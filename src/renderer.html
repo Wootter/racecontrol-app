@@ -458,6 +458,7 @@ const DRIVER_ROLE   = "1464790972679454903";
 const MARSHAL_ROLE  = "1464789326519865475";
 const DIRECTOR_ROLE = "1464788930296549572";
 const DEV_USER_ID   = "790254318389166111";
+const GIST_ID = "your_gist_id_here"; // Fill in after first bot run
 
 const FLAG_DEFS = {
   green:      {emoji:"🟢",title:"Green Flag",         sub:"Green flag — race on!",                         color:"green",  sound:"GreenFlag.mp4"},
@@ -559,10 +560,19 @@ window.addEventListener("DOMContentLoaded", async () => {
   const apiDisplay = document.getElementById("api-url-display");
   if (apiDisplay) apiDisplay.textContent = apiUrl || "No API URL set — click Login to set one";
 
-  const saved = sessionStorage.getItem("rc_user") || localStorage.getItem("rc_user");
+// Auto-fetch latest API URL from Gist
+const gistUrl = await fetchApiUrlFromGist();
+if (gistUrl && gistUrl !== apiUrl) {
+  console.log("[Gist] Updated API URL:", gistUrl);
+  apiUrl = gistUrl;
+  config.apiUrl = gistUrl;
+  await window.api.saveConfig({ apiUrl: gistUrl });
+  const apiDisplay = document.getElementById("api-url-display");
+  if (apiDisplay) apiDisplay.textContent = apiUrl;
+}
+
+const saved = sessionStorage.getItem("rc_user") || localStorage.getItem("rc_user");
 if (saved && apiUrl) { user = JSON.parse(saved); await afterLogin(); }
-  if (saved && apiUrl) { user = JSON.parse(saved); await afterLogin(); }
-});
 
 async function loginWithDiscord() {
   const errEl = document.getElementById("login-error");
@@ -674,6 +684,20 @@ localStorage.setItem("rc_user", JSON.stringify(user));
   }
 }
 
+async function fetchApiUrlFromGist() {
+  try {
+    const res  = await fetch(`https://api.github.com/gists/${GIST_ID}`);
+    const data = await res.json();
+    const file = data.files?.["racecontrol-api.json"];
+    if (!file) return null;
+    const parsed = JSON.parse(file.content);
+    return parsed.url || null;
+  } catch(e) {
+    console.error("[Gist] Failed to fetch URL:", e);
+    return null;
+  }
+}
+  
 // Shows a small inline button to change the API URL without restarting
 function showChangeUrlPrompt() {
   const errEl = document.getElementById("login-error");
