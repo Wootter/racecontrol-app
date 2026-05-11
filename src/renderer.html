@@ -897,23 +897,7 @@ function setDriverBtnsEnabled(on) {
   notice.style.display = on ? "none" : "block";
   notice.textContent   = on ? "" : "⏳ Waiting for race to start...";
 }
-
-  document.addEventListener("DOMContentLoaded", () => {
-  // This runs after the main DOMContentLoaded so use a small delay
-  setTimeout(() => {
-    const drop = document.getElementById("dev-audio-drop");
-    if (!drop) return;
-    drop.addEventListener("dragover", e => { e.preventDefault(); drop.style.borderColor = "var(--green)"; });
-    drop.addEventListener("dragleave", () => { drop.style.borderColor = "var(--border)"; });
-    drop.addEventListener("drop", e => {
-      e.preventDefault();
-      drop.style.borderColor = "var(--border)";
-      const file = e.dataTransfer.files[0];
-      if (file) devPlayAudio(file);
-    });
-  }, 500);
-});
-  
+ 
 function onFlagEvent(flag, customData) {
   if (flag === "__custom__" && customData) {
     const colorMap = {green:"green",yellow:"yellow",red:"red",blue:"blue",orange:"orange",white:"white"};
@@ -1368,6 +1352,19 @@ function showToast(msg, type="") {
   const t=document.getElementById("toast"); t.textContent=msg; t.className=`show ${type}`;
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>{t.className="";},2500);
 }
+  
+setTimeout(() => {
+  const drop = document.getElementById("dev-audio-drop");
+  if (!drop) return;
+  drop.addEventListener("dragover", e => { e.preventDefault(); drop.style.borderColor = "var(--green)"; });
+  drop.addEventListener("dragleave", () => { drop.style.borderColor = "var(--border)"; });
+  drop.addEventListener("drop", e => {
+    e.preventDefault();
+    drop.style.borderColor = "var(--border)";
+    const file = e.dataTransfer.files[0];
+    if (file) devPlayAudio(file);
+  });
+}, 500);
 </script>
 </body>
 </html>
