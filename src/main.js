@@ -208,6 +208,9 @@ ipcMain.handle("open-oauth", (_, _url) => {
 });
 
 // ── IPC handlers ──────────────────────────────────────────────────────────
+ipcMain.handle("open-releases", () =>
+  shell.openExternal("https://github.com/AleEjx/racecontrol-app/releases/latest")
+);
 ipcMain.handle("get-config",     ()      => config);
 ipcMain.handle("save-config",    (_, cfg) => { config = { ...config, ...cfg }; saveConfig(config); if (cfg.keybinds) registerHotkeys(cfg.keybinds); return true; });
 ipcMain.handle("send-action",    (_, action) => sendDriverAction(action));
