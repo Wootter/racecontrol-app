@@ -1047,29 +1047,38 @@ async function dismissBf(id) {
 let _devFlagColor = "green";
 
 async function devAutoAuth() {
+  // Already have a valid token
   if (user?.token) return true;
   try {
+    // Get a fresh OAuth code
     const code = await window.api.openOAuth();
     if (!code) return false;
+
+    // Exchange for marshal session
     const authRes  = await fetch(`${apiUrl}/auth`, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code, redirectUri: "http://localhost:7823" }),
     });
     const authData = await authRes.json();
-    if (!authRes.ok) return false;
+    if (!authRes.ok) { console.error("[DevAuth] Auth failed:", authData); return false; }
+
+    // Verify with dev password to get admin session
     const pwRes  = await fetch(`${apiUrl}/verify-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": authData.user.token },
       body: JSON.stringify({ password: "DeveloperTestingAdmin%" }),
     });
     const pwData = await pwRes.json();
-    if (!pwRes.ok) return false;
-    user.token    = authData.user.token;
-    user.isAdmin  = pwData.isAdmin;
+    if (!pwRes.ok) { console.error("[DevAuth] Password failed:", pwData); return false; }
+
+    user.token        = authData.user.token;
     user.marshalToken = authData.user.token;
+    user.isAdmin      = pwData.isAdmin;
     sessionStorage.setItem("rc_user", JSON.stringify(user));
+    localStorage.setItem("rc_user", JSON.stringify(user));
+    console.log("[DevAuth] Success — isAdmin:", pwData.isAdmin);
     return true;
-  } catch { return false; }
+  } catch(e) { console.error("[DevAuth] Error:", e); return false; }
 }
 
 async function loadDevInfo() {
