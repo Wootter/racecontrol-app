@@ -488,52 +488,130 @@ window.addEventListener("DOMContentLoaded", async () => {
 });
 
 async function loginWithDiscord() {
+  const errEl = document.getElementById("login-error");
+
+  // Step 1: Make sure we have an API URL
   if (!apiUrl) {
     const url = prompt("Enter your API URL:\n(Check your Discord log channel)");
-    if (!url) return;
+    if (!url) {
+      errEl.style.color = "var(--red)";
+      errEl.textContent = "❌ No API URL set.";
+      return;
+    }
     apiUrl = url.trim();
     config.apiUrl = apiUrl;
     await window.api.saveConfig({ apiUrl });
+    const apiDisplay = document.getElementById("api-url-display");
+    if (apiDisplay) apiDisplay.textContent = apiUrl;
   }
 
-  const errEl = document.getElementById("login-error");
-  errEl.textContent = "Opening Discord login...";
   errEl.style.color = "var(--muted)";
+  errEl.textContent = "Opening Discord login...";
 
+  // Step 2: Open OAuth window and get code
   let code;
-  try { code = await window.api.openOAuth(); } catch { errEl.textContent = "❌ Could not open login window."; errEl.style.color = "var(--red)"; return; }
-  if (!code) { errEl.textContent = "❌ Login cancelled."; errEl.style.color = "var(--red)"; return; }
-
-  errEl.textContent = "Verifying...";
   try {
-    const dRes = await fetch(`${apiUrl}/driver/auth`, {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ code, redirectUri: "http://localhost:7823" }),
-    });
-    const dData = await dRes.json();
+    code = await window.api.openOAuth();
+  } catch (e) {
+    errEl.style.color = "var(--red)";
+    errEl.textContent = "❌ Could not open login window.";
+    console.error("[Login] OAuth window error:", e);
+    return;
+  }
 
-    if (dRes.ok) {
-      user = dData.user;
-    } else if (dRes.status === 403 && !dData.disabled) {
-      const mRes = await fetch(`${apiUrl}/auth`, {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ code, redirectUri: "http://localhost:7823" }),
+  if (!code) {
+    errEl.style.color = "var(--red)";
+    errEl.textContent = "❌ Login cancelled.";
+    return;
+  }
+
+  errEl.style.color = "var(--muted)";
+  errEl.textContent = "Verifying with server...";
+
+  // Step 3: Exchange code with your API
+  try {
+    // First try driver auth
+    let dRes, dData;
+    try {
+      dRes  = await fetch(`${apiUrl}/driver/auth`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ code, redirectUri: "http://localhost:7823" }),
       });
-      const mData = await mRes.json();
-      if (!mRes.ok) { errEl.textContent = "❌ " + (mData.error || "Access denied"); return; }
-      user = mData.user;
-      user.marshalToken = mData.user.token;
-    } else {
-      errEl.textContent = "❌ " + (dData.error || "Access denied");
+      dData = await dRes.json();
+    } catch (fetchErr) {
+      errEl.style.color = "var(--red)";
+      errEl.textContent = "❌ Can't reach API. Is the URL still valid?";
+      console.error("[Login] Fetch error:", fetchErr);
+      // Show change URL button
+      showChangeUrlPrompt();
       return;
     }
 
+    if (dRes.ok) {
+      // Logged in as driver
+      user = dData.user;
+    } else if (dRes.status === 403 && !dData.disabled) {
+      // Not a driver — try marshal auth
+      errEl.style.color = "var(--muted)";
+      errEl.textContent = "Trying marshal login...";
+      let mRes, mData;
+      try {
+        mRes  = await fetch(`${apiUrl}/auth`, {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({ code, redirectUri: "http://localhost:7823" }),
+        });
+        mData = await mRes.json();
+      } catch (fetchErr) {
+        errEl.style.color = "var(--red)";
+        errEl.textContent = "❌ Can't reach API. Is the URL still valid?";
+        showChangeUrlPrompt();
+        return;
+      }
+      if (!mRes.ok) {
+        errEl.style.color = "var(--red)";
+        errEl.textContent = "❌ " + (mData.error || "Access denied.");
+        return;
+      }
+      user = mData.user;
+      user.marshalToken = mData.user.token;
+    } else {
+      // Some other error from driver/auth
+      errEl.style.color = "var(--red)";
+      errEl.textContent = "❌ " + (dData.error || "Access denied.");
+      return;
+    }
+
+    // Step 4: Success
     user.discordId = user.id;
     sessionStorage.setItem("rc_user", JSON.stringify(user));
+    errEl.textContent = "";
     await afterLogin();
+
   } catch (err) {
-    errEl.textContent = "❌ " + err.message;
+    errEl.style.color = "var(--red)";
+    errEl.textContent = "❌ Unexpected error: " + err.message;
+    console.error("[Login] Unexpected error:", err);
   }
+}
+
+// Shows a small inline button to change the API URL without restarting
+function showChangeUrlPrompt() {
+  const errEl = document.getElementById("login-error");
+  errEl.innerHTML = `❌ Can't reach API. <button onclick="resetApiUrl()" style="background:none;border:none;color:var(--blue);font-family:'Oxanium',sans-serif;font-size:9px;cursor:pointer;text-decoration:underline;padding:0;">Change URL</button>`;
+}
+
+async function resetApiUrl() {
+  const url = prompt("Enter new API URL:", apiUrl);
+  if (!url?.trim()) return;
+  apiUrl = url.trim();
+  config.apiUrl = apiUrl;
+  await window.api.saveConfig({ apiUrl });
+  const apiDisplay = document.getElementById("api-url-display");
+  if (apiDisplay) apiDisplay.textContent = apiUrl;
+  document.getElementById("login-error").textContent = "✓ URL updated — try logging in again.";
+  document.getElementById("login-error").style.color = "var(--green)";
 }
 
 async function afterLogin() {
