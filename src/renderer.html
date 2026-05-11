@@ -473,18 +473,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   const saved = sessionStorage.getItem("rc_user");
   if (saved && apiUrl) { user = JSON.parse(saved); await afterLogin(); }
 });
-  window.api.onUpdateDownloaded(v => {
-    document.getElementById("update-text").textContent = `✅ v${v} ready — click to install!`;
-    const btn = document.getElementById("update-install-btn");
-    btn.disabled = false; btn.style.cursor = "pointer"; btn.style.opacity = "1"; btn.style.background = "var(--green)";
-    document.getElementById("update-banner").style.display = "flex";
-  });
-
-  if (config.keybinds) window.api.registerHotkeys(config.keybinds);
-
-  const saved = sessionStorage.getItem("rc_user");
-  if (saved && apiUrl) { user = JSON.parse(saved); await afterLogin(); }
-});
 
 async function loginWithDiscord() {
   const errEl = document.getElementById("login-error");
