@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld("api", {
   installUpdate:    ()        => ipcRenderer.invoke("install-update"),
   checkVersion:     ()        => ipcRenderer.invoke("check-version"),
   registerHotkeys:  (kb)      => ipcRenderer.invoke("register-hotkeys", kb),
+  onUpdateError: (cb) => ipcRenderer.on("update-error", (_, v) => cb(v)),
+  openReleases:  ()   => ipcRenderer.invoke("open-releases"),
 
   onUpdateAvailable:  (cb) => ipcRenderer.on("update-available",  (_, v) => cb(v)),
   onUpdateDownloaded: (cb) => ipcRenderer.on("update-downloaded", (_, v) => cb(v)),
