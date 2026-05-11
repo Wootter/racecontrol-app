@@ -4,7 +4,6 @@ const fs   = require("fs");
 const { autoUpdater } = require("electron-updater");
 
 // Store app data on D: drive
-app.setPath("userData", "D:\\RaceLeagueData\\racecontrol-driver");
 const CONFIG_FILE = path.join(app.getPath("userData"), "config.json");
 
 function loadConfig() {
