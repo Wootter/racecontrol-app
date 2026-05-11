@@ -396,9 +396,19 @@
       <div id="dev-sessions" style="font-size:10px;color:var(--muted);">Loading...</div>
     </div>
 
-    <div class="dev-card">
+<div class="dev-card">
       <button class="dev-btn" onclick="window.api.openDevTools()">Open DevTools</button>
     </div>
+    <button class="dev-btn" onclick="openToolbox()" style="background:rgba(41,121,255,0.1);border-color:rgba(41,121,255,0.3);color:var(--blue);">🧰 Toolbox</button>
+  </div>
+</div>
+
+<!-- Toolbox Modal -->
+<div id="toolbox-modal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;width:320px;max-height:80vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
+    <div style="font-size:12px;font-weight:800;color:var(--red);">🧰 TOOLBOX</div>
+    <div id="toolbox-items" style="display:flex;flex-direction:column;gap:6px;"></div>
+    <button class="save-btn" onclick="closeToolbox()" style="margin-top:4px;">Done</button>
   </div>
 </div>
 
@@ -418,6 +428,7 @@
     </div>
     <button class="save-btn" onclick="saveSettings()">✓ Save Settings</button>
     <button class="save-btn" onclick="goBack()" style="background:rgba(255,255,255,0.03);border-color:var(--border);color:var(--muted);">← Back</button>
+<button class="save-btn" onclick="reLogin()" style="background:rgba(255,23,68,0.08);border-color:rgba(255,23,68,0.3);color:var(--red);">↩ Re-Login</button>
   </div>
 </div>
 
@@ -548,7 +559,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   const apiDisplay = document.getElementById("api-url-display");
   if (apiDisplay) apiDisplay.textContent = apiUrl || "No API URL set — click Login to set one";
 
-  const saved = sessionStorage.getItem("rc_user");
+  const saved = sessionStorage.getItem("rc_user") || localStorage.getItem("rc_user");
+if (saved && apiUrl) { user = JSON.parse(saved); await afterLogin(); }
   if (saved && apiUrl) { user = JSON.parse(saved); await afterLogin(); }
 });
 
@@ -651,6 +663,7 @@ async function loginWithDiscord() {
     // Step 4: Success
     user.discordId = user.id;
     sessionStorage.setItem("rc_user", JSON.stringify(user));
+localStorage.setItem("rc_user", JSON.stringify(user));
     errEl.textContent = "";
     await afterLogin();
 
@@ -728,7 +741,20 @@ function showEngineerScreen() {
     </div>`;
   showScreen("screen-login");
 }
-
+  
+function reLogin() {
+  sessionStorage.removeItem("rc_user");
+  localStorage.removeItem("rc_user");
+  user       = null;
+  hasDriver  = false;
+  hasMarshal = false;
+  hasDev     = false;
+  document.getElementById("panel-switcher").style.display = "none";
+  document.getElementById("mode-badge").style.display     = "none";
+  showScreen("screen-login");
+  document.getElementById("login-error").textContent = "";
+}
+  
 function confirmEngineer() {
   const name = document.getElementById("eng-driver-select")?.value;
   if (!name) { document.getElementById("eng-error").textContent = "Please select a driver."; return; }
@@ -876,6 +902,74 @@ async function pollDriverState() {
   }
 }
 
+const TOOLBOX_SECTIONS = [
+  { id: "dev-stats",         label: "Status & Uptime" },
+  { id: "dev-vcs",           label: "All Voice Channels" },
+  { id: "dev-blacklist",     label: "Blacklisted Users" },
+  { id: "dev-sessions",      label: "Active Sessions" },
+  { id: "dev-driver-logins", label: "Driver Panel Logins" },
+  { id: "dev-audit",         label: "Audit Log" },
+  { id: "dev-audio-drop",    label: "Custom Audio Player" },
+  { id: "dev-mock-lb",       label: "Mock Leaderboard (dev)" },
+  { id: "dev-flag-text",     label: "Custom Flag (dev)" },
+];
+
+let _toolboxVisible = {};
+
+function openToolbox() {
+  const items = document.getElementById("toolbox-items");
+  items.innerHTML = TOOLBOX_SECTIONS.map(s => {
+    const visible = _toolboxVisible[s.id] !== false;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;">
+      <span style="font-size:11px;">${s.label}</span>
+      <button onclick="toggleToolboxSection('${s.id}')" id="tb-btn-${s.id}" style="font-size:9px;font-weight:800;padding:3px 10px;border-radius:4px;border:1px solid;cursor:pointer;font-family:'Oxanium',sans-serif;background:${visible?"rgba(0,230,118,0.15)":"rgba(255,23,68,0.15)"};border-color:${visible?"var(--green)":"var(--red)"};color:${visible?"var(--green)":"var(--red)"};">
+        ${visible?"VISIBLE":"HIDDEN"}
+      </button>
+    </div>`;
+  }).join("");
+  document.getElementById("toolbox-modal").style.display = "flex";
+}
+
+function toggleToolboxSection(id) {
+  const visible = _toolboxVisible[id] !== false;
+  _toolboxVisible[id] = !visible;
+  // Find the parent dev-card and toggle it
+  const el = document.getElementById(id);
+  if (el) {
+    const card = el.closest(".dev-card") || el;
+    card.style.display = !visible ? "" : "none";
+  }
+  // Update button
+  const btn = document.getElementById(`tb-btn-${id}`);
+  if (btn) {
+    const nowVisible = !visible;
+    btn.textContent = nowVisible ? "VISIBLE" : "HIDDEN";
+    btn.style.background = nowVisible ? "rgba(0,230,118,0.15)" : "rgba(255,23,68,0.15)";
+    btn.style.borderColor = nowVisible ? "var(--green)" : "var(--red)";
+    btn.style.color = nowVisible ? "var(--green)" : "var(--red)";
+  }
+  localStorage.setItem("rc_toolbox", JSON.stringify(_toolboxVisible));
+}
+
+function closeToolbox() {
+  document.getElementById("toolbox-modal").style.display = "none";
+}
+
+function loadToolboxPrefs() {
+  try {
+    const saved = localStorage.getItem("rc_toolbox");
+    if (saved) {
+      _toolboxVisible = JSON.parse(saved);
+      TOOLBOX_SECTIONS.forEach(s => {
+        if (_toolboxVisible[s.id] === false) {
+          const el = document.getElementById(s.id);
+          if (el) { const card = el.closest(".dev-card") || el; card.style.display = "none"; }
+        }
+      });
+    }
+  } catch {}
+}
+  
 function renderLeaderboard(data) {
   const lb = document.getElementById("d-leaderboard");
   if (!data.drivers?.length) { lb.innerHTML = '<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">Waiting for race...</div>'; return; }
@@ -1276,15 +1370,34 @@ async function devClearMockLb() {
 }
 
 async function devTogglePanel(target, enable) {
+  if (!user?.token) {
+    const ok = await devAutoAuth();
+    if (!ok) { showToast("❌ Dev auth failed", "err"); return; }
+  }
   try {
-    await fetch(`${apiUrl}/panel-status`, {
-      method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+    // Try POST /panel-status first, fall back to POST /admin/panel-status
+    let res = await fetch(`${apiUrl}/panel-status`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
       body: JSON.stringify({ target, enable }),
     });
-    showToast(`✓ ${target} panel ${enable?"enabled":"disabled"}`, "ok");
-    document.getElementById("dev-panel-status").textContent = `${target} panel ${enable?"enabled":"disabled"}`;
-    document.getElementById("dev-panel-status").style.color = enable ? "var(--green)" : "var(--red)";
-    loadDevInfo();
+    if (res.status === 404) {
+      res = await fetch(`${apiUrl}/admin/panel-status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+        body: JSON.stringify({ target, enable }),
+      });
+    }
+    const data = await res.json();
+    if (res.ok) {
+      showToast(`✓ ${target} panel ${enable?"enabled":"disabled"}`, "ok");
+      const el = document.getElementById("dev-panel-status");
+      el.textContent = `${target} panel ${enable?"enabled":"disabled"}`;
+      el.style.color = enable ? "var(--green)" : "var(--red)";
+      loadDevInfo();
+    } else {
+      showToast(`✗ ${data.error || "Failed"}`, "err");
+    }
   } catch { showToast("✗ Bot unreachable", "err"); }
 }
 
