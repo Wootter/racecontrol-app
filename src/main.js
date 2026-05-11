@@ -64,12 +64,32 @@ app.whenReady().then(() => {
 app.on("window-all-closed", () => app.quit());
 
 function setupAutoUpdater() {
+  // Only run updater in packaged (installed) builds
+  if (!app.isPackaged) {
+    console.log("[Updater] Skipping — running in dev mode.");
+    return;
+  }
+
   autoUpdater.autoDownload         = true;
   autoUpdater.autoInstallOnAppQuit = false;
-  autoUpdater.on("update-available",  (info) => { mainWindow?.webContents.send("update-available",  info.version); console.log(`[Updater] Available: v${info.version}`); });
-  autoUpdater.on("update-downloaded", (info) => { mainWindow?.webContents.send("update-downloaded", info.version); console.log(`[Updater] Downloaded: v${info.version}`); });
-  autoUpdater.on("error", (err) => console.log("[Updater] Error:", err.message));
-  setTimeout(() => autoUpdater.checkForUpdates().catch(() => {}), 5000);
+
+  autoUpdater.on("checking-for-update", () => console.log("[Updater] Checking..."));
+  autoUpdater.on("update-not-available", () => console.log("[Updater] Up to date."));
+  autoUpdater.on("update-available",  (info) => {
+    mainWindow?.webContents.send("update-available",  info.version);
+    console.log(`[Updater] Available: v${info.version}`);
+  });
+  autoUpdater.on("update-downloaded", (info) => {
+    mainWindow?.webContents.send("update-downloaded", info.version);
+    console.log(`[Updater] Downloaded: v${info.version}`);
+  });
+  autoUpdater.on("error", (err) => {
+    console.log("[Updater] Error:", err.message);
+    // Tell renderer so it can show a fallback
+    mainWindow?.webContents.send("update-error", err.message);
+  });
+
+  setTimeout(() => autoUpdater.checkForUpdates().catch(e => console.log("[Updater]", e.message)), 5000);
 }
 
 function createWindow() {
