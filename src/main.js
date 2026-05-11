@@ -45,9 +45,11 @@ const oauthServer = http.createServer((req, res) => {
 // Start OAuth server — handle port conflict gracefully instead of crashing
 oauthServer.on("error", (err) => {
   if (err.code === "EADDRINUSE") {
-    console.warn(`[OAuth] Port ${OAUTH_PORT} already in use — another instance may be running.`);
-    // Still usable; the existing server on that port belongs to the old instance
-    // which the single-instance lock above should have already prevented.
+    console.warn(`[OAuth] Port ${OAUTH_PORT} in use — retrying...`);
+    setTimeout(() => {
+      oauthServer.close();
+      oauthServer.listen(OAUTH_PORT);
+    }, 1000);
   } else {
     console.error("[OAuth] Server error:", err.message);
   }
