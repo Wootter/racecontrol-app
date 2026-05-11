@@ -194,18 +194,38 @@ async function sendDriverAction(action) {
 // ── OAuth window ──────────────────────────────────────────────────────────
 ipcMain.handle("open-oauth", (_, _url) => {
   return new Promise((resolve) => {
-    oauthResolve = (code) => { if (authWin && !authWin.isDestroyed()) authWin.destroy(); resolve(code); };
     const CLIENT_ID  = "1467595519718195473";
     const REDIRECT   = encodeURIComponent(`http://localhost:${OAUTH_PORT}`);
     const discordUrl = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT}&response_type=code&scope=identify`;
+
     const authWin = new BrowserWindow({
       width: 520, height: 720, show: true, alwaysOnTop: true,
       webPreferences: { nodeIntegration: false, contextIsolation: true },
       title: "Login with Discord", autoHideMenuBar: true,
     });
+
+    // Set the resolve function BEFORE loading the URL
+    oauthResolve = (code) => {
+      console.log("[OAuth] Code received:", code ? "yes" : "no");
+      if (authWin && !authWin.isDestroyed()) {
+        // Small delay so user sees the success message
+        setTimeout(() => authWin.destroy(), 1500);
+      }
+      resolve(code);
+    };
+
     authWin.loadURL(discordUrl);
-    authWin.show(); authWin.focus();
-    authWin.on("closed", () => { if (oauthResolve) { oauthResolve = null; resolve(null); } });
+    authWin.show();
+    authWin.focus();
+
+    // Only resolve null if user manually closes without completing
+    authWin.on("closed", () => {
+      console.log("[OAuth] Window closed");
+      if (oauthResolve) {
+        oauthResolve = null;
+        resolve(null);
+      }
+    });
   });
 });
 
