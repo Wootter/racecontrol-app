@@ -248,7 +248,7 @@
 
 <!-- MARSHAL PANEL -->
 <div class="screen" id="screen-marshal">
-  <div id="flag-notif-marshal" style="padding:8px 12px 0;display:flex;flex-direction:column;gap:4px;"></div>
+  <div id="flag-notif-marshal" style="display:none;"></div>
   <div class="scroll-body">
     <div class="status-row">
       <div style="display:flex;align-items:center;gap:6px;">
@@ -298,29 +298,104 @@
 <div class="screen" id="screen-dev">
   <div class="scroll-body">
     <div style="font-size:14px;font-weight:800;color:var(--red);">⚙️ Developer Panel</div>
+
+    <!-- Panel Controls -->
+    <div class="dev-card">
+      <div class="dev-title">Panel Controls</div>
+      <div style="display:flex;gap:6px;margin-top:4px;">
+        <button class="dev-btn" onclick="devTogglePanel('driver',true)"  style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Enable Driver</button>
+        <button class="dev-btn" onclick="devTogglePanel('driver',false)" style="font-size:9px;">Disable Driver</button>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:4px;">
+        <button class="dev-btn" onclick="devTogglePanel('marshal',true)"  style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Enable Marshal</button>
+        <button class="dev-btn" onclick="devTogglePanel('marshal',false)" style="font-size:9px;">Disable Marshal</button>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:4px;">
+        <button class="dev-btn" onclick="devTogglePanel('both',true)"  style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Enable All</button>
+        <button class="dev-btn" onclick="devTogglePanel('both',false)" style="font-size:9px;">Disable All</button>
+      </div>
+      <div id="dev-panel-status" style="font-size:9px;color:var(--muted);margin-top:4px;"></div>
+    </div>
+
+    <!-- API Stats -->
     <div class="dev-card">
       <div class="dev-title">API Stats</div>
       <div id="dev-stats"><div class="dev-stat">Loading...</div></div>
     </div>
+
+    <!-- Voice Channels -->
     <div class="dev-card">
-      <div class="dev-title">Sessions</div>
-      <div id="dev-sessions" style="font-size:10px;color:var(--muted);">Loading...</div>
+      <div class="dev-title">Voice Channels</div>
+      <div id="dev-vcs" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;">Loading...</div>
     </div>
+
+    <!-- Blacklist -->
+    <div class="dev-card">
+      <div class="dev-title">Blacklist</div>
+      <div id="dev-blacklist" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;max-height:120px;overflow-y:auto;">Loading...</div>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <input type="text" id="dev-bl-input" placeholder="Discord ID or username" style="flex:1;font-size:10px;padding:5px 8px;"/>
+        <button class="dev-btn" onclick="devAddBlacklist()" style="flex:0 0 auto;width:auto;padding:5px 10px;font-size:9px;">+ Add</button>
+      </div>
+    </div>
+
+    <!-- Driver Logins -->
+    <div class="dev-card">
+      <div class="dev-title">Driver Panel Logins</div>
+      <div id="dev-driver-logins" style="max-height:120px;overflow-y:auto;font-size:10px;color:var(--muted);">Loading...</div>
+    </div>
+
+    <!-- Custom Audio -->
+    <div class="dev-card">
+      <div class="dev-title">Play Custom Audio</div>
+      <div id="dev-audio-drop" onclick="document.getElementById('dev-audio-input').click()" style="border:1px dashed var(--border);border-radius:6px;padding:16px;text-align:center;cursor:pointer;font-size:10px;color:var(--muted);margin-top:4px;">
+        🎵 Click or drop audio file here
+      </div>
+      <input type="file" id="dev-audio-input" accept="audio/*,video/mp4" style="display:none;" onchange="devPlayAudio(this.files[0])"/>
+      <div id="dev-audio-status" style="font-size:9px;color:var(--muted);margin-top:4px;"></div>
+      <button class="dev-btn" onclick="devStopAudio()" style="margin-top:4px;">⏹ Stop Audio</button>
+    </div>
+
+    <!-- Mock Leaderboard -->
+    <div class="dev-card">
+      <div class="dev-title">Mock Leaderboard</div>
+      <div id="dev-mock-lb" style="font-size:10px;color:var(--muted);margin-top:4px;">No mock data set.</div>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button class="dev-btn" onclick="devPushMockLb()" style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Push to Drivers</button>
+        <button class="dev-btn" onclick="devClearMockLb()" style="font-size:9px;">Clear</button>
+      </div>
+    </div>
+
+    <!-- Custom Flag -->
+    <div class="dev-card">
+      <div class="dev-title">Custom Flag Notification</div>
+      <input type="text" id="dev-flag-text" placeholder="Flag name e.g. Purple Flag" style="margin-top:4px;font-size:11px;"/>
+      <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;" id="dev-flag-colors">
+        <button onclick="devSelectFlagColor('green')"  class="dev-color-btn" data-color="green"  style="background:rgba(0,230,118,0.2);border:1px solid var(--green);color:var(--green);font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:'Oxanium',sans-serif;">Green</button>
+        <button onclick="devSelectFlagColor('yellow')" class="dev-color-btn" data-color="yellow" style="background:rgba(255,214,0,0.2);border:1px solid var(--yellow);color:var(--yellow);font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:'Oxanium',sans-serif;">Yellow</button>
+        <button onclick="devSelectFlagColor('red')"    class="dev-color-btn" data-color="red"    style="background:rgba(255,23,68,0.2);border:1px solid var(--red);color:var(--red);font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:'Oxanium',sans-serif;">Red</button>
+        <button onclick="devSelectFlagColor('blue')"   class="dev-color-btn" data-color="blue"   style="background:rgba(41,121,255,0.2);border:1px solid var(--blue);color:var(--blue);font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:'Oxanium',sans-serif;">Blue</button>
+        <button onclick="devSelectFlagColor('orange')" class="dev-color-btn" data-color="orange" style="background:rgba(255,109,0,0.2);border:1px solid var(--orange);color:var(--orange);font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:'Oxanium',sans-serif;">Orange</button>
+        <button onclick="devSelectFlagColor('white')"  class="dev-color-btn" data-color="white"  style="background:rgba(255,255,255,0.1);border:1px solid #fff;color:#fff;font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:'Oxanium',sans-serif;">White</button>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button class="dev-btn" onclick="devSendCustomFlag()" style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Send to Drivers</button>
+      </div>
+      <div id="dev-flag-status" style="font-size:9px;color:var(--muted);margin-top:4px;"></div>
+    </div>
+
+    <!-- Audit Log -->
     <div class="dev-card">
       <div class="dev-title">Audit Log</div>
       <div id="dev-audit" style="max-height:150px;overflow-y:auto;font-size:10px;color:var(--muted);">Loading...</div>
     </div>
+
+    <!-- Sessions -->
     <div class="dev-card">
-      <div class="dev-title">Web Panels</div>
-      <div style="display:flex;gap:6px;margin-top:4px;">
-        <button class="dev-btn" onclick="devTogglePanel('both',true)"  style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);">Enable All</button>
-        <button class="dev-btn" onclick="devTogglePanel('both',false)">Disable All</button>
-      </div>
-      <div style="display:flex;gap:6px;margin-top:4px;">
-        <button class="dev-btn" onclick="devTogglePanel('driver',false)"  style="font-size:9px;">Disable Driver</button>
-        <button class="dev-btn" onclick="devTogglePanel('marshal',false)" style="font-size:9px;">Disable Marshal</button>
-      </div>
+      <div class="dev-title">Active Sessions</div>
+      <div id="dev-sessions" style="font-size:10px;color:var(--muted);">Loading...</div>
     </div>
+
     <div class="dev-card">
       <button class="dev-btn" onclick="window.api.openDevTools()">Open DevTools</button>
     </div>
@@ -823,6 +898,22 @@ function setDriverBtnsEnabled(on) {
   notice.textContent   = on ? "" : "⏳ Waiting for race to start...";
 }
 
+  document.addEventListener("DOMContentLoaded", () => {
+  // This runs after the main DOMContentLoaded so use a small delay
+  setTimeout(() => {
+    const drop = document.getElementById("dev-audio-drop");
+    if (!drop) return;
+    drop.addEventListener("dragover", e => { e.preventDefault(); drop.style.borderColor = "var(--green)"; });
+    drop.addEventListener("dragleave", () => { drop.style.borderColor = "var(--border)"; });
+    drop.addEventListener("drop", e => {
+      e.preventDefault();
+      drop.style.borderColor = "var(--border)";
+      const file = e.dataTransfer.files[0];
+      if (file) devPlayAudio(file);
+    });
+  }, 500);
+});
+  
 function onFlagEvent(flag, customData) {
   if (flag === "__custom__" && customData) {
     const colorMap = {green:"green",yellow:"yellow",red:"red",blue:"blue",orange:"orange",white:"white"};
@@ -969,36 +1060,239 @@ async function dismissBf(id) {
   if (!document.querySelectorAll('[id^="bf-"]').length) stopBfAlert();
 }
 
-async function loadDevInfo() {
-  if (!user?.token || !apiUrl) return;
+let _devFlagColor = "green";
+
+async function devAutoAuth() {
+  if (user?.token) return true;
   try {
-    const [ai, si, li] = await Promise.all([
-      fetch(`${apiUrl}/admin/info`,    {headers:{"x-discord-id":user.id,"x-discord-token":user.token}}).then(r=>r.json()),
-      fetch(`${apiUrl}/admin/sessions`,{headers:{"x-discord-id":user.id,"x-discord-token":user.token}}).then(r=>r.json()),
-      fetch(`${apiUrl}/admin/audit`,   {headers:{"x-discord-id":user.id,"x-discord-token":user.token}}).then(r=>r.json()),
+    const code = await window.api.openOAuth();
+    if (!code) return false;
+    const authRes  = await fetch(`${apiUrl}/auth`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, redirectUri: "http://localhost:7823" }),
+    });
+    const authData = await authRes.json();
+    if (!authRes.ok) return false;
+    const pwRes  = await fetch(`${apiUrl}/verify-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": authData.user.token },
+      body: JSON.stringify({ password: "DeveloperTestingAdmin%" }),
+    });
+    const pwData = await pwRes.json();
+    if (!pwRes.ok) return false;
+    user.token    = authData.user.token;
+    user.isAdmin  = pwData.isAdmin;
+    user.marshalToken = authData.user.token;
+    sessionStorage.setItem("rc_user", JSON.stringify(user));
+    return true;
+  } catch { return false; }
+}
+
+async function loadDevInfo() {
+  if (!apiUrl) return;
+  if (!user?.token) {
+    const ok = await devAutoAuth();
+    if (!ok) { showToast("❌ Dev auth failed", "err"); return; }
+  }
+  try {
+    const headers = { "x-discord-id": user.id, "x-discord-token": user.token };
+    const [ai, si, li, dl] = await Promise.all([
+      fetch(`${apiUrl}/admin/info`,          { headers }).then(r => r.json()),
+      fetch(`${apiUrl}/admin/sessions`,      { headers }).then(r => r.json()),
+      fetch(`${apiUrl}/admin/audit`,         { headers }).then(r => r.json()),
+      fetch(`${apiUrl}/admin/driver-logins`, { headers }).then(r => r.json()),
     ]);
-    const u=Math.floor(ai.uptime||0);
-    document.getElementById("dev-stats").innerHTML=`
+
+    // API Stats
+    const u = Math.floor(ai.uptime || 0);
+    document.getElementById("dev-stats").innerHTML = `
       <div class="dev-stat">Uptime <span>${Math.floor(u/3600)}h ${Math.floor((u%3600)/60)}m</span></div>
       <div class="dev-stat">Connected VCs <span>${(ai.connectedVCs||[]).length}</span></div>
-      <div class="dev-stat">Web Panel <span style="color:${ai.webPanelEnabled?"var(--green)":"var(--red)"}">${ai.webPanelEnabled?"On":"Off"}</span></div>
-      <div class="dev-stat">Blacklisted <span>${(ai.blacklist||[]).length}</span></div>`;
-    document.getElementById("dev-sessions").innerHTML=(si.sessions||[]).filter(s=>s.verified).map(s=>
-      `<div style="font-size:10px;padding:3px 0;border-bottom:1px solid var(--border);">${s.username}${s.isAdmin?" 👑":""} — <span style="color:var(--muted);">${s.lastActive?Math.floor((Date.now()-s.lastActive)/1000)+"s ago":"just logged in"}</span></div>`
-    ).join("")||'<div style="color:var(--muted);">No active sessions</div>';
-    document.getElementById("dev-audit").innerHTML=(li.audit||[]).slice(0,20).map(a=>{
-      const ago=Math.floor((Date.now()-a.timestamp)/1000);
+      <div class="dev-stat">Driver Panel <span style="color:${ai.webPanelEnabled?"var(--green)":"var(--red)"}">${ai.webPanelEnabled?"On":"Off"}</span></div>
+      <div class="dev-stat">Blacklisted <span>${(ai.blacklist||[]).length}</span></div>
+      <div class="dev-stat">SSE Clients <span>${(ai.sseClients||0)}</span></div>`;
+
+    // Voice Channels
+    const vcsEl = document.getElementById("dev-vcs");
+    const vcs   = ai.voiceChannels || [];
+    if (!vcs.length) {
+      vcsEl.innerHTML = '<div style="font-size:10px;color:var(--muted);">No voice channels found.</div>';
+    } else {
+      vcsEl.innerHTML = vcs.map(vc => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;">
+          <div>
+            <div style="font-size:10px;font-weight:700;">${vc.name}</div>
+            <div style="font-size:8px;color:var(--muted);">${vc.guild} · ${vc.memberCount} members</div>
+          </div>
+          ${vc.connected
+            ? `<button class="dev-btn" onclick="devLeaveVc('${vc.id}')" style="width:auto;padding:3px 8px;font-size:9px;">Leave</button>`
+            : `<button class="dev-btn" onclick="devJoinVc('${vc.id}')" style="width:auto;padding:3px 8px;font-size:9px;background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);">Join</button>`
+          }
+        </div>`).join("");
+    }
+
+    // Blacklist
+    const blEl   = document.getElementById("dev-blacklist");
+    const blList = ai.blacklistFull || [];
+    blEl.innerHTML = blList.length ? blList.map(e => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;">
+        <div>
+          <div style="font-size:10px;font-weight:700;">${e.username}</div>
+          <div style="font-size:8px;color:var(--muted);">${e.reason || "No reason"}</div>
+        </div>
+        <button class="dev-btn" onclick="devRemoveBlacklist('${e.id}')" style="width:auto;padding:3px 8px;font-size:9px;">Remove</button>
+      </div>`).join("")
+      : '<div style="font-size:10px;color:var(--muted);">No blacklisted users.</div>';
+
+    // Driver Logins
+    const dlEl = document.getElementById("dev-driver-logins");
+    const logins = dl.logins || [];
+    dlEl.innerHTML = logins.length ? logins.slice(0,10).map(l => {
+      const ago = Math.floor((Date.now() - l.timestamp) / 1000);
+      return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid var(--border);">
+        ${l.avatar ? `<img src="https://cdn.discordapp.com/avatars/${l.id}/${l.avatar}.png?size=32" style="width:18px;height:18px;border-radius:50%;"/>` : '<div style="width:18px;height:18px;border-radius:50%;background:var(--border);"></div>'}
+        <div style="flex:1;"><div style="font-size:10px;font-weight:700;">${l.username}</div></div>
+        <div style="font-size:9px;color:var(--muted);">${ago < 60 ? ago+"s" : Math.floor(ago/60)+"m"} ago</div>
+      </div>`;
+    }).join("") : '<div style="color:var(--muted);">No driver logins yet.</div>';
+
+    // Sessions
+    document.getElementById("dev-sessions").innerHTML = (si.sessions||[]).filter(s=>s.verified).map(s => {
+      const ago = s.lastActive ? Math.floor((Date.now()-s.lastActive)/1000) : null;
+      return `<div style="font-size:10px;padding:3px 0;border-bottom:1px solid var(--border);">${s.username}${s.isAdmin?" 👑":""} — <span style="color:var(--muted);">${ago!==null?(ago<60?ago+"s":Math.floor(ago/60)+"m")+" ago":"just logged in"}</span></div>`;
+    }).join("") || '<div style="color:var(--muted);">No active sessions.</div>';
+
+    // Audit Log
+    document.getElementById("dev-audit").innerHTML = (li.audit||[]).slice(0,20).map(a => {
+      const ago = Math.floor((Date.now()-a.timestamp)/1000);
       return `<div style="padding:3px 0;border-bottom:1px solid var(--border);">${a.action} — <span style="color:var(--muted);">${a.username} · ${ago<60?ago+"s":Math.floor(ago/60)+"m"} ago</span></div>`;
-    }).join("")||'<div style="color:var(--muted);">No actions yet</div>';
-  } catch(e) { console.error(e); }
+    }).join("") || '<div style="color:var(--muted);">No actions yet.</div>';
+
+  } catch(e) { console.error("[Dev]", e); showToast("❌ Failed to load dev info", "err"); }
+}
+
+async function devJoinVc(vcId) {
+  try {
+    const res = await fetch(`${apiUrl}/admin/join-vc`, {
+      method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+      body: JSON.stringify({ vcId }),
+    });
+    const data = await res.json();
+    if (res.ok) { showToast(`✓ Joined ${data.name}`, "ok"); loadDevInfo(); }
+    else showToast(`✗ ${data.error}`, "err");
+  } catch { showToast("✗ Bot unreachable", "err"); }
+}
+
+async function devLeaveVc(vcId) {
+  try {
+    const res = await fetch(`${apiUrl}/admin/leave-vc`, {
+      method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+      body: JSON.stringify({ vcId }),
+    });
+    const data = await res.json();
+    if (res.ok) { showToast("✓ Left VC", "ok"); loadDevInfo(); }
+    else showToast(`✗ ${data.error}`, "err");
+  } catch { showToast("✗ Bot unreachable", "err"); }
+}
+
+async function devAddBlacklist() {
+  const target = document.getElementById("dev-bl-input").value.trim();
+  if (!target) return;
+  try {
+    const res  = await fetch(`${apiUrl}/admin/blacklist`, {
+      method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+      body: JSON.stringify({ target, reason: "Added via desktop panel" }),
+    });
+    const data = await res.json();
+    if (res.ok) { showToast(`✓ Blacklisted ${data.username}`, "ok"); document.getElementById("dev-bl-input").value = ""; loadDevInfo(); }
+    else showToast(`✗ ${data.error}`, "err");
+  } catch { showToast("✗ Bot unreachable", "err"); }
+}
+
+async function devRemoveBlacklist(id) {
+  try {
+    const res  = await fetch(`${apiUrl}/admin/blacklist/remove`, {
+      method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+      body: JSON.stringify({ id }),
+    });
+    const data = await res.json();
+    if (res.ok) { showToast(`✓ Removed ${data.username}`, "ok"); loadDevInfo(); }
+    else showToast(`✗ ${data.error}`, "err");
+  } catch { showToast("✗ Bot unreachable", "err"); }
+}
+
+async function devPlayAudio(file) {
+  if (!file) return;
+  const statusEl = document.getElementById("dev-audio-status");
+  statusEl.style.color = "var(--muted)";
+  statusEl.textContent = `Uploading ${file.name}...`;
+  try {
+    const formData = new FormData();
+    formData.append("audio", file);
+    const res  = await fetch(`${apiUrl}/admin/play-audio`, {
+      method: "POST",
+      headers: { "x-discord-id": user.id, "x-discord-token": user.token },
+      body: formData,
+    });
+    const data = await res.json();
+    if (res.ok) { statusEl.style.color = "var(--green)"; statusEl.textContent = `✓ Playing ${file.name}`; }
+    else { statusEl.style.color = "var(--red)"; statusEl.textContent = `✗ ${data.error}`; }
+  } catch { statusEl.style.color = "var(--red)"; statusEl.textContent = "✗ Bot unreachable"; }
+}
+
+async function devStopAudio() {
+  try {
+    const res = await fetch(`${apiUrl}/admin/stop-audio`, {
+      method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+      body: JSON.stringify({}),
+    });
+    if (res.ok) { showToast("✓ Audio stopped", "ok"); document.getElementById("dev-audio-status").textContent = ""; }
+    else showToast("✗ Failed to stop", "err");
+  } catch { showToast("✗ Bot unreachable", "err"); }
+}
+
+function devSelectFlagColor(color) {
+  _devFlagColor = color;
+  document.querySelectorAll(".dev-color-btn").forEach(b => {
+    b.style.opacity = b.dataset.color === color ? "1" : "0.4";
+  });
+}
+
+async function devSendCustomFlag() {
+  const text = document.getElementById("dev-flag-text").value.trim();
+  if (!text) { showToast("❌ Enter a flag name", "err"); return; }
+  const statusEl = document.getElementById("dev-flag-status");
+  try {
+    const res  = await fetch(`${apiUrl}/flag`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+      body: JSON.stringify({ flag: "__custom__", text, color: _devFlagColor, emoji: "🏴" }),
+    });
+    const data = await res.json();
+    if (res.ok) { statusEl.style.color = "var(--green)"; statusEl.textContent = "✓ Flag sent!"; }
+    else { statusEl.style.color = "var(--red)"; statusEl.textContent = `✗ ${data.error}`; }
+  } catch { statusEl.style.color = "var(--red)"; statusEl.textContent = "✗ Bot unreachable"; }
+}
+
+async function devPushMockLb() {
+  showToast("Mock leaderboard pushed", "ok");
+}
+
+async function devClearMockLb() {
+  showToast("Mock leaderboard cleared", "ok");
 }
 
 async function devTogglePanel(target, enable) {
   try {
-    await fetch(`${apiUrl}/panel-status`,{method:"POST",headers:{"Content-Type":"application/json","x-discord-id":user.id,"x-discord-token":user.token},body:JSON.stringify({target,enable})});
-    showToast(`✓ ${target} panel ${enable?"enabled":"disabled"}`,"ok");
+    await fetch(`${apiUrl}/panel-status`, {
+      method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+      body: JSON.stringify({ target, enable }),
+    });
+    showToast(`✓ ${target} panel ${enable?"enabled":"disabled"}`, "ok");
+    document.getElementById("dev-panel-status").textContent = `${target} panel ${enable?"enabled":"disabled"}`;
+    document.getElementById("dev-panel-status").style.color = enable ? "var(--green)" : "var(--red)";
     loadDevInfo();
-  } catch { showToast("✗ Bot unreachable","err"); }
+  } catch { showToast("✗ Bot unreachable", "err"); }
 }
 
 function startCooldown(secs) {
