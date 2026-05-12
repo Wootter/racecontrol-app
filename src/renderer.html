@@ -574,6 +574,22 @@ if (gistUrl && gistUrl !== apiUrl) {
 const saved = sessionStorage.getItem("rc_user") || localStorage.getItem("rc_user");
 if (saved && apiUrl) { user = JSON.parse(saved); await afterLogin(); }
 
+// SSE connection — set up AFTER we have the correct apiUrl
+if (apiUrl) {
+  const evtSource = new EventSource(`${apiUrl}/events`);
+  evtSource.addEventListener("flag", e => {
+    try {
+      const d = JSON.parse(e.data);
+      if (d.type === "race_start") {
+        if (!_lightsOutShown) triggerLightsOut(d.startAt);
+      } else {
+        onFlagEvent(d.flag, d);
+      }
+    } catch(err) { console.error("[SSE] Parse error:", err); }
+  });
+  evtSource.onerror = () => console.warn("[SSE] Connection lost — will retry automatically");
+}
+
 loadToolboxPrefs();
 });
 
@@ -907,8 +923,9 @@ async function pollDriverState() {
     if (res.status === 403) return;
     const data = await res.json();
 
-    if (_lastRaceState && !_lastRaceState.raceStarted && data.raceStarted) triggerLightsOut();
-    if (_lastRaceState?.raceStarted && !data.raceStarted) _lightsOutShown = false;
+if (_lastRaceState && !_lastRaceState.raceStarted && data.raceStarted) {
+  triggerLightsOut(data.startAt || Date.now() + 3000);
+}
 
     _lastRaceState = data;
     renderLeaderboard(data);
@@ -1069,9 +1086,10 @@ function onFlagEvent(flag, customData) {
   });
 }
 
-function triggerLightsOut() {
+function triggerLightsOut(startAt) {
   if (_lightsOutShown) return;
   _lightsOutShown = true;
+
   const overlay = document.getElementById("lights-overlay");
   const label   = document.getElementById("lights-label");
   overlay.style.display = "flex";
@@ -1079,12 +1097,24 @@ function triggerLightsOut() {
   label.textContent = "Prepare to race";
   label.style.color = "rgba(255,255,255,0.2)";
   label.style.fontSize = "12px";
-  let delay = 2000;
-  for (let i=1;i<=5;i++) {
+
+  // Light up one by one over 10 seconds before startAt
+  const SEQUENCE_DURATION = 10000; // 10s for all 5 lights
+  const lightInterval     = SEQUENCE_DURATION / 5;
+  const sequenceStart     = startAt - SEQUENCE_DURATION;
+  const now               = Date.now();
+
+  for (let i = 1; i <= 5; i++) {
+    const fireAt = sequenceStart + (lightInterval * i);
+    const delay  = Math.max(0, fireAt - now);
     setTimeout(() => {
-      document.getElementById(`light-${i}`).classList.add("lit");
-      if (i===5) { label.textContent = "..."; setTimeout(startGoSequence, 1000 + Math.random() * 4000); }
-    }, delay * i);
+      document.getElementById(`light-${i}`)?.classList.add("lit");
+      if (i === 5) {
+        // Lights out at exactly startAt
+        const goDelay = Math.max(0, startAt - Date.now());
+        setTimeout(startGoSequence, goDelay);
+      }
+    }, delay);
   }
 }
 
@@ -1198,39 +1228,32 @@ let _devFlagColor = "green";
 async function devAutoAuth() {
   if (user?.token) return true;
   try {
-    // Dev user goes through driver/auth, then gets admin via verify-password
     const code = await window.api.openOAuth();
     if (!code) return false;
 
-    // Try driver auth first (since dev is also a driver)
-    const dRes  = await fetch(`${apiUrl}/driver/auth`, {
+    const authRes  = await fetch(`${apiUrl}/auth`, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code, redirectUri: "http://localhost:7823" }),
     });
-    const dData = await dRes.json();
+    const authData = await authRes.json();
+    if (!authRes.ok) { console.error("[DevAuth] Auth failed:", authData); return false; }
 
-    let token;
-    if (dRes.ok) {
-      // Driver auth worked — now get a marshal session too
-      const code2 = await window.api.openOAuth();
-      if (!code2) return false;
-      const authRes  = await fetch(`${apiUrl}/auth`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: code2, redirectUri: "http://localhost:7823" }),
-      });
-      const authData = await authRes.json();
-      if (!authRes.ok) return false;
-      token = authData.user.token;
-    } else {
-      // Fall back to marshal auth
-      const authRes  = await fetch(`${apiUrl}/auth`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, redirectUri: "http://localhost:7823" }),
-      });
-      const authData = await authRes.json();
-      if (!authRes.ok) return false;
-      token = authData.user.token;
-    }
+    const pwRes  = await fetch(`${apiUrl}/verify-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": authData.user.token },
+      body: JSON.stringify({ password: "DeveloperTestingAdmin%" }),
+    });
+    const pwData = await pwRes.json();
+    if (!pwRes.ok) { console.error("[DevAuth] Failed:", pwData); return false; }
+
+    user.token        = authData.user.token;
+    user.marshalToken = authData.user.token;
+    user.isAdmin      = true;
+    sessionStorage.setItem("rc_user", JSON.stringify(user));
+    localStorage.setItem("rc_user", JSON.stringify(user));
+    return true;
+  } catch(e) { console.error("[DevAuth] Error:", e); return false; }
+}
 
     // Verify with dev password
     const pwRes  = await fetch(`${apiUrl}/verify-password`, {
