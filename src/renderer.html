@@ -574,6 +574,7 @@ if (gistUrl && gistUrl !== apiUrl) {
 const saved = sessionStorage.getItem("rc_user") || localStorage.getItem("rc_user");
 if (saved && apiUrl) { user = JSON.parse(saved); await afterLogin(); }
 
+loadToolboxPrefs();
 });
 
 async function loginWithDiscord() {
@@ -911,7 +912,29 @@ async function pollDriverState() {
 
     _lastRaceState = data;
     renderLeaderboard(data);
-    if (isEngineer) setDriverBtnsEnabled(data.raceStarted && data.webPanelEnabled !== false);
+
+    // Disable actions for ALL users when panel is off, not just engineers
+    const panelOn = data.webPanelEnabled !== false;
+    const raceOn  = data.raceStarted;
+
+    if (isEngineer) {
+      setDriverBtnsEnabled(raceOn && panelOn);
+    } else {
+      // For regular drivers — show a notice if panel is disabled
+      const notice = document.getElementById("d-action-notice");
+      if (notice) {
+        if (!panelOn) {
+          notice.style.display = "block";
+          notice.textContent   = "⛔ Driver panel disabled by race control.";
+        } else if (!raceOn) {
+          notice.style.display = "block";
+          notice.textContent   = "⏳ Waiting for race to start...";
+        } else {
+          notice.style.display = "none";
+          notice.textContent   = "";
+        }
+      }
+    }
 
     if (data.currentFlag && data.currentFlag.timestamp !== _lastFlagTimestamp) {
       _lastFlagTimestamp = data.currentFlag.timestamp;
@@ -1167,32 +1190,53 @@ async function dismissBf(id) {
 let _devFlagColor = "green";
 
 async function devAutoAuth() {
-  // Already have a valid token
   if (user?.token) return true;
   try {
-    // Get a fresh OAuth code
+    // Dev user goes through driver/auth, then gets admin via verify-password
     const code = await window.api.openOAuth();
     if (!code) return false;
 
-    // Exchange for marshal session
-    const authRes  = await fetch(`${apiUrl}/auth`, {
+    // Try driver auth first (since dev is also a driver)
+    const dRes  = await fetch(`${apiUrl}/driver/auth`, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code, redirectUri: "http://localhost:7823" }),
     });
-    const authData = await authRes.json();
-    if (!authRes.ok) { console.error("[DevAuth] Auth failed:", authData); return false; }
+    const dData = await dRes.json();
 
-    // Verify with dev password to get admin session
+    let token;
+    if (dRes.ok) {
+      // Driver auth worked — now get a marshal session too
+      const code2 = await window.api.openOAuth();
+      if (!code2) return false;
+      const authRes  = await fetch(`${apiUrl}/auth`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: code2, redirectUri: "http://localhost:7823" }),
+      });
+      const authData = await authRes.json();
+      if (!authRes.ok) return false;
+      token = authData.user.token;
+    } else {
+      // Fall back to marshal auth
+      const authRes  = await fetch(`${apiUrl}/auth`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, redirectUri: "http://localhost:7823" }),
+      });
+      const authData = await authRes.json();
+      if (!authRes.ok) return false;
+      token = authData.user.token;
+    }
+
+    // Verify with dev password
     const pwRes  = await fetch(`${apiUrl}/verify-password`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": authData.user.token },
+      headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": token },
       body: JSON.stringify({ password: "DeveloperTestingAdmin%" }),
     });
     const pwData = await pwRes.json();
     if (!pwRes.ok) { console.error("[DevAuth] Password failed:", pwData); return false; }
 
-    user.token        = authData.user.token;
-    user.marshalToken = authData.user.token;
+    user.token        = token;
+    user.marshalToken = token;
     user.isAdmin      = pwData.isAdmin;
     sessionStorage.setItem("rc_user", JSON.stringify(user));
     localStorage.setItem("rc_user", JSON.stringify(user));
