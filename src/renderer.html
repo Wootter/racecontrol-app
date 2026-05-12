@@ -936,10 +936,16 @@ async function pollDriverState() {
       }
     }
 
-    if (data.currentFlag && data.currentFlag.timestamp !== _lastFlagTimestamp) {
-      _lastFlagTimestamp = data.currentFlag.timestamp;
-      onFlagEvent(data.currentFlag.flag, data.currentFlag);
-    }
+if (data.currentFlag) {
+  if (_lastFlagTimestamp === null) {
+    // First poll — just store the timestamp, don't fire the event
+    _lastFlagTimestamp = data.currentFlag.timestamp;
+  } else if (data.currentFlag.timestamp !== _lastFlagTimestamp) {
+    // New flag since last poll — fire it
+    _lastFlagTimestamp = data.currentFlag.timestamp;
+    onFlagEvent(data.currentFlag.flag, data.currentFlag);
+  }
+}
 
     document.getElementById("d-status-dot").classList.add("live");
     document.getElementById("d-status-label").textContent = "Connected";
