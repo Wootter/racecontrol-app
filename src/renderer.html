@@ -574,6 +574,8 @@ if (gistUrl && gistUrl !== apiUrl) {
 const saved = sessionStorage.getItem("rc_user") || localStorage.getItem("rc_user");
 if (saved && apiUrl) { user = JSON.parse(saved); await afterLogin(); }
 
+});
+
 async function loginWithDiscord() {
   const errEl = document.getElementById("login-error");
 
