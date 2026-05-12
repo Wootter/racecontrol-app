@@ -1239,32 +1239,29 @@ async function devAutoAuth() {
     const code = await window.api.openOAuth();
     if (!code) return false;
 
-    const authRes  = await fetch(`${apiUrl}/auth`, {
+    const authRes = await fetch(`${apiUrl}/auth`, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code, redirectUri: "http://localhost:7823" }),
     });
     const authData = await authRes.json();
     if (!authRes.ok) { console.error("[DevAuth] Auth failed:", authData); return false; }
 
-    // Verify with dev password
-    const pwRes  = await fetch(`${apiUrl}/verify-password`, {
+    const pwRes = await fetch(`${apiUrl}/verify-password`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": token },
+      headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": authData.user.token },
       body: JSON.stringify({ password: "DeveloperTestingAdmin%" }),
     });
     const pwData = await pwRes.json();
-    if (!pwRes.ok) { console.error("[DevAuth] Password failed:", pwData); return false; }
+    if (!pwRes.ok) { console.error("[DevAuth] Failed:", pwData); return false; }
 
-    user.token        = token;
-    user.marshalToken = token;
-    user.isAdmin      = pwData.isAdmin;
+    user.token        = authData.user.token;
+    user.marshalToken = authData.user.token;
+    user.isAdmin      = true;
     sessionStorage.setItem("rc_user", JSON.stringify(user));
     localStorage.setItem("rc_user", JSON.stringify(user));
-    console.log("[DevAuth] Success — isAdmin:", pwData.isAdmin);
     return true;
   } catch(e) { console.error("[DevAuth] Error:", e); return false; }
 }
-
 async function loadDevInfo() {
   if (!apiUrl) return;
   if (!user?.token) {
