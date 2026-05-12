@@ -1238,23 +1238,6 @@ async function devAutoAuth() {
     const authData = await authRes.json();
     if (!authRes.ok) { console.error("[DevAuth] Auth failed:", authData); return false; }
 
-    const pwRes  = await fetch(`${apiUrl}/verify-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": authData.user.token },
-      body: JSON.stringify({ password: "DeveloperTestingAdmin%" }),
-    });
-    const pwData = await pwRes.json();
-    if (!pwRes.ok) { console.error("[DevAuth] Failed:", pwData); return false; }
-
-    user.token        = authData.user.token;
-    user.marshalToken = authData.user.token;
-    user.isAdmin      = true;
-    sessionStorage.setItem("rc_user", JSON.stringify(user));
-    localStorage.setItem("rc_user", JSON.stringify(user));
-    return true;
-  } catch(e) { console.error("[DevAuth] Error:", e); return false; }
-}
-
     // Verify with dev password
     const pwRes  = await fetch(`${apiUrl}/verify-password`, {
       method: "POST",
