@@ -415,7 +415,10 @@
 <!-- SETTINGS -->
 <div class="screen" id="screen-settings">
   <div class="scroll-body">
-    <div style="font-size:13px;font-weight:800;color:var(--text);">Settings</div>
+   <div style="display:flex;align-items:center;justify-content:space-between;">
+  <div style="font-size:13px;font-weight:800;color:var(--text);">Settings</div>
+  <div id="app-version" style="font-size:9px;color:var(--muted);font-weight:700;letter-spacing:1px;"></div>
+</div>
     <div id="s-api-card" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;flex-direction:column;gap:8px;">
       <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">API Connection</div>
       <input type="url" id="s-api" placeholder="https://xxx.trycloudflare.com"/>
@@ -590,6 +593,11 @@ if (apiUrl) {
   evtSource.onerror = () => console.warn("[SSE] Connection lost — will retry automatically");
 }
 
+window.api.checkVersion().then(v => {
+  const el = document.getElementById("app-version");
+  if (el) el.textContent = `v${v}`;
+});
+  
 loadToolboxPrefs();
 });
 
