@@ -936,8 +936,8 @@ async function pollDriverState() {
       triggerLightsOut(data.startAt||Date.now()+3000);
     _lastRaceState = data;
     renderLeaderboard(data);
-    const panelOn = data.webPanelEnabled!==false, raceOn = data.raceStarted;
-if (!panelOn) {
+const panelOn = data.webPanelEnabled!==false, raceOn = data.raceStarted;
+if (!panelOn && !hasDev) {
   showDisabledScreen();
 } else {
   hideDisabledScreen();
