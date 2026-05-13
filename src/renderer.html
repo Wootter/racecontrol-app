@@ -423,11 +423,28 @@
       <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">API Connection</div>
       <input type="url" id="s-api" placeholder="https://xxx.trycloudflare.com"/>
     </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;">
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;">
       <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Global Keybinds</div>
       <div class="settings-row"><span class="settings-label">🔵 Blue Flag</span><input type="text" class="kb-input" id="kb-blue_flag" readonly onclick="listenKey('blue_flag')"/></div>
       <div class="settings-row"><span class="settings-label">🏁 Next Lap</span><input type="text" class="kb-input" id="kb-next_lap" readonly onclick="listenKey('next_lap')"/></div>
       <div class="settings-row" style="border:none;"><span class="settings-label">🔧 Pitting</span><input type="text" class="kb-input" id="kb-pitting" readonly onclick="listenKey('pitting')"/></div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;">
+      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Keybind Sounds</div>
+      <div class="settings-row">
+        <span class="settings-label">🔵 Blue Flag sound</span>
+        <button onclick="pickKeybindSound('blue_flag')" id="snd-blue_flag-btn" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;font-family:'Oxanium',sans-serif;">📁 Choose</button>
+      </div>
+      <div class="settings-row">
+        <span class="settings-label">🏁 Next Lap sound</span>
+        <button onclick="pickKeybindSound('next_lap')" id="snd-next_lap-btn" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;font-family:'Oxanium',sans-serif;">📁 Choose</button>
+      </div>
+      <div class="settings-row" style="border:none;">
+        <span class="settings-label">🔧 Pitting sound</span>
+        <button onclick="pickKeybindSound('pitting')" id="snd-pitting-btn" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;font-family:'Oxanium',sans-serif;">📁 Choose</button>
+      </div>
+      <div style="font-size:9px;color:var(--muted);">Custom local sounds played when keybind is pressed.</div>
     </div>
     <button class="save-btn" onclick="saveSettings()">✓ Save Settings</button>
     <button class="save-btn" onclick="goBack()" style="background:rgba(255,255,255,0.03);border-color:var(--border);color:var(--muted);">← Back</button>
@@ -453,7 +470,8 @@
   <div style="font-size:11px;color:var(--green);font-weight:700;" id="update-text">🔄 Downloading update...</div>
   <button id="update-install-btn" onclick="installUpdate()" disabled style="background:var(--muted);border:none;color:#000;font-family:'Oxanium',sans-serif;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:4px;cursor:not-allowed;opacity:0.5;transition:all 0.2s;">Install & Restart</button>
 </div>
-
+<input type="file" id="sound-picker" accept="audio/*" style="display:none;"/>
+  
 <div id="toast"></div>
 
 <script>
@@ -1035,6 +1053,55 @@ function closeToolbox() {
   document.getElementById("toolbox-modal").style.display = "none";
 }
 
+let _keybindSounds = {};
+let _currentSoundPick = null;
+
+function loadKeybindSounds() {
+  try {
+    const saved = localStorage.getItem("rc_keybind_sounds");
+    if (saved) {
+      _keybindSounds = JSON.parse(saved);
+      updateSoundBtnLabels();
+    }
+  } catch {}
+}
+
+function updateSoundBtnLabels() {
+  ["blue_flag", "next_lap", "pitting"].forEach(k => {
+    const btn = document.getElementById(`snd-${k}-btn`);
+    if (btn) btn.textContent = _keybindSounds[k] ? "✓ Custom" : "📁 Choose";
+  });
+}
+
+function pickKeybindSound(action) {
+  _currentSoundPick = action;
+  document.getElementById("sound-picker").click();
+}
+
+document.getElementById("sound-picker")?.addEventListener("change", function() {
+  const file = this.files[0];
+  if (!file || !_currentSoundPick) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    _keybindSounds[_currentSoundPick] = e.target.result; // store as base64
+    localStorage.setItem("rc_keybind_sounds", JSON.stringify(_keybindSounds));
+    updateSoundBtnLabels();
+    showToast(`✓ Sound set for ${_currentSoundPick}`, "ok");
+  };
+  reader.readAsDataURL(file);
+  this.value = "";
+});
+
+function playKeybindSound(action) {
+  const src = _keybindSounds[action];
+  if (!src) return;
+  try {
+    const audio = new Audio(src);
+    audio.volume = 1.0;
+    audio.play();
+  } catch(e) { console.error("Keybind sound error:", e); }
+}
+  
 function loadToolboxPrefs() {
   try {
     const saved = localStorage.getItem("rc_toolbox");
@@ -1147,9 +1214,13 @@ function startGoSequence() {
 function doAction(action) {
   const btn = document.getElementById(`btn-${action}`);
   if (btn) { btn.classList.add("fired"); setTimeout(()=>btn.classList.remove("fired"),300); }
+  playKeybindSound(action);
   window.api.sendAction(action);
 }
-function doTogglePitting() { window.api.togglePitting().then(v => updatePitBtn(v)); }
+function doTogglePitting() {
+  playKeybindSound("pitting");
+  window.api.togglePitting().then(v => updatePitBtn(v));
+}
 function updatePitBtn(v) {
   document.getElementById("pit-icon").textContent  = "🔧";
   document.getElementById("pit-label").textContent = v ? "In Pits" : "Pitting";
@@ -1323,17 +1394,24 @@ async function loadDevInfo() {
     const logins = dl.logins || [];
     dlEl.innerHTML = logins.length ? logins.slice(0,10).map(l => {
       const ago = Math.floor((Date.now() - l.timestamp) / 1000);
-      return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid var(--border);">
-        ${l.avatar ? `<img src="https://cdn.discordapp.com/avatars/${l.id}/${l.avatar}.png?size=32" style="width:18px;height:18px;border-radius:50%;"/>` : '<div style="width:18px;height:18px;border-radius:50%;background:var(--border);"></div>'}
-        <div style="flex:1;"><div style="font-size:10px;font-weight:700;">${l.username}</div></div>
-        <div style="font-size:9px;color:var(--muted);">${ago < 60 ? ago+"s" : Math.floor(ago/60)+"m"} ago</div>
-      </div>`;
+return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid var(--border);">
+  ${l.avatar ? `<img src="https://cdn.discordapp.com/avatars/${l.id}/${l.avatar}.png?size=32" style="width:18px;height:18px;border-radius:50%;"/>` : '<div style="width:18px;height:18px;border-radius:50%;background:var(--border);"></div>'}
+  <div style="flex:1;">
+    <div style="font-size:10px;font-weight:700;">${l.username}</div>
+    <div style="font-size:8px;color:var(--muted);">${l.ip || "unknown"}</div>
+  </div>
+  <div style="font-size:9px;color:var(--muted);">${ago < 60 ? ago+"s" : Math.floor(ago/60)+"m"} ago</div>
+</div>`;
     }).join("") : '<div style="color:var(--muted);">No driver logins yet.</div>';
 
     // Sessions
     document.getElementById("dev-sessions").innerHTML = (si.sessions||[]).filter(s=>s.verified).map(s => {
       const ago = s.lastActive ? Math.floor((Date.now()-s.lastActive)/1000) : null;
-      return `<div style="font-size:10px;padding:3px 0;border-bottom:1px solid var(--border);">${s.username}${s.isAdmin?" 👑":""} — <span style="color:var(--muted);">${ago!==null?(ago<60?ago+"s":Math.floor(ago/60)+"m")+" ago":"just logged in"}</span></div>`;
+      return `<div style="font-size:10px;padding:3px 0;border-bottom:1px solid var(--border);">
+  ${s.username}${s.isAdmin?" 👑":""} 
+  <span style="color:var(--muted);font-size:8px;"> · ${s.ip || "unknown"}</span>
+  — <span style="color:var(--muted);">${ago!==null?(ago<60?ago+"s":Math.floor(ago/60)+"m")+" ago":"just logged in"}</span>
+</div>`;
     }).join("") || '<div style="color:var(--muted);">No active sessions.</div>';
 
     // Audit Log
