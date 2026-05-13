@@ -1242,10 +1242,10 @@ async function pollBlueFlagRequests() {
     // Check panel status first
     const statusRes = await fetch(`${apiUrl}/panel-status`);
     const statusData = await statusRes.json();
-    if (!statusData.marshal) {
-      showMarshalDisabledScreen();
-      return;
-    }
+if (!statusData.marshal && !hasDev) {
+  showMarshalDisabledScreen();
+  return;
+}
     hideMarshalDisabledScreen();
 
     const res=await fetch(`${apiUrl}/driver/blue-flags`,{headers:{"x-discord-id":user.id,"x-discord-token":user.token}});
@@ -1299,13 +1299,19 @@ async function loadDevInfo() {
       fetch(`${apiUrl}/admin/audit`,{headers}).then(r=>r.json()),
       fetch(`${apiUrl}/admin/driver-logins`,{headers}).then(r=>r.json()),
     ]);
-    const u=Math.floor(ai.uptime||0);
-    document.getElementById("dev-stats").innerHTML=`
-      <div class="dev-stat">Uptime <span>${Math.floor(u/3600)}h ${Math.floor((u%3600)/60)}m</span></div>
-      <div class="dev-stat">Connected VCs <span>${(ai.connectedVCs||[]).length}</span></div>
-      <div class="dev-stat">Driver Panel <span style="color:${ai.webPanelEnabled?"var(--green)":"var(--red)"}">${ai.webPanelEnabled?"On":"Off"}</span></div>
-      <div class="dev-stat">Blacklisted <span>${(ai.blacklist||[]).length}</span></div>
-      <div class="dev-stat">SSE Clients <span>${ai.sseClients||0}</span></div>`;
+const u=Math.floor(ai.uptime||0);
+const driverState = await fetch(`${apiUrl}/driver/state`).then(r=>r.json()).catch(()=>({drivers:[]}));
+const driversOnline = (driverState.drivers||[]).length;
+
+document.getElementById("dev-stats").innerHTML=`
+  <div class="dev-stat">Uptime <span>${Math.floor(u/3600)}h ${Math.floor((u%3600)/60)}m</span></div>
+  <div class="dev-stat">Connected VCs <span>${(ai.connectedVCs||[]).length}</span></div>
+  <div class="dev-stat">Driver Panel <span style="color:${ai.driverEnabled?"var(--green)":"var(--red)"}">${ai.driverEnabled?"On":"Off"}</span></div>
+  <div class="dev-stat">Marshal Panel <span style="color:${ai.marshalEnabled?"var(--green)":"var(--red)"}">${ai.marshalEnabled?"On":"Off"}</span></div>
+  <div class="dev-stat">Drivers in Race <span>${driversOnline}</span></div>
+  <div class="dev-stat">SSE Clients (app+web) <span>${ai.sseClients||0}</span></div>
+  <div class="dev-stat">Active Sessions <span>${(ai.sessions||si.sessions||[]).filter(s=>s.verified).length}</span></div>
+  <div class="dev-stat">Blacklisted <span>${(ai.blacklist||[]).length}</span></div>`;
     const vcsEl=document.getElementById("dev-vcs"), vcs=ai.voiceChannels||[];
     vcsEl.innerHTML=!vcs.length?'<div style="font-size:10px;color:var(--muted);">No voice channels found.</div>':vcs.map(vc=>`
       <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;">
