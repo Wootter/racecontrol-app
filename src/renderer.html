@@ -62,22 +62,37 @@
     .fc-sub{font-size:9px;opacity:0.7;margin-top:2px;}
 
     /* Holographic flag animation — defined globally so it works everywhere */
-    @keyframes holo-border {
-      0%  {border-color:#ff0080;box-shadow:0 0 14px #ff008099,inset 0 0 8px #ff008033;background:linear-gradient(135deg,#ff008018,#00ffff18);}
-      16% {border-color:#ff8800;box-shadow:0 0 14px #ff880099,inset 0 0 8px #ff880033;background:linear-gradient(135deg,#ff880018,#ff008018);}
-      33% {border-color:#ffff00;box-shadow:0 0 14px #ffff0099,inset 0 0 8px #ffff0033;background:linear-gradient(135deg,#ffff0018,#ff880018);}
-      50% {border-color:#00ff80;box-shadow:0 0 14px #00ff8099,inset 0 0 8px #00ff8033;background:linear-gradient(135deg,#00ff8018,#ffff0018);}
-      66% {border-color:#00ffff;box-shadow:0 0 14px #00ffff99,inset 0 0 8px #00ffff33;background:linear-gradient(135deg,#00ffff18,#00ff8018);}
-      83% {border-color:#8800ff;box-shadow:0 0 14px #8800ff99,inset 0 0 8px #8800ff33;background:linear-gradient(135deg,#8800ff18,#00ffff18);}
-      100%{border-color:#ff0080;box-shadow:0 0 14px #ff008099,inset 0 0 8px #ff008033;background:linear-gradient(135deg,#ff008018,#00ffff18);}
-    }
-    @keyframes holo-text {
-      0%  {color:#ff0080} 16% {color:#ff8800} 33% {color:#ffff00}
-      50% {color:#00ff80} 66% {color:#00ffff} 83% {color:#8800ff} 100%{color:#ff0080}
-    }
-    .flag-card-holo{animation:holo-border 2s linear infinite;border:2px solid #ff0080;border-radius:10px;padding:12px 18px;display:flex;align-items:center;gap:10px;}
-    .flag-card-holo .fc-emoji{font-size:2em;}
-    .flag-card-holo .fc-title{animation:holo-text 2s linear infinite;font-weight:bold;font-size:1.1em;}
+@keyframes holo-border {
+  0%   { border-color:#ff0080; box-shadow:0 0 10px #ff008066, 0 0 22px #ff008033; }
+  16%  { border-color:#ff8800; box-shadow:0 0 10px #ff880066, 0 0 22px #ff880033; }
+  33%  { border-color:#ffff00; box-shadow:0 0 10px #ffff0066, 0 0 22px #ffff0033; }
+  50%  { border-color:#00ff80; box-shadow:0 0 10px #00ff8066, 0 0 22px #00ff8033; }
+  66%  { border-color:#00ffff; box-shadow:0 0 10px #00ffff66, 0 0 22px #00ffff33; }
+  83%  { border-color:#8800ff; box-shadow:0 0 10px #8800ff66, 0 0 22px #8800ff33; }
+  100% { border-color:#ff0080; box-shadow:0 0 10px #ff008066, 0 0 22px #ff008033; }
+}
+@keyframes holo-text {
+  0%   { color:#ff0080; } 16%  { color:#ff8800; } 33%  { color:#ffff00; }
+  50%  { color:#00ff80; } 66%  { color:#00ffff; } 83%  { color:#8800ff; } 100% { color:#ff0080; }
+}
+.flag-card-holo {
+  animation: holo-border 4s linear infinite;
+  border: 2px solid #ff0080;
+  border-radius: 10px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,0,128,0.05);
+  will-change: border-color, box-shadow;
+}
+.flag-card-holo .fc-emoji { font-size: 2em; }
+.flag-card-holo .fc-title {
+  animation: holo-text 4s linear infinite;
+  font-weight: bold;
+  font-size: 1.1em;
+  will-change: color;
+}
 
     .lb-row{display:flex;align-items:center;gap:7px;padding:7px 9px;background:var(--surface);border:1px solid var(--border);border-radius:5px;}
     .lb-row.is-me{border-color:rgba(41,121,255,0.4);background:rgba(41,121,255,0.06);}
@@ -563,7 +578,7 @@ function updatePreview() {
   const text  = textInput?.value  || "Custom Flag";
   if (_holoMode) {
     preview.style.cssText      = "";
-    preview.style.animation    = "holo-border 2s linear infinite";
+    preview.style.animation    = "holo-border 4s linear infinite";
     preview.style.border       = "2px solid #ff0080";
     preview.style.borderRadius = "var(--radius)";
     preview.style.padding      = "6px 10px";
@@ -572,7 +587,7 @@ function updatePreview() {
     preview.style.gap          = "6px";
     preview.style.fontSize     = "11px";
     preview.style.fontWeight   = "700";
-    preview.innerHTML = `<span style="font-size:16px;">${emoji}</span><span style="animation:holo-text 2s linear infinite;">${text}</span>`;
+    preview.innerHTML = `<span style="font-size:16px;">${emoji}</span><span style="animation:holo-text 4s linear infinite;">${text}</span>`;
   } else {
     preview.style.cssText     = "";
     preview.style.border      = "1px solid " + hex;
@@ -922,16 +937,25 @@ async function pollDriverState() {
     _lastRaceState = data;
     renderLeaderboard(data);
     const panelOn = data.webPanelEnabled!==false, raceOn = data.raceStarted;
-    if (isEngineer) {
-      setDriverBtnsEnabled(raceOn&&panelOn);
-    } else {
-      const notice = document.getElementById("d-action-notice");
-      if (notice) {
-        if (!panelOn)      { notice.style.display="block"; notice.textContent="⛔ Driver panel disabled by race control."; }
-        else if (!raceOn)  { notice.style.display="block"; notice.textContent="⏳ Waiting for race to start..."; }
-        else               { notice.style.display="none";  notice.textContent=""; }
+if (!panelOn) {
+  showDisabledScreen();
+} else {
+  hideDisabledScreen();
+  if (isEngineer) {
+    setDriverBtnsEnabled(raceOn);
+  } else {
+    const notice = document.getElementById("d-action-notice");
+    if (notice) {
+      if (!raceOn) {
+        notice.style.display = "block";
+        notice.textContent   = "⏳ Waiting for race to start...";
+      } else {
+        notice.style.display = "none";
+        notice.textContent   = "";
       }
     }
+  }
+}
     if (data.currentFlag) {
       if (_lastFlagTimestamp===null) { _lastFlagTimestamp=data.currentFlag.timestamp; }
       else if (data.currentFlag.timestamp!==_lastFlagTimestamp) {
@@ -962,6 +986,26 @@ const TOOLBOX_SECTIONS = [
 ];
 let _toolboxVisible = {};
 
+function showDisabledScreen() {
+  if (document.getElementById("panel-disabled-overlay")) return;
+  const overlay = document.createElement("div");
+  overlay.id = "panel-disabled-overlay";
+  overlay.style.cssText = "position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;";
+  overlay.innerHTML = `
+    <div style="font-size:32px;">⛔</div>
+    <div style="font-size:14px;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:1px;">Panel Disabled</div>
+    <div style="font-size:11px;color:var(--muted);text-align:center;max-width:220px;line-height:1.5;">
+      The driver panel has been disabled by race control.<br/>Please wait.
+    </div>
+    <div style="font-size:9px;color:var(--border);margin-top:8px;">Checking every 3 seconds...</div>`;
+  document.body.appendChild(overlay);
+}
+
+function hideDisabledScreen() {
+  const overlay = document.getElementById("panel-disabled-overlay");
+  if (overlay) overlay.remove();
+}
+  
 function openToolbox() {
   const items = document.getElementById("toolbox-items");
   items.innerHTML = TOOLBOX_SECTIONS.map(s => {
@@ -1099,6 +1143,26 @@ function onFlagEvent(flag, customData) {
   });
 }
 
+function showMarshalDisabledScreen() {
+  if (document.getElementById("marshal-disabled-overlay")) return;
+  const overlay = document.createElement("div");
+  overlay.id = "marshal-disabled-overlay";
+  overlay.style.cssText = "position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;";
+  overlay.innerHTML = `
+    <div style="font-size:32px;">🔒</div>
+    <div style="font-size:14px;font-weight:800;color:var(--yellow);text-transform:uppercase;letter-spacing:1px;">Marshal Panel Disabled</div>
+    <div style="font-size:11px;color:var(--muted);text-align:center;max-width:220px;line-height:1.5;">
+      The marshal panel has been disabled by an administrator.<br/>Please wait.
+    </div>
+    <div style="font-size:9px;color:var(--border);margin-top:8px;">Checking every 3 seconds...</div>`;
+  document.body.appendChild(overlay);
+}
+
+function hideMarshalDisabledScreen() {
+  const overlay = document.getElementById("marshal-disabled-overlay");
+  if (overlay) overlay.remove();
+}
+  
 function triggerLightsOut(startAt) {
   if (_lightsOutShown) return; _lightsOutShown=true;
   const overlay=document.getElementById("lights-overlay"), label=document.getElementById("lights-label");
@@ -1175,6 +1239,15 @@ async function marshalResetRace() {
 async function pollBlueFlagRequests() {
   if (!user?.token||currentPanel!=="marshal") return;
   try {
+    // Check panel status first
+    const statusRes = await fetch(`${apiUrl}/panel-status`);
+    const statusData = await statusRes.json();
+    if (!statusData.marshal) {
+      showMarshalDisabledScreen();
+      return;
+    }
+    hideMarshalDisabledScreen();
+
     const res=await fetch(`${apiUrl}/driver/blue-flags`,{headers:{"x-discord-id":user.id,"x-discord-token":user.token}});
     const data=await res.json();
     const container=document.getElementById("m-bf-container"), requests=data.requests||[];
