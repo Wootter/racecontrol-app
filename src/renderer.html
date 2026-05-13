@@ -366,23 +366,20 @@
       </div>
     </div>
 
-    <!-- Custom Flag -->
-    <div class="dev-card">
-      <div class="dev-title">Custom Flag Notification</div>
-      <input type="text" id="dev-flag-text" placeholder="Flag name e.g. Purple Flag" style="margin-top:4px;font-size:11px;"/>
-      <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;" id="dev-flag-colors">
-        <button onclick="devSelectFlagColor('green')"  class="dev-color-btn" data-color="green"  style="background:rgba(0,230,118,0.2);border:1px solid var(--green);color:var(--green);font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:'Oxanium',sans-serif;">Green</button>
-        <button onclick="devSelectFlagColor('yellow')" class="dev-color-btn" data-color="yellow" style="background:rgba(255,214,0,0.2);border:1px solid var(--yellow);color:var(--yellow);font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:'Oxanium',sans-serif;">Yellow</button>
-        <button onclick="devSelectFlagColor('red')"    class="dev-color-btn" data-color="red"    style="background:rgba(255,23,68,0.2);border:1px solid var(--red);color:var(--red);font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:'Oxanium',sans-serif;">Red</button>
-        <button onclick="devSelectFlagColor('blue')"   class="dev-color-btn" data-color="blue"   style="background:rgba(41,121,255,0.2);border:1px solid var(--blue);color:var(--blue);font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:'Oxanium',sans-serif;">Blue</button>
-        <button onclick="devSelectFlagColor('orange')" class="dev-color-btn" data-color="orange" style="background:rgba(255,109,0,0.2);border:1px solid var(--orange);color:var(--orange);font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:'Oxanium',sans-serif;">Orange</button>
-        <button onclick="devSelectFlagColor('white')"  class="dev-color-btn" data-color="white"  style="background:rgba(255,255,255,0.1);border:1px solid #fff;color:#fff;font-size:9px;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:'Oxanium',sans-serif;">White</button>
-      </div>
-      <div style="display:flex;gap:6px;margin-top:6px;">
-        <button class="dev-btn" onclick="devSendCustomFlag()" style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Send to Drivers</button>
-      </div>
-      <div id="dev-flag-status" style="font-size:9px;color:var(--muted);margin-top:4px;"></div>
-    </div>
+<!-- Custom Flag -->
+<div class="dev-card">
+  <div class="dev-title">Custom Flag Notification</div>
+  <input type="text" id="dev-flag-text" placeholder="Flag name e.g. Purple Flag" style="margin-top:4px;font-size:11px;"/>
+  <div style="display:flex;gap:6px;margin-top:6px;">
+    <input type="text" id="dev-flag-emoji" placeholder="🏴" maxlength="2" style="width:50px;text-align:center;font-size:18px;padding:4px;flex:0 0 auto;"/>
+    <input type="color" id="dev-flag-hex" value="#ff00ff" style="width:50px;height:36px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);cursor:pointer;padding:2px;flex:0 0 auto;"/>
+    <div id="dev-flag-preview" style="flex:1;border-radius:var(--radius);border:1px solid;padding:6px 10px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:6px;">Preview</div>
+  </div>
+  <div style="display:flex;gap:6px;margin-top:6px;">
+    <button class="dev-btn" onclick="devSendCustomFlag()" style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Send to Drivers</button>
+  </div>
+  <div id="dev-flag-status" style="font-size:9px;color:var(--muted);margin-top:4px;"></div>
+</div>
 
     <!-- Audit Log -->
     <div class="dev-card">
@@ -1144,12 +1141,48 @@ function setDriverBtnsEnabled(on) {
 }
  
 function onFlagEvent(flag, customData) {
-  if (flag === "__custom__" && customData) {
-    const colorMap = {green:"green",yellow:"yellow",red:"red",blue:"blue",orange:"orange",white:"white"};
-    const color = colorMap[customData.color] || "white";
-    const html  = `<div class="flag-card ${color}"><span class="fc-emoji">${customData.emoji||"🏴"}</span><div><div class="fc-title">${customData.text||customData.label||"Custom Flag"}</div></div></div>`;
+if (flag === "__custom__" && customData) {
+    let html;
+    const isHolo = customData.color === "holographic" || customData.color === "rainbow";
+
+    if (customData.html) {
+      // Server already built the HTML (including holographic) — use it directly
+      html = customData.html;
+    } else if (isHolo) {
+      html = `<style>
+        @keyframes holo-border {
+          0%{border-color:#ff0080;box-shadow:0 0 14px #ff008099,inset 0 0 8px #ff008033;background:linear-gradient(135deg,#ff008018,#00ffff18);}
+          16%{border-color:#ff8800;box-shadow:0 0 14px #ff880099,inset 0 0 8px #ff880033;background:linear-gradient(135deg,#ff880018,#ff008018);}
+          33%{border-color:#ffff00;box-shadow:0 0 14px #ffff0099,inset 0 0 8px #ffff0033;background:linear-gradient(135deg,#ffff0018,#ff880018);}
+          50%{border-color:#00ff80;box-shadow:0 0 14px #00ff8099,inset 0 0 8px #00ff8033;background:linear-gradient(135deg,#00ff8018,#ffff0018);}
+          66%{border-color:#00ffff;box-shadow:0 0 14px #00ffff99,inset 0 0 8px #00ffff33;background:linear-gradient(135deg,#00ffff18,#00ff8018);}
+          83%{border-color:#8800ff;box-shadow:0 0 14px #8800ff99,inset 0 0 8px #8800ff33;background:linear-gradient(135deg,#8800ff18,#00ffff18);}
+          100%{border-color:#ff0080;box-shadow:0 0 14px #ff008099,inset 0 0 8px #ff008033;background:linear-gradient(135deg,#ff008018,#00ffff18);}
+        }
+        @keyframes holo-text {
+          0%{color:#ff0080}16%{color:#ff8800}33%{color:#ffff00}
+          50%{color:#00ff80}66%{color:#00ffff}83%{color:#8800ff}100%{color:#ff0080}
+        }
+        .flag-card-holo{animation:holo-border 2s linear infinite;border:2px solid #ff0080;border-radius:10px;padding:12px 18px;display:flex;align-items:center;gap:10px;}
+        .flag-card-holo .fc-emoji{font-size:2em;}
+        .flag-card-holo .fc-title{animation:holo-text 2s linear infinite;font-weight:bold;font-size:1.1em;}
+      </style>
+      <div class="flag-card-holo">
+        <span class="fc-emoji">${customData.emoji||"🌈"}</span>
+        <div><div class="fc-title">${customData.text||customData.label||"Custom Flag"}</div></div>
+      </div>`;
+    } else {
+      const isHex  = customData.color?.startsWith("#");
+      const colorMap = {green:"green",yellow:"yellow",red:"red",blue:"blue",orange:"orange",white:"white"};
+      const color  = colorMap[customData.color] || "white";
+      html = isHex
+        ? `<div class="flag-card" style="background:${customData.color}22;border-color:${customData.color};color:${customData.color};"><span class="fc-emoji">${customData.emoji||"🏴"}</span><div><div class="fc-title">${customData.text||customData.label||"Custom Flag"}</div></div></div>`
+        : `<div class="flag-card ${color}"><span class="fc-emoji">${customData.emoji||"🏴"}</span><div><div class="fc-title">${customData.text||customData.label||"Custom Flag"}</div></div></div>`;
+    }
+
     document.getElementById("flag-notif-driver").innerHTML  = html;
     document.getElementById("flag-notif-marshal").innerHTML = html;
+    document.getElementById("flag-notif-marshal").style.display = "";
     return;
   }
   const def = FLAG_DEFS[flag];
@@ -1514,15 +1547,44 @@ function devSelectFlagColor(color) {
   });
 }
 
+// Update preview as user types
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    const hexInput  = document.getElementById("dev-flag-hex");
+    const emojiInput = document.getElementById("dev-flag-emoji");
+    const textInput  = document.getElementById("dev-flag-text");
+    const preview    = document.getElementById("dev-flag-preview");
+
+    function updatePreview() {
+      if (!preview) return;
+      const hex   = hexInput?.value || "#ff00ff";
+      const emoji = emojiInput?.value || "🏴";
+      const text  = textInput?.value || "Custom Flag";
+      preview.style.borderColor  = hex;
+      preview.style.color        = hex;
+      preview.style.background   = hex + "22";
+      preview.innerHTML = `<span style="font-size:16px;">${emoji}</span> ${text}`;
+    }
+
+    hexInput?.addEventListener("input",   updatePreview);
+    emojiInput?.addEventListener("input", updatePreview);
+    textInput?.addEventListener("input",  updatePreview);
+    updatePreview();
+  }, 600);
+});
+
 async function devSendCustomFlag() {
-  const text = document.getElementById("dev-flag-text").value.trim();
+  const text  = document.getElementById("dev-flag-text").value.trim();
+  const emoji = document.getElementById("dev-flag-emoji").value.trim() || "🏴";
+  const hex   = document.getElementById("dev-flag-hex").value || "#ff00ff";
   if (!text) { showToast("❌ Enter a flag name", "err"); return; }
+
   const statusEl = document.getElementById("dev-flag-status");
   try {
-    const res  = await fetch(`${apiUrl}/flag`, {
+    const res = await fetch(`${apiUrl}/flag`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
-      body: JSON.stringify({ flag: "__custom__", text, color: _devFlagColor, emoji: "🏴" }),
+      body: JSON.stringify({ flag: "__custom__", text, color: hex, emoji }),
     });
     const data = await res.json();
     if (res.ok) { statusEl.style.color = "var(--green)"; statusEl.textContent = "✓ Flag sent!"; }
