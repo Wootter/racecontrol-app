@@ -555,6 +555,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("update-banner").style.display = "flex";
   });
 
+  window.api.onKeybindFired(action => {
+  playKeybindSound(action);
+}); 
+  
   window.api.onUpdateDownloaded(v => {
     document.getElementById("update-text").textContent = `✅ v${v} ready — click to install!`;
     const btn = document.getElementById("update-install-btn");
