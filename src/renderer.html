@@ -389,31 +389,42 @@
       <button class="dev-btn" onclick="devStopAudio()" style="margin-top:4px;">⏹ Stop Audio</button>
     </div>
 
-    <!-- Mock Leaderboard -->
-    <div class="dev-card">
-      <div class="dev-title">Mock Leaderboard</div>
-      <div id="dev-mock-lb" style="font-size:10px;color:var(--muted);margin-top:4px;">No mock data set.</div>
-      <div style="display:flex;gap:6px;margin-top:6px;">
-        <button class="dev-btn" onclick="devPushMockLb()" style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Push to Drivers</button>
-        <button class="dev-btn" onclick="devClearMockLb()" style="font-size:9px;">Clear</button>
-      </div>
-    </div>
+<!-- Mock Leaderboard -->
+<div class="dev-card">
+  <div class="dev-title">Mock Leaderboard</div>
+  <div id="dev-mock-lb" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;max-height:200px;overflow-y:auto;"></div>
+  <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;">
+    <button class="dev-btn" onclick="devAddMockDriver()" style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;flex:1;">+ Add Driver</button>
+    <button class="dev-btn" onclick="devPushMockLb()" style="background:rgba(41,121,255,0.1);border-color:rgba(41,121,255,0.3);color:var(--blue);font-size:9px;flex:1;">⬆ Push to Race</button>
+    <button class="dev-btn" onclick="devClearMockLb()" style="font-size:9px;flex:0 0 auto;padding:7px 10px;">✕ Clear</button>
+  </div>
+  <div id="dev-mock-status" style="font-size:9px;color:var(--muted);margin-top:2px;"></div>
+</div>
 
-    <!-- Custom Flag -->
-    <div class="dev-card">
-      <div class="dev-title">Custom Flag Notification</div>
-      <input type="text" id="dev-flag-text" placeholder="Flag name e.g. Purple Flag" style="margin-top:4px;font-size:11px;"/>
-      <div style="display:flex;gap:6px;margin-top:6px;">
-        <input type="text" id="dev-flag-emoji" placeholder="🏴" maxlength="2" style="width:50px;text-align:center;font-size:18px;padding:4px;flex:0 0 auto;"/>
-        <input type="color" id="dev-flag-hex" value="#ff00ff" style="width:50px;height:36px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);cursor:pointer;padding:2px;flex:0 0 auto;"/>
-        <button id="dev-holo-btn" onclick="toggleHoloMode()" style="flex:0 0 auto;height:36px;padding:0 8px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);color:var(--muted);font-family:'Oxanium',sans-serif;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:0.5px;">🌈 HOLO</button>
-        <div id="dev-flag-preview" style="flex:1;border-radius:var(--radius);border:1px solid var(--border);padding:6px 10px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:6px;">Preview</div>
-      </div>
-      <div style="display:flex;gap:6px;margin-top:6px;">
-        <button class="dev-btn" onclick="devSendCustomFlag()" style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Send to Drivers</button>
-      </div>
-      <div id="dev-flag-status" style="font-size:9px;color:var(--muted);margin-top:4px;"></div>
-    </div>
+<!-- Custom Flag -->
+<div class="dev-card">
+  <div class="dev-title">Custom Flag Notification</div>
+  <input type="text" id="dev-flag-text" placeholder="Flag name e.g. Purple Flag" style="margin-top:4px;font-size:11px;"/>
+  <div style="display:flex;gap:6px;margin-top:6px;">
+    <input type="text" id="dev-flag-emoji" placeholder="🏴" maxlength="2" style="width:50px;text-align:center;font-size:18px;padding:4px;flex:0 0 auto;"/>
+    <input type="color" id="dev-flag-hex" value="#ff00ff" style="width:50px;height:36px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);cursor:pointer;padding:2px;flex:0 0 auto;"/>
+    <button id="dev-holo-btn" onclick="toggleHoloMode()" style="flex:0 0 auto;height:36px;padding:0 8px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);color:var(--muted);font-family:'Oxanium',sans-serif;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:0.5px;">🌈 HOLO</button>
+    <div id="dev-flag-preview" style="flex:1;border-radius:var(--radius);border:1px solid var(--border);padding:6px 10px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:6px;">Preview</div>
+  </div>
+  <!-- Background image drop zone -->
+  <div id="dev-flag-bg-drop" style="margin-top:6px;border:1px dashed var(--border);border-radius:var(--radius);padding:10px;text-align:center;font-size:9px;color:var(--muted);cursor:pointer;transition:border-color 0.2s;" onclick="document.getElementById('dev-flag-bg-input').click()">
+    🖼️ Drop or click to set background image
+  </div>
+  <input type="file" id="dev-flag-bg-input" accept="image/*" style="display:none;" onchange="loadFlagBgImage(this.files[0])"/>
+  <div id="dev-flag-bg-preview" style="display:none;margin-top:4px;position:relative;">
+    <img id="dev-flag-bg-img" style="width:100%;height:48px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);"/>
+    <button onclick="clearFlagBgImage()" style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.7);border:none;color:#fff;font-size:9px;border-radius:3px;padding:2px 5px;cursor:pointer;">✕ Remove</button>
+  </div>
+  <div style="display:flex;gap:6px;margin-top:6px;">
+    <button class="dev-btn" onclick="devSendCustomFlag()" style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Send to Drivers</button>
+  </div>
+  <div id="dev-flag-status" style="font-size:9px;color:var(--muted);margin-top:4px;"></div>
+</div>
 
     <!-- Audit Log -->
     <div class="dev-card">
@@ -588,11 +599,11 @@ function updatePreview() {
     preview.style.fontSize     = "11px";
     preview.style.fontWeight   = "700";
     preview.innerHTML = `<span style="font-size:16px;">${emoji}</span><span style="animation:holo-text 4s linear infinite;">${text}</span>`;
-  } else {
+} else {
     preview.style.cssText     = "";
     preview.style.border      = "1px solid " + hex;
     preview.style.color       = hex;
-    preview.style.background  = hex + "22";
+    preview.style.background  = _flagBgDataUrl ? `url(${_flagBgDataUrl}) center/cover` : hex + "22";
     preview.style.borderRadius = "var(--radius)";
     preview.style.padding     = "6px 10px";
     preview.style.display     = "flex";
@@ -600,6 +611,7 @@ function updatePreview() {
     preview.style.gap         = "6px";
     preview.style.fontSize    = "11px";
     preview.style.fontWeight  = "700";
+    preview.style.textShadow  = _flagBgDataUrl ? "0 1px 3px rgba(0,0,0,0.8)" : "";
     preview.innerHTML = `<span style="font-size:16px;">${emoji}</span> ${text}`;
   }
 }
@@ -1121,9 +1133,13 @@ function onFlagEvent(flag, customData) {
       const isHex    = customData.color?.startsWith("#");
       const colorMap = {green:"green",yellow:"yellow",red:"red",blue:"blue",orange:"orange",white:"white"};
       const color    = colorMap[customData.color]||"white";
-      html = isHex
-        ? `<div class="flag-card" style="background:${customData.color}22;border-color:${customData.color};color:${customData.color};"><span class="fc-emoji">${customData.emoji||"🏴"}</span><div><div class="fc-title">${customData.text||customData.label||"Custom Flag"}</div></div></div>`
-        : `<div class="flag-card ${color}"><span class="fc-emoji">${customData.emoji||"🏴"}</span><div><div class="fc-title">${customData.text||customData.label||"Custom Flag"}</div></div></div>`;
+const bgStyle = customData.bgImage
+  ? `background:url(${customData.bgImage}) center/cover;border-color:${isHex?customData.color:"rgba(255,255,255,0.3)"};color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.9);`
+  : isHex
+    ? `background:${customData.color}22;border-color:${customData.color};color:${customData.color};`
+    : "";
+const bgClass = (!customData.bgImage && !isHex) ? color : "";
+html = `<div class="flag-card ${bgClass}" style="${bgStyle}"><span class="fc-emoji">${customData.emoji||"🏴"}</span><div><div class="fc-title">${customData.text||customData.label||"Custom Flag"}</div></div></div>`;
     }
     document.getElementById("flag-notif-driver").innerHTML  = html;
     document.getElementById("flag-notif-marshal").innerHTML = html;
@@ -1340,7 +1356,10 @@ document.getElementById("dev-stats").innerHTML=`
     document.getElementById("dev-audit").innerHTML=(li.audit||[]).slice(0,20).map(a=>{
       const ago=Math.floor((Date.now()-a.timestamp)/1000);
       return `<div style="padding:3px 0;border-bottom:1px solid var(--border);">${a.action} — <span style="color:var(--muted);">${a.username} · ${ago<60?ago+"s":Math.floor(ago/60)+"m"} ago</span></div>`;
-    }).join("")||'<div style="color:var(--muted);">No actions yet.</div>';
+}).join("")||'<div style="color:var(--muted);">No actions yet.</div>';
+
+    renderMockLb();
+
   } catch(e){console.error("[Dev]",e);showToast("❌ Failed to load dev info","err");}
 }
 
@@ -1370,17 +1389,159 @@ async function devSendCustomFlag() {
   const emoji = document.getElementById("dev-flag-emoji").value.trim()||"🏴";
   const color = _holoMode ? "holographic" : (document.getElementById("dev-flag-hex").value||"#ff00ff");
   if (!text) { showToast("❌ Enter a flag name","err"); return; }
-  const statusEl=document.getElementById("dev-flag-status");
+  const statusEl = document.getElementById("dev-flag-status");
   try {
-    const res=await fetch(`${apiUrl}/flag`,{method:"POST",headers:{"Content-Type":"application/json","x-discord-id":user.id,"x-discord-token":user.token},body:JSON.stringify({flag:"__custom__",text,color,emoji})});
-    const data=await res.json();
-    if(res.ok){statusEl.style.color="var(--green)";statusEl.textContent="✓ Flag sent!";}
-    else{statusEl.style.color="var(--red)";statusEl.textContent=`✗ ${data.error}`;}
-  } catch{statusEl.style.color="var(--red)";statusEl.textContent="✗ Bot unreachable";}
+    const res = await fetch(`${apiUrl}/flag`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-discord-id":user.id,"x-discord-token":user.token},
+      body: JSON.stringify({ flag:"__custom__", text, color, emoji, bgImage: _flagBgDataUrl||null }),
+    });
+    const data = await res.json();
+    if (res.ok) { statusEl.style.color="var(--green)"; statusEl.textContent="✓ Flag sent!"; }
+    else { statusEl.style.color="var(--red)"; statusEl.textContent=`✗ ${data.error}`; }
+  } catch { statusEl.style.color="var(--red)"; statusEl.textContent="✗ Bot unreachable"; }
+}
+let _flagBgDataUrl = null;
+
+function loadFlagBgImage(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    _flagBgDataUrl = e.target.result;
+    document.getElementById("dev-flag-bg-img").src = _flagBgDataUrl;
+    document.getElementById("dev-flag-bg-preview").style.display = "block";
+    document.getElementById("dev-flag-bg-drop").textContent = "✓ Background set";
+    document.getElementById("dev-flag-bg-drop").style.borderColor = "var(--green)";
+    document.getElementById("dev-flag-bg-drop").style.color = "var(--green)";
+    updatePreview();
+  };
+  reader.readAsDataURL(file);
 }
 
-async function devPushMockLb(){showToast("Mock leaderboard pushed","ok");}
-async function devClearMockLb(){showToast("Mock leaderboard cleared","ok");}
+function clearFlagBgImage() {
+  _flagBgDataUrl = null;
+  document.getElementById("dev-flag-bg-preview").style.display = "none";
+  document.getElementById("dev-flag-bg-drop").textContent = "🖼️ Drop or click to set background image (optional)";
+  document.getElementById("dev-flag-bg-drop").style.borderColor = "var(--border)";
+  document.getElementById("dev-flag-bg-drop").style.color = "var(--muted)";
+  document.getElementById("dev-flag-bg-input").value = "";
+  updatePreview();
+}
+// ── Mock Leaderboard ──────────────────────────────────────────────────────
+let _mockDrivers = [];
+
+function renderMockLb() {
+  const el = document.getElementById("dev-mock-lb");
+  if (!_mockDrivers.length) {
+    el.innerHTML = '<div style="font-size:10px;color:var(--muted);text-align:center;padding:8px;">No drivers. Click + Add Driver.</div>';
+    return;
+  }
+  el.innerHTML = _mockDrivers.map((d, i) => `
+    <div style="display:flex;align-items:center;gap:4px;padding:5px 6px;background:var(--bg);border:1px solid var(--border);border-radius:4px;">
+      <div style="font-size:10px;font-weight:800;color:var(--muted);width:16px;text-align:center;flex-shrink:0;">${i+1}</div>
+      <select onchange="mockDriverField(${i},'name',this.value)" style="flex:1;font-size:9px;padding:3px 4px;min-width:0;">
+        <option value="">-- Driver --</option>
+        ${Object.entries(DRIVER_INFO).sort((a,b)=>parseInt(a[1].number)-parseInt(b[1].number)).map(([name,info])=>
+          `<option value="${name}" ${d.name===name?"selected":""}>${name} #${info.number}</option>`
+        ).join("")}
+      </select>
+      <input type="number" value="${d.lap||1}" min="1" max="99" onchange="mockDriverField(${i},'lap',parseInt(this.value)||1)"
+        style="width:36px;font-size:9px;padding:3px 4px;text-align:center;" title="Lap"/>
+      <button onclick="mockTogglePit(${i})" title="Toggle pitting"
+        style="font-size:9px;padding:2px 5px;border-radius:3px;border:1px solid;cursor:pointer;font-family:'Oxanium',sans-serif;background:${d.inPits?"rgba(255,214,0,0.15)":"var(--bg)"};border-color:${d.inPits?"var(--yellow)":"var(--border)"};color:${d.inPits?"var(--yellow)":"var(--muted)"};">
+        🔧
+      </button>
+      <button onclick="mockMoveUp(${i})" style="font-size:9px;padding:2px 4px;border-radius:3px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;" ${i===0?"disabled":""}>↑</button>
+      <button onclick="mockMoveDown(${i})" style="font-size:9px;padding:2px 4px;border-radius:3px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;" ${i===_mockDrivers.length-1?"disabled":""}>↓</button>
+      <button onclick="mockRemoveDriver(${i})" style="font-size:9px;padding:2px 5px;border-radius:3px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;">✕</button>
+    </div>`).join("");
+}
+
+function devAddMockDriver() {
+  const used = new Set(_mockDrivers.map(d => d.name));
+  const next = Object.keys(DRIVER_INFO).find(n => !used.has(n)) || "";
+  const info = DRIVER_INFO[next] || { number:"00", callsign:"???" };
+  _mockDrivers.push({ name:next, number:info.number, callsign:info.callsign, lap:1, inPits:false, pitted:false, gap:"–", position:_mockDrivers.length+1 });
+  renderMockLb();
+}
+
+function mockDriverField(i, field, value) {
+  if (field === "name") {
+    const info = DRIVER_INFO[value] || { number:"00", callsign:"???" };
+    _mockDrivers[i].name     = value;
+    _mockDrivers[i].number   = info.number;
+    _mockDrivers[i].callsign = info.callsign;
+  } else if (field !== "_reorder") {
+    _mockDrivers[i][field] = value;
+  }
+  _mockDrivers.forEach((d, idx) => {
+    d.position = idx + 1;
+    const lapDiff = (_mockDrivers[0].lap||1) - (d.lap||1);
+    d.gap = idx===0 ? "Leader" : lapDiff>0 ? `+${lapDiff} lap${lapDiff>1?"s":""}` : "Same lap";
+  });
+  renderMockLb();
+}
+
+function mockTogglePit(i) {
+  _mockDrivers[i].inPits = !_mockDrivers[i].inPits;
+  renderMockLb();
+}
+
+function mockMoveUp(i) {
+  if (i === 0) return;
+  [_mockDrivers[i-1], _mockDrivers[i]] = [_mockDrivers[i], _mockDrivers[i-1]];
+  mockDriverField(0, "_reorder", null);
+}
+
+function mockMoveDown(i) {
+  if (i >= _mockDrivers.length-1) return;
+  [_mockDrivers[i], _mockDrivers[i+1]] = [_mockDrivers[i+1], _mockDrivers[i]];
+  mockDriverField(0, "_reorder", null);
+}
+
+function mockRemoveDriver(i) {
+  _mockDrivers.splice(i, 1);
+  renderMockLb();
+}
+
+async function devPushMockLb() {
+  if (!_mockDrivers.length) { showToast("❌ No drivers to push","err"); return; }
+  if (!user?.token) { showToast("❌ Not authenticated","err"); return; }
+  _mockDrivers.forEach((d, i) => {
+    d.position = i + 1;
+    const lapDiff = (_mockDrivers[0].lap||1) - (d.lap||1);
+    d.gap = i===0 ? "Leader" : lapDiff>0 ? `+${lapDiff} lap${lapDiff>1?"s":""}` : "Same lap";
+  });
+  try {
+    const res = await fetch(`${apiUrl}/driver/state`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-discord-id":user.id,"x-discord-token":user.token},
+      body: JSON.stringify({ drivers: _mockDrivers }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showToast("✓ Mock leaderboard pushed","ok");
+      document.getElementById("dev-mock-status").textContent = `✓ Pushed ${_mockDrivers.length} drivers`;
+      document.getElementById("dev-mock-status").style.color = "var(--green)";
+    } else { showToast(`✗ ${data.error||"Failed"}`,"err"); }
+  } catch { showToast("✗ Bot unreachable","err"); }
+}
+
+async function devClearMockLb() {
+  _mockDrivers = [];
+  renderMockLb();
+  document.getElementById("dev-mock-status").textContent = "";
+  if (user?.token) {
+    try {
+      await fetch(`${apiUrl}/driver/state`, {
+        method:"POST",
+        headers:{"Content-Type":"application/json","x-discord-id":user.id,"x-discord-token":user.token},
+        body: JSON.stringify({ drivers: [] }),
+      });
+    } catch {}
+  }
+  showToast("✓ Mock leaderboard cleared","ok");
+}
 
 async function devTogglePanel(target,enable){
   if(!user?.token){const ok=await devAutoAuth();if(!ok){showToast("❌ Dev auth failed","err");return;}}
@@ -1443,8 +1604,19 @@ function showToast(msg,type=""){
   clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.className="";},2500);
 }
 
+// Flag background image drag-and-drop
 setTimeout(()=>{
-  const drop=document.getElementById("dev-audio-drop");if(!drop)return;
+  const flagBgDrop = document.getElementById("dev-flag-bg-drop");
+  if (flagBgDrop) {
+    flagBgDrop.addEventListener("dragover", e => { e.preventDefault(); flagBgDrop.style.borderColor="var(--green)"; });
+    flagBgDrop.addEventListener("dragleave", () => { flagBgDrop.style.borderColor = _flagBgDataUrl ? "var(--green)" : "var(--border)"; });
+    flagBgDrop.addEventListener("drop", e => {
+      e.preventDefault();
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith("image/")) loadFlagBgImage(file);
+    });
+  }
+  const drop = document.getElementById("dev-audio-drop"); if(!drop) return;
   drop.addEventListener("dragover",e=>{e.preventDefault();drop.style.borderColor="var(--green)";});
   drop.addEventListener("dragleave",()=>{drop.style.borderColor="var(--border)";});
   drop.addEventListener("drop",e=>{e.preventDefault();drop.style.borderColor="var(--border)";const file=e.dataTransfer.files[0];if(file)devPlayAudio(file);});
