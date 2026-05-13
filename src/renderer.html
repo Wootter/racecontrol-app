@@ -1570,42 +1570,63 @@ function devSelectFlagColor(color) {
 }
 
 // Update preview as user types
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(() => {
-    const hexInput  = document.getElementById("dev-flag-hex");
-    const emojiInput = document.getElementById("dev-flag-emoji");
-    const textInput  = document.getElementById("dev-flag-text");
-    const preview    = document.getElementById("dev-flag-preview");
+let _holoMode = false;
 
 function updatePreview() {
+  const hexInput   = document.getElementById("dev-flag-hex");
+  const emojiInput = document.getElementById("dev-flag-emoji");
+  const textInput  = document.getElementById("dev-flag-text");
+  const preview    = document.getElementById("dev-flag-preview");
   if (!preview) return;
   const hex   = hexInput?.value || "#ff00ff";
-  const emoji = emojiInput?.value || "🏴";
-  const text  = textInput?.value || "Custom Flag";
+  const emoji = emojiInput?.value || "🌈";
+  const text  = textInput?.value  || "Custom Flag";
   if (_holoMode) {
-    preview.style.cssText = "";
-    preview.style.animation      = "holo-border 2s linear infinite";
-    preview.style.border         = "2px solid #ff0080";
-    preview.style.borderRadius   = "var(--radius)";
-    preview.style.padding        = "6px 10px";
-    preview.style.display        = "flex";
-    preview.style.alignItems     = "center";
-    preview.style.gap            = "6px";
-    preview.style.fontSize       = "11px";
-    preview.style.fontWeight     = "700";
-    preview.innerHTML = `<span style="font-size:16px;">${emoji}</span> <span style="animation:holo-text 2s linear infinite;">${text}</span>`;
+    preview.style.cssText      = "";
+    preview.style.animation    = "holo-border 2s linear infinite";
+    preview.style.border       = "2px solid #ff0080";
+    preview.style.borderRadius = "var(--radius)";
+    preview.style.padding      = "6px 10px";
+    preview.style.display      = "flex";
+    preview.style.alignItems   = "center";
+    preview.style.gap          = "6px";
+    preview.style.fontSize     = "11px";
+    preview.style.fontWeight   = "700";
+    preview.innerHTML = `<span style="font-size:16px;">${emoji}</span><span style="animation:holo-text 2s linear infinite;">${text}</span>`;
   } else {
-    preview.style.animation    = "";
-    preview.style.borderColor  = hex;
-    preview.style.color        = hex;
-    preview.style.background   = hex + "22";
+    preview.style.animation   = "";
+    preview.style.borderColor = hex;
+    preview.style.color       = hex;
+    preview.style.background  = hex + "22";
     preview.innerHTML = `<span style="font-size:16px;">${emoji}</span> ${text}`;
   }
 }
 
-    hexInput?.addEventListener("input",   updatePreview);
-    emojiInput?.addEventListener("input", updatePreview);
-    textInput?.addEventListener("input",  updatePreview);
+function toggleHoloMode() {
+  _holoMode = !_holoMode;
+  const btn = document.getElementById("dev-holo-btn");
+  const hex = document.getElementById("dev-flag-hex");
+  if (_holoMode) {
+    btn.style.background  = "linear-gradient(90deg,#ff0080,#ff8800,#ffff00,#00ff80,#00ffff,#8800ff)";
+    btn.style.borderColor = "#ff0080";
+    btn.style.color       = "#fff";
+    hex.disabled          = true;
+    hex.style.opacity     = "0.3";
+  } else {
+    btn.style.background  = "var(--bg)";
+    btn.style.borderColor = "var(--border)";
+    btn.style.color       = "var(--muted)";
+    hex.disabled          = false;
+    hex.style.opacity     = "1";
+  }
+  updatePreview();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    document.getElementById("dev-flag-hex")?.addEventListener("input",   updatePreview);
+    document.getElementById("dev-flag-emoji")?.addEventListener("input", updatePreview);
+    document.getElementById("dev-flag-text")?.addEventListener("input",  updatePreview);
     updatePreview();
   }, 600);
 });
