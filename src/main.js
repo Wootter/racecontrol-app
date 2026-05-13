@@ -146,10 +146,17 @@ function createTray() {
 function registerHotkeys(keybinds) {
   globalShortcut.unregisterAll();
   const { blue_flag, next_lap, pitting } = keybinds || {};
-  if (blue_flag) globalShortcut.register(blue_flag, () => sendDriverAction("blue_flag"));
-  if (next_lap)  globalShortcut.register(next_lap,  () => sendDriverAction("next_lap"));
-  if (pitting)   globalShortcut.register(pitting,   () => {
+  if (blue_flag) globalShortcut.register(blue_flag, () => {
+    mainWindow?.webContents.send("keybind-fired", "blue_flag");
+    sendDriverAction("blue_flag");
+  });
+  if (next_lap) globalShortcut.register(next_lap, () => {
+    mainWindow?.webContents.send("keybind-fired", "next_lap");
+    sendDriverAction("next_lap");
+  });
+  if (pitting) globalShortcut.register(pitting, () => {
     inPits = !inPits;
+    mainWindow?.webContents.send("keybind-fired", "pitting");
     sendDriverAction(inPits ? "pitting" : "in_race");
     mainWindow?.webContents.send("pit-state-changed", inPits);
   });
