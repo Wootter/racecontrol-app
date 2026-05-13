@@ -333,10 +333,11 @@
     <div class="dev-card">
       <div class="dev-title">Blacklist</div>
       <div id="dev-blacklist" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;max-height:120px;overflow-y:auto;">Loading...</div>
-      <div style="display:flex;gap:6px;margin-top:6px;">
-        <input type="text" id="dev-bl-input" placeholder="Discord ID or username" style="flex:1;font-size:10px;padding:5px 8px;"/>
-        <button class="dev-btn" onclick="devAddBlacklist()" style="flex:0 0 auto;width:auto;padding:5px 10px;font-size:9px;">+ Add</button>
-      </div>
+<div style="display:flex;gap:6px;margin-top:6px;">
+    <input type="text" id="dev-flag-emoji" placeholder="🏴" maxlength="2" style="width:50px;text-align:center;font-size:18px;padding:4px;flex:0 0 auto;"/>
+    <input type="color" id="dev-flag-hex" value="#ff00ff" style="width:50px;height:36px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);cursor:pointer;padding:2px;flex:0 0 auto;"/>
+    <div id="dev-flag-preview" style="flex:1;border-radius:var(--radius);border:1px solid;padding:6px 10px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:6px;">Preview</div>
+</div>
     </div>
 
     <!-- Driver Logins -->
@@ -1540,6 +1541,27 @@ async function devStopAudio() {
   } catch { showToast("✗ Bot unreachable", "err"); }
 }
 
+let _holoMode = false;
+function toggleHoloMode() {
+  _holoMode = !_holoMode;
+  const btn = document.getElementById("dev-holo-btn");
+  const hex = document.getElementById("dev-flag-hex");
+  if (_holoMode) {
+    btn.style.background    = "linear-gradient(90deg,#ff0080,#ff8800,#ffff00,#00ff80,#00ffff,#8800ff)";
+    btn.style.borderColor   = "#ff0080";
+    btn.style.color         = "#fff";
+    hex.disabled            = true;
+    hex.style.opacity       = "0.3";
+  } else {
+    btn.style.background    = "var(--bg)";
+    btn.style.borderColor   = "var(--border)";
+    btn.style.color         = "var(--muted)";
+    hex.disabled            = false;
+    hex.style.opacity       = "1";
+  }
+  updatePreview();
+}
+  
 function devSelectFlagColor(color) {
   _devFlagColor = color;
   document.querySelectorAll(".dev-color-btn").forEach(b => {
@@ -1555,16 +1577,31 @@ document.addEventListener("DOMContentLoaded", () => {
     const textInput  = document.getElementById("dev-flag-text");
     const preview    = document.getElementById("dev-flag-preview");
 
-    function updatePreview() {
-      if (!preview) return;
-      const hex   = hexInput?.value || "#ff00ff";
-      const emoji = emojiInput?.value || "🏴";
-      const text  = textInput?.value || "Custom Flag";
-      preview.style.borderColor  = hex;
-      preview.style.color        = hex;
-      preview.style.background   = hex + "22";
-      preview.innerHTML = `<span style="font-size:16px;">${emoji}</span> ${text}`;
-    }
+function updatePreview() {
+  if (!preview) return;
+  const hex   = hexInput?.value || "#ff00ff";
+  const emoji = emojiInput?.value || "🏴";
+  const text  = textInput?.value || "Custom Flag";
+  if (_holoMode) {
+    preview.style.cssText = "";
+    preview.style.animation      = "holo-border 2s linear infinite";
+    preview.style.border         = "2px solid #ff0080";
+    preview.style.borderRadius   = "var(--radius)";
+    preview.style.padding        = "6px 10px";
+    preview.style.display        = "flex";
+    preview.style.alignItems     = "center";
+    preview.style.gap            = "6px";
+    preview.style.fontSize       = "11px";
+    preview.style.fontWeight     = "700";
+    preview.innerHTML = `<span style="font-size:16px;">${emoji}</span> <span style="animation:holo-text 2s linear infinite;">${text}</span>`;
+  } else {
+    preview.style.animation    = "";
+    preview.style.borderColor  = hex;
+    preview.style.color        = hex;
+    preview.style.background   = hex + "22";
+    preview.innerHTML = `<span style="font-size:16px;">${emoji}</span> ${text}`;
+  }
+}
 
     hexInput?.addEventListener("input",   updatePreview);
     emojiInput?.addEventListener("input", updatePreview);
@@ -1576,7 +1613,7 @@ document.addEventListener("DOMContentLoaded", () => {
 async function devSendCustomFlag() {
   const text  = document.getElementById("dev-flag-text").value.trim();
   const emoji = document.getElementById("dev-flag-emoji").value.trim() || "🏴";
-  const hex   = document.getElementById("dev-flag-hex").value || "#ff00ff";
+  const hex   = _holoMode ? "holographic" : (document.getElementById("dev-flag-hex").value || "#ff00ff");
   if (!text) { showToast("❌ Enter a flag name", "err"); return; }
 
   const statusEl = document.getElementById("dev-flag-status");
