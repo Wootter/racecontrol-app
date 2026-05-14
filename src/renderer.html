@@ -17,6 +17,7 @@
     .tl-badge.driver {background:rgba(41,121,255,0.15);color:var(--blue);border:1px solid rgba(41,121,255,0.3);}
     .tl-badge.marshal{background:rgba(255,214,0,0.12);color:var(--yellow);border:1px solid rgba(255,214,0,0.3);}
     .tl-badge.dev    {background:rgba(255,23,68,0.12);color:var(--red);border:1px solid rgba(255,23,68,0.3);}
+    .snd-pick-btn{font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;font-family:'Oxanium',sans-serif;}
     .tb-btns{display:flex;gap:2px;-webkit-app-region:no-drag;}
     .tb-btn{width:26px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:3px;cursor:pointer;border:none;background:none;color:var(--muted);transition:background 0.15s,color 0.15s;}
     .tb-btn:hover{background:var(--border);color:var(--text);}
@@ -481,6 +482,20 @@
         <span class="settings-label">🏁 Next Lap sound</span>
         <button onclick="pickKeybindSound('next_lap')" id="snd-next_lap-btn" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;font-family:'Oxanium',sans-serif;">📁 Choose</button>
       </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;">
+  <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Local Flag Sounds</div>
+  <div style="font-size:9px;color:var(--muted);">Override flag sounds locally — only you hear these.</div>
+  <div class="settings-row"><span class="settings-label">🟢 Green Flag</span><button onclick="pickFlagSound('green')" id="fsnd-green-btn" class="snd-pick-btn">📁 Choose</button></div>
+  <div class="settings-row"><span class="settings-label">🟡 Yellow Flag</span><button onclick="pickFlagSound('yellow')" id="fsnd-yellow-btn" class="snd-pick-btn">📁 Choose</button></div>
+  <div class="settings-row"><span class="settings-label">🟡 Full Course Yellow</span><button onclick="pickFlagSound('fcy')" id="fsnd-fcy-btn" class="snd-pick-btn">📁 Choose</button></div>
+  <div class="settings-row"><span class="settings-label">🔴 Red Flag</span><button onclick="pickFlagSound('red')" id="fsnd-red-btn" class="snd-pick-btn">📁 Choose</button></div>
+  <div class="settings-row"><span class="settings-label">🔵 Blue Flag</span><button onclick="pickFlagSound('blue')" id="fsnd-blue-btn" class="snd-pick-btn">📁 Choose</button></div>
+  <div class="settings-row"><span class="settings-label">🟠 Safety Car</span><button onclick="pickFlagSound('safety_car')" id="fsnd-safety_car-btn" class="snd-pick-btn">📁 Choose</button></div>
+  <div class="settings-row"><span class="settings-label">🟠 SC Ending</span><button onclick="pickFlagSound('sc_ending')" id="fsnd-sc_ending-btn" class="snd-pick-btn">📁 Choose</button></div>
+  <div class="settings-row"><span class="settings-label">🟠 Speed Up</span><button onclick="pickFlagSound('sc_speedup')" id="fsnd-sc_speedup-btn" class="snd-pick-btn">📁 Choose</button></div>
+  <div class="settings-row"><span class="settings-label">🟠 Single File</span><button onclick="pickFlagSound('sfl')" id="fsnd-sfl-btn" class="snd-pick-btn">📁 Choose</button></div>
+  <div class="settings-row" style="border:none;"><span class="settings-label">🏁 Checkered</span><button onclick="pickFlagSound('checkered')" id="fsnd-checkered-btn" class="snd-pick-btn">📁 Choose</button></div>
+</div>
       <div class="settings-row" style="border:none;">
         <span class="settings-label">🔧 Pitting sound</span>
         <button onclick="pickKeybindSound('pitting')" id="snd-pitting-btn" style="font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;font-family:'Oxanium',sans-serif;">📁 Choose</button>
@@ -490,6 +505,7 @@
     <button class="save-btn" onclick="saveSettings()">✓ Save Settings</button>
     <button class="save-btn" onclick="goBack()" style="background:rgba(255,255,255,0.03);border-color:var(--border);color:var(--muted);">← Back</button>
     <button class="save-btn" onclick="reLogin()" style="background:rgba(255,23,68,0.08);border-color:rgba(255,23,68,0.3);color:var(--red);">↩ Re-Login</button>
+    
   </div>
 </div>
 
@@ -512,7 +528,7 @@
   <button id="update-install-btn" onclick="installUpdate()" disabled style="background:var(--muted);border:none;color:#000;font-family:'Oxanium',sans-serif;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:4px;cursor:not-allowed;opacity:0.5;transition:all 0.2s;">Install & Restart</button>
 </div>
 <input type="file" id="sound-picker" accept="audio/*" style="display:none;"/>
-
+<input type="file" id="flag-sound-picker" accept="audio/*" style="display:none;"/>
 <div id="toast"></div>
 
 <script>
@@ -714,7 +730,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("dev-flag-text")?.addEventListener("input",  updatePreview);
     updatePreview();
   }, 600);
-
+  
+  loadFlagSounds()
   loadToolboxPrefs();
   loadKeybindSounds();
 });
@@ -828,6 +845,42 @@ function showEngineerScreen() {
   showScreen("screen-login");
 }
 
+let _flagSounds        = {};
+let _currentFlagPick   = null;
+
+function loadFlagSounds() {
+  try {
+    const saved = localStorage.getItem("rc_flag_sounds");
+    if (saved) { _flagSounds = JSON.parse(saved); updateFlagSoundBtnLabels(); }
+  } catch {}
+}
+
+function updateFlagSoundBtnLabels() {
+  Object.keys(FLAG_DEFS).forEach(flag => {
+    const btn = document.getElementById(`fsnd-${flag}-btn`);
+    if (btn) btn.textContent = _flagSounds[flag] ? "✓ Custom" : "📁 Choose";
+  });
+}
+
+function pickFlagSound(flag) {
+  _currentFlagPick = flag;
+  document.getElementById("flag-sound-picker").click();
+}
+
+document.getElementById("flag-sound-picker")?.addEventListener("change", function() {
+  const file = this.files[0];
+  if (!file || !_currentFlagPick) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    _flagSounds[_currentFlagPick] = e.target.result;
+    localStorage.setItem("rc_flag_sounds", JSON.stringify(_flagSounds));
+    updateFlagSoundBtnLabels();
+    showToast(`✓ Sound set for ${_currentFlagPick}`, "ok");
+  };
+  reader.readAsDataURL(file);
+  this.value = "";
+});
+  
 function reLogin() {
   sessionStorage.removeItem("rc_user"); localStorage.removeItem("rc_user");
   user=null; hasDriver=false; hasMarshal=false; hasDev=false;
@@ -1591,11 +1644,33 @@ document.addEventListener("keydown",e=>{
   listeningKey=null;
 });
 
-async function playFlagAudio(soundFile){
-  if(!soundFile||!apiUrl)return;
-  try{const res=await fetch(`${apiUrl}/sounds/${soundFile}`);if(!res.ok)return;const blob=await res.blob();const url=URL.createObjectURL(blob);const audio=new Audio(url);audio.volume=1.0;await audio.play();audio.onended=()=>URL.revokeObjectURL(url);}catch(e){console.error("Audio error:",e);}
-}
+async function playFlagAudio(soundFile) {
+  if (!soundFile) return;
 
+  // Check for local override first
+  const flagKey = Object.keys(FLAG_DEFS).find(k => FLAG_DEFS[k].sound === soundFile);
+  if (flagKey && _flagSounds[flagKey]) {
+    try {
+      const audio = new Audio(_flagSounds[flagKey]);
+      audio.volume = 1.0;
+      await audio.play();
+    } catch(e) { console.error("Local flag sound error:", e); }
+    return;
+  }
+
+  // Fall back to server sound
+  if (!apiUrl) return;
+  try {
+    const res  = await fetch(`${apiUrl}/sounds/${soundFile}`);
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.volume = 1.0;
+    await audio.play();
+    audio.onended = () => URL.revokeObjectURL(url);
+  } catch(e) { console.error("Audio error:", e); }
+}
 function showScreen(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id)?.classList.add("active");}
 async function toggleTop(){const v=await window.api.toggleTop();document.getElementById("top-btn").style.color=v?"var(--blue)":"var(--muted)";}
 function installUpdate(){window.api.installUpdate();}
