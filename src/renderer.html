@@ -351,6 +351,12 @@
       <div id="dev-panel-status" style="font-size:9px;color:var(--muted);margin-top:4px;"></div>
     </div>
 
+    <!-- Engineering -->
+<div class="dev-card">
+  <div class="dev-title">Engineering Assignments</div>
+  <div id="dev-engineers" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;font-size:10px;color:var(--muted);">Loading...</div>
+</div>
+    
     <!-- API Stats -->
     <div class="dev-card">
       <div class="dev-title">API Stats</div>
@@ -1262,9 +1268,10 @@ function startGoSequence() {
 }
 
 function doAction(action) {
-  const btn=document.getElementById(`btn-${action}`);
-  if(btn){btn.classList.add("fired");setTimeout(()=>btn.classList.remove("fired"),300);}
-  playKeybindSound(action); window.api.sendAction(action);
+  const btn = document.getElementById(`btn-${action}`);
+  if (btn) { btn.classList.add("fired"); setTimeout(()=>btn.classList.remove("fired"),300); }
+  playKeybindSound(action);
+  window.api.sendAction(action);
 }
 function doTogglePitting() { playKeybindSound("pitting"); window.api.togglePitting().then(v=>updatePitBtn(v)); }
 function updatePitBtn(v) {
@@ -1412,7 +1419,15 @@ document.getElementById("dev-stats").innerHTML=`
 }).join("")||'<div style="color:var(--muted);">No actions yet.</div>';
 
     renderMockLb();
-
+    
+// Engineering assignments
+const engEl = document.getElementById("dev-engineers");
+const engineers = (dl.logins || []).filter(l => l.engineer);
+engEl.innerHTML = engineers.length ? engineers.map(l => `
+  <div style="padding:3px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;">
+    <span style="font-weight:700;">${l.username}</span>
+    <span style="color:var(--muted);">→ engineering for <span style="color:var(--text);font-weight:700;">${l.engineerFor||"?"}</span></span>
+  </div>`).join("") : '<div style="color:var(--muted);">No engineers active.</div>';
   } catch(e){console.error("[Dev]",e);showToast("❌ Failed to load dev info","err");}
 }
 
