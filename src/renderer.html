@@ -714,6 +714,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   if (apiUrl) {
     const evtSource = new EventSource(`${apiUrl}/events`);
+    const evtSource = new EventSource(`${apiUrl}/events?type=app`);
     evtSource.addEventListener("flag", e => {
       try {
         const d = JSON.parse(e.data);
@@ -822,6 +823,7 @@ async function afterLogin() {
   }
   if (driverName) {
     const info = DRIVER_INFO[driverName] || {};
+    config.username  = user.username;
     config.driver = driverName; config.number = info.number; config.callsign = info.callsign;
     config.discordId = user.id; config.engineer = false; isEngineer = false;
     window.api.saveConfig(config); updateSwitcher(); launchDriverPanel();
@@ -1382,6 +1384,8 @@ const driversOnline = (driverState.drivers||[]).length;
 document.getElementById("dev-stats").innerHTML=`
   <div class="dev-stat">Uptime <span>${Math.floor(u/3600)}h ${Math.floor((u%3600)/60)}m</span></div>
   <div class="dev-stat">Connected VCs <span>${(ai.connectedVCs||[]).length}</span></div>
+  <div class="dev-stat">SSE — App <span>${ai.sseAppClients||0}</span></div>
+  <div class="dev-stat">SSE — Web <span>${ai.sseWebClients||0}</span></div>
   <div class="dev-stat">Driver Panel <span style="color:${ai.driverEnabled?"var(--green)":"var(--red)"}">${ai.driverEnabled?"On":"Off"}</span></div>
   <div class="dev-stat">Marshal Panel <span style="color:${ai.marshalEnabled?"var(--green)":"var(--red)"}">${ai.marshalEnabled?"On":"Off"}</span></div>
   <div class="dev-stat">Drivers in Race <span>${driversOnline}</span></div>
