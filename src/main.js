@@ -172,6 +172,17 @@ async function sendDriverAction(action) {
     return;
   }
   try {
+    const stateRes = await fetch(`${config.apiUrl}/driver/state`, {
+      headers: { "x-discord-id": config.discordId || "" }
+    });
+    const stateData = await stateRes.json();
+    if (!stateData.raceStarted) {
+      mainWindow?.webContents.send("toast", { msg: "⏳ Race not started", type: "err" });
+      return;
+    }
+  } catch {
+  }
+  try {
     const res = await fetch(`${config.apiUrl}/driver/action`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
