@@ -1,6 +1,7 @@
 const { app, BrowserWindow, globalShortcut, ipcMain, Tray, Menu, nativeImage, shell } = require("electron");
 const path = require("path");
 const fs   = require("fs");
+const { exec } = require('child_process');
 const { autoUpdater } = require("electron-updater");
 
 // Store app data on D: drive
@@ -260,5 +261,10 @@ ipcMain.handle("check-version",  () => app.getVersion());
 ipcMain.handle("flag-broadcast", (_, data) => mainWindow?.webContents.send("flag-event", data));
 ipcMain.handle("register-hotkeys", (_, keybinds) => { registerHotkeys(keybinds); return true; });
 ipcMain.handle("open-releases", () => shell.openExternal("https://github.com/AleEjx/racecontrol-app/releases/latest"));
+ipcMain.handle("uninstall", () => {
+  const uninstallerPath = path.join(process.env.LOCALAPPDATA, 'RaceLeague Control', 'Update.exe');
+  exec(`"${uninstallerPath}" --uninstall`);
+  setTimeout(() => { globalShortcut.unregisterAll(); app.quit(); }, 1000);
+});
 
 app.on("will-quit", () => globalShortcut.unregisterAll());
