@@ -175,15 +175,15 @@ async function sendDriverAction(action) {
     const res = await fetch(`${config.apiUrl}/driver/action`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action,
-        driver:    config.driver,
-        callsign:  config.callsign,
-        number:    config.number,
-        discordId: config.discordId,
-        username:  config.driver,
-        engineer:  config.engineer || false,
-      }),
+body: JSON.stringify({
+  action,
+  driver:    config.driver,
+  callsign:  config.callsign,
+  number:    config.number,
+  discordId: config.discordId,
+  username:  config.username || config.driver,
+  engineer:  config.engineer || false,
+}),
     });
     if (res.ok) {
       const labels = { blue_flag:"🔵 Blue Flag", next_lap:"🏁 Next Lap", pitting:"🔧 Pitting", in_race:"🏎️ Back on Track" };
