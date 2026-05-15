@@ -727,15 +727,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (saved && apiUrl) { user = JSON.parse(saved); await afterLogin(); }
 
 if (apiUrl) {
-<<<<<<< Updated upstream
-  window._evtSource = new EventSource(`${apiUrl}/events`);
-  window._evtSource.addEventListener("flag", e => { ... });
-  window._evtSource.onerror = () => ...;
-}
-=======
     const evtSource = new EventSource(`${apiUrl}/events`);
     evtSource.addEventListener("flag", e => {
->>>>>>> Stashed changes
       try {
         const d = JSON.parse(e.data);
         if (d.type === "race_start") { if (!_lightsOutShown) triggerLightsOut(d.startAt); }
