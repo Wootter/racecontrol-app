@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld("api", {
   checkVersion:     ()        => ipcRenderer.invoke("check-version"),
   registerHotkeys:  (kb)      => ipcRenderer.invoke("register-hotkeys", kb),
   onUpdateError: (cb) => ipcRenderer.on("update-error", (_, v) => cb(v)),
+  uninstall: () => ipcRenderer.invoke('uninstall'),
   onKeybindFired: (cb) => ipcRenderer.on("keybind-fired", (_, action) => cb(action)),
   openReleases:  ()   => ipcRenderer.invoke("open-releases"),
 
