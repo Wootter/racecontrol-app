@@ -501,6 +501,7 @@
     <button class="save-btn" onclick="saveSettings()">✓ Save Settings</button>
     <button class="save-btn" onclick="goBack()" style="background:rgba(255,255,255,0.03);border-color:var(--border);color:var(--muted);">← Back</button>
     <button class="save-btn" onclick="reLogin()" style="background:rgba(255,23,68,0.08);border-color:rgba(255,23,68,0.3);color:var(--red);">↩ Re-Login</button>
+    <button class="save-btn" onclick="uninstallApp()" style="background:rgba(255,23,68,0.08);border-color:rgba(255,23,68,0.3);color:var(--red);">🗑️ Uninstall App</button>
     
   </div>
 </div>
@@ -640,6 +641,12 @@ function resetFlagSound(flag) {
   localStorage.setItem("rc_flag_sounds", JSON.stringify(_flagSounds));
   updateFlagSoundBtnLabels();
   showToast(`✓ Sound reset for ${flag}`, "ok");
+}
+
+function uninstallApp() {
+  const confirmed = confirm("Are you sure you want to uninstall RaceLeague Control?\n\nThis will remove the app and all its data.");
+  if (!confirmed) return;
+  window.api.uninstall();
 }
   
 function toggleHoloMode() {
