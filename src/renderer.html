@@ -191,6 +191,7 @@
   </div>
   <div class="tb-btns">
     <button class="tb-btn" title="Settings"  onclick="switchPanel('settings')">⚙</button>
+    <button class="tb-btn" title="Report Bug" onclick="openBugReport()">🐛</button>
     <button class="tb-btn" title="Pin" id="top-btn" onclick="toggleTop()">📌</button>
     <button class="tb-btn" title="Minimize"  onclick="window.api.minimize()">─</button>
     <button class="tb-btn close-btn" title="Quit" onclick="window.api.close()">✕</button>
@@ -527,6 +528,94 @@
 <input type="file" id="sound-picker" accept="audio/*" style="display:none;"/>
 <input type="file" id="flag-sound-picker" accept="audio/*" style="display:none;"/>
 <div id="toast"></div>
+
+<!-- Bug Report Modal -->
+<div id="bug-modal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;overflow-y:auto;padding:20px;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:10px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:13px;font-weight:800;color:var(--red);">🐛 Report a Bug</div>
+      <button onclick="closeBugReport()" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;">✕</button>
+    </div>
+
+    <div style="font-size:9px;color:var(--muted);">All reports are sent directly to the developer.</div>
+
+    <!-- What happened -->
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">What happened?</label>
+      <textarea id="bug-what" placeholder="Describe the bug..." style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Oxanium',sans-serif;font-size:11px;padding:8px;border-radius:var(--radius);outline:none;resize:none;height:70px;"></textarea>
+    </div>
+
+    <!-- Steps to reproduce -->
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">Steps to reproduce</label>
+      <textarea id="bug-steps" placeholder="1. I clicked...\n2. Then..." style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Oxanium',sans-serif;font-size:11px;padding:8px;border-radius:var(--radius);outline:none;resize:none;height:60px;"></textarea>
+    </div>
+
+    <!-- Expected vs actual -->
+    <div style="display:flex;gap:8px;">
+      <div style="display:flex;flex-direction:column;gap:4px;flex:1;">
+        <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">Expected</label>
+        <textarea id="bug-expected" placeholder="What should happen..." style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Oxanium',sans-serif;font-size:11px;padding:8px;border-radius:var(--radius);outline:none;resize:none;height:50px;"></textarea>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;flex:1;">
+        <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">Actual</label>
+        <textarea id="bug-actual" placeholder="What actually happened..." style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Oxanium',sans-serif;font-size:11px;padding:8px;border-radius:var(--radius);outline:none;resize:none;height:50px;"></textarea>
+      </div>
+    </div>
+
+    <!-- How often -->
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">How often does this happen?</label>
+      <select id="bug-frequency" style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Oxanium',sans-serif;font-size:11px;padding:8px;border-radius:var(--radius);outline:none;">
+        <option value="always">Always</option>
+        <option value="often">Often</option>
+        <option value="sometimes">Sometimes</option>
+        <option value="once">Only happened once</option>
+      </select>
+    </div>
+
+    <!-- Panel they were on -->
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">Which panel were you on?</label>
+      <select id="bug-panel" style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Oxanium',sans-serif;font-size:11px;padding:8px;border-radius:var(--radius);outline:none;">
+        <option value="driver">Driver</option>
+        <option value="marshal">Marshal</option>
+        <option value="dev">Dev</option>
+        <option value="settings">Settings</option>
+        <option value="login">Login</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+
+    <!-- Screenshot -->
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">Screenshot (optional)</label>
+      <div id="bug-img-drop" onclick="document.getElementById('bug-img-input').click()" style="border:1px dashed var(--border);border-radius:var(--radius);padding:12px;text-align:center;font-size:10px;color:var(--muted);cursor:pointer;">
+        🖼️ Click or drop image here
+      </div>
+      <input type="file" id="bug-img-input" accept="image/*" style="display:none;" onchange="loadBugImage(this.files[0])"/>
+      <div id="bug-img-preview" style="display:none;position:relative;margin-top:4px;">
+        <img id="bug-img-thumb" style="width:100%;border-radius:var(--radius);border:1px solid var(--border);max-height:120px;object-fit:cover;"/>
+        <button onclick="clearBugImage()" style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.7);border:none;color:#fff;font-size:9px;border-radius:3px;padding:2px 5px;cursor:pointer;">✕</button>
+      </div>
+    </div>
+
+    <!-- Dev logs toggle -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);">
+      <div>
+        <div style="font-size:10px;font-weight:700;">Include dev logs</div>
+        <div style="font-size:8px;color:var(--muted);">Helps diagnose the issue faster</div>
+      </div>
+      <input type="checkbox" id="bug-include-logs" checked style="width:16px;height:16px;cursor:pointer;accent-color:var(--blue);"/>
+    </div>
+
+    <div id="bug-status" style="font-size:9px;text-align:center;min-height:12px;color:var(--muted);"></div>
+
+    <button onclick="submitBugReport()" id="bug-submit-btn" style="width:100%;padding:10px;background:rgba(255,23,68,0.15);border:1px solid rgba(255,23,68,0.4);color:var(--red);font-family:'Oxanium',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--radius);cursor:pointer;">
+      🐛 Submit Report
+    </button>
+  </div>
+</div>
 
 <script>
 const DRIVER_ROLE   = "1464790972679454903";
@@ -881,6 +970,130 @@ function updateFlagSoundBtnLabels() {
   });
 }
 
+// ── Bug Report ────────────────────────────────────────────────────────────
+let _bugImageData = null;
+const _devLogs    = [];
+const _origConsole = { log: console.log, warn: console.warn, error: console.error };
+
+// Intercept console logs to capture them
+(function captureLogs() {
+  ["log","warn","error"].forEach(level => {
+    console[level] = (...args) => {
+      _origConsole[level](...args);
+      _devLogs.unshift({ level, msg: args.map(a => typeof a === "object" ? JSON.stringify(a) : String(a)).join(" "), t: new Date().toISOString() });
+      if (_devLogs.length > 100) _devLogs.pop();
+    };
+  });
+})();
+
+function openBugReport() {
+  document.getElementById("bug-modal").style.display = "flex";
+  // Pre-select current panel
+  const panelSelect = document.getElementById("bug-panel");
+  if (panelSelect && currentPanel) panelSelect.value = currentPanel;
+}
+
+function closeBugReport() {
+  document.getElementById("bug-modal").style.display = "none";
+  document.getElementById("bug-status").textContent = "";
+}
+
+function loadBugImage(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    _bugImageData = e.target.result;
+    document.getElementById("bug-img-thumb").src = _bugImageData;
+    document.getElementById("bug-img-preview").style.display = "block";
+    document.getElementById("bug-img-drop").textContent = "✓ Image attached";
+    document.getElementById("bug-img-drop").style.borderColor = "var(--green)";
+    document.getElementById("bug-img-drop").style.color = "var(--green)";
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearBugImage() {
+  _bugImageData = null;
+  document.getElementById("bug-img-preview").style.display = "none";
+  document.getElementById("bug-img-drop").textContent = "🖼️ Click or drop image here";
+  document.getElementById("bug-img-drop").style.borderColor = "var(--border)";
+  document.getElementById("bug-img-drop").style.color = "var(--muted)";
+  document.getElementById("bug-img-input").value = "";
+}
+
+async function submitBugReport() {
+  const what      = document.getElementById("bug-what").value.trim();
+  const steps     = document.getElementById("bug-steps").value.trim();
+  const expected  = document.getElementById("bug-expected").value.trim();
+  const actual    = document.getElementById("bug-actual").value.trim();
+  const frequency = document.getElementById("bug-frequency").value;
+  const panel     = document.getElementById("bug-panel").value;
+  const inclLogs  = document.getElementById("bug-include-logs").checked;
+  const statusEl  = document.getElementById("bug-status");
+  const submitBtn = document.getElementById("bug-submit-btn");
+
+  if (!what) { statusEl.style.color="var(--red)"; statusEl.textContent="❌ Please describe what happened."; return; }
+
+  statusEl.style.color = "var(--muted)";
+  statusEl.textContent = "Sending report...";
+  submitBtn.disabled   = true;
+
+  const version = document.getElementById("app-version")?.textContent || "unknown";
+  const logs    = inclLogs ? _devLogs.slice(0, 30) : [];
+
+  const report = {
+    what, steps, expected, actual, frequency, panel,
+    reporter:  user?.username || "Unknown",
+    discordId: user?.id || "unknown",
+    version,
+    apiUrl,
+    timestamp: new Date().toISOString(),
+    logs,
+    hasImage: !!_bugImageData,
+  };
+
+  try {
+    const res = await fetch(`${apiUrl}/bug-report`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ report, image: _bugImageData || null }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      statusEl.style.color = "var(--green)";
+      statusEl.textContent = "✅ Report sent! Thank you.";
+      setTimeout(() => {
+        closeBugReport();
+        // Clear form
+        ["bug-what","bug-steps","bug-expected","bug-actual"].forEach(id => { const el=document.getElementById(id); if(el) el.value=""; });
+        clearBugImage();
+        submitBtn.disabled = false;
+      }, 2000);
+    } else {
+      statusEl.style.color = "var(--red)";
+      statusEl.textContent = "❌ " + (data.error || "Failed to send.");
+      submitBtn.disabled = false;
+    }
+  } catch {
+    statusEl.style.color = "var(--red)";
+    statusEl.textContent = "❌ Can't reach API.";
+    submitBtn.disabled = false;
+  }
+}
+
+// Drag and drop for bug image
+setTimeout(() => {
+  const drop = document.getElementById("bug-img-drop");
+  if (!drop) return;
+  drop.addEventListener("dragover",  e => { e.preventDefault(); drop.style.borderColor="var(--blue)"; });
+  drop.addEventListener("dragleave", () => { drop.style.borderColor = _bugImageData ? "var(--green)" : "var(--border)"; });
+  drop.addEventListener("drop", e => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image/")) loadBugImage(file);
+  });
+}, 500);
+  
 function pickFlagSound(flag) {
   _currentFlagPick = flag;
   document.getElementById("flag-sound-picker").click();
@@ -1729,6 +1942,7 @@ function showToast(msg,type=""){
   const t=document.getElementById("toast");t.textContent=msg;t.className=`show ${type}`;
   clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.className="";},2500);
 }
+
 
 // Flag background image drag-and-drop
 setTimeout(()=>{
