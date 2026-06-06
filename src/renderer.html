@@ -1213,7 +1213,11 @@ function launchDriverPanel(startPoll=true) {
   const kbSection  = document.getElementById("d-keybind-info");
   if (isEngineer) { actSection.style.display="block"; kbSection.style.display="none"; }
   else            { actSection.style.display="none";  kbSection.style.display="block"; }
-  if (startPoll) { pollDriverState(); setInterval(pollDriverState, 3000); }
+  if (startPoll) {
+    if (_driverPollInterval) clearInterval(_driverPollInterval);
+    pollDriverState();
+    _driverPollInterval = setInterval(pollDriverState, 3000);
+  }
 }
 
 function launchMarshalPanel(startPoll=true) {
@@ -1222,7 +1226,11 @@ function launchMarshalPanel(startPoll=true) {
   updateSwitcher();
   if (user?.roles?.includes(DIRECTOR_ROLE)||user?.isAdmin)
     document.getElementById("m-race-setup").style.display = "block";
-  if (startPoll) { setInterval(pollBlueFlagRequests, 3000); pollBlueFlagRequests(); }
+  if (startPoll) {
+    if (_marshalPollInterval) clearInterval(_marshalPollInterval);
+    pollBlueFlagRequests();
+    _marshalPollInterval = setInterval(pollBlueFlagRequests, 3000);
+  }
 }
 
 async function pollDriverState() {
@@ -1605,7 +1613,9 @@ async function devAutoAuth() {
     const code=await window.api.openOAuth(); if(!code) return false;
     const authRes=await fetch(`${apiUrl}/auth`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code,redirectUri:"http://localhost:7823"})});
     const authData=await authRes.json(); if(!authRes.ok) return false;
-    const pwRes=await fetch(`${apiUrl}/verify-password`,{method:"POST",headers:{"Content-Type":"application/json","x-discord-id":user.id,"x-discord-token":authData.user.token},body:JSON.stringify({password:"DeveloperTestingAdmin%"})});
+    const pw = await window.api.devAuthPassword();
+if (!pw) { showToast("❌ Dev password not configured","err"); return false; }
+const pwRes=await fetch(`${apiUrl}/verify-password`,{method:"POST",headers:{"Content-Type":"application/json","x-discord-id":user.id,"x-discord-token":authData.user.token},body:JSON.stringify({password:pw})});
     const pwData=await pwRes.json(); if(!pwRes.ok) return false;
     user.token=authData.user.token; user.marshalToken=authData.user.token; user.isAdmin=true;
     sessionStorage.setItem("rc_user",JSON.stringify(user)); localStorage.setItem("rc_user",JSON.stringify(user));
