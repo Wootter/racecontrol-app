@@ -4,7 +4,6 @@ const fs   = require("fs");
 const { exec } = require('child_process');
 const { autoUpdater } = require("electron-updater");
 
-// Store app data on D: drive
 const CONFIG_FILE = path.join(app.getPath("userData"), "config.json");
 
 function loadConfig() {
@@ -19,10 +18,8 @@ let tray       = null;
 let inPits     = false;
 let onCooldown = false;
 
-// ── Single instance lock — kill previous zombie if already running ────────
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
-  // Another instance is running — focus it and quit this one
   app.quit();
   process.exit(0);
 }
@@ -30,7 +27,6 @@ app.on("second-instance", () => {
   if (mainWindow) { if (mainWindow.isMinimized()) mainWindow.restore(); mainWindow.focus(); }
 });
 
-// ── Local OAuth redirect server ───────────────────────────────────────────
 const http = require("http");
 const OAUTH_PORT = 7823;
 let oauthResolve = null;
@@ -42,7 +38,6 @@ const oauthServer = http.createServer((req, res) => {
   if (code && oauthResolve) { oauthResolve(code); oauthResolve = null; }
 });
 
-// Start OAuth server — handle port conflict gracefully instead of crashing
 oauthServer.on("error", (err) => {
   if (err.code === "EADDRINUSE") {
     console.warn(`[OAuth] Port ${OAUTH_PORT} in use — retrying...`);
@@ -62,11 +57,10 @@ app.whenReady().then(() => {
   setupAutoUpdater();
 });
 
-// ── Fully quit when all windows closed ───────────────────────────────────
+
 app.on("window-all-closed", () => app.quit());
 
 function setupAutoUpdater() {
-  // Only run updater in packaged (installed) builds
   if (!app.isPackaged) {
     console.log("[Updater] Skipping — running in dev mode.");
     return;
@@ -87,7 +81,6 @@ function setupAutoUpdater() {
   });
   autoUpdater.on("error", (err) => {
     console.log("[Updater] Error:", err.message);
-    // Tell renderer so it can show a fallback
     mainWindow?.webContents.send("update-error", err.message);
   });
 
@@ -111,7 +104,6 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, "renderer.html"));
 
-  // ── Close button fully quits ──────────────────────────────────────────
   mainWindow.on("close", () => {
     globalShortcut.unregisterAll();
     app.quit();
@@ -209,7 +201,6 @@ body: JSON.stringify({
   }
 }
 
-// ── OAuth window ──────────────────────────────────────────────────────────
 ipcMain.handle("open-oauth", (_, _url) => {
   return new Promise((resolve) => {
     const CLIENT_ID  = "1467595519718195473";
@@ -222,11 +213,9 @@ ipcMain.handle("open-oauth", (_, _url) => {
       title: "Login with Discord", autoHideMenuBar: true,
     });
 
-    // Set the resolve function BEFORE loading the URL
     oauthResolve = (code) => {
       console.log("[OAuth] Code received:", code ? "yes" : "no");
       if (authWin && !authWin.isDestroyed()) {
-        // Small delay so user sees the success message
         setTimeout(() => authWin.destroy(), 1500);
       }
       resolve(code);
@@ -236,7 +225,6 @@ ipcMain.handle("open-oauth", (_, _url) => {
     authWin.show();
     authWin.focus();
 
-    // Only resolve null if user manually closes without completing
     authWin.on("closed", () => {
       console.log("[OAuth] Window closed");
       if (oauthResolve) {
@@ -247,7 +235,6 @@ ipcMain.handle("open-oauth", (_, _url) => {
   });
 });
 
-// ── IPC handlers ──────────────────────────────────────────────────────────
 ipcMain.handle("get-config",     ()      => config);
 ipcMain.handle("save-config",    (_, cfg) => { config = { ...config, ...cfg }; saveConfig(config); if (cfg.keybinds) registerHotkeys(cfg.keybinds); return true; });
 ipcMain.handle("send-action",    (_, action) => sendDriverAction(action));
