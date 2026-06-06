@@ -1,28 +1,34 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
-contextBridge.exposeInMainWorld("api", {
-  getConfig:        ()        => ipcRenderer.invoke("get-config"),
-  saveConfig:       (cfg)     => ipcRenderer.invoke("save-config", cfg),
-  sendAction:       (a)       => ipcRenderer.invoke("send-action", a),
-  togglePitting:    ()        => ipcRenderer.invoke("toggle-pitting"),
-  minimize:         ()        => ipcRenderer.invoke("minimize-app"),
-  close:            ()        => ipcRenderer.invoke("close-app"),
-  toggleTop:        ()        => ipcRenderer.invoke("toggle-top"),
-  openDevTools:     ()        => ipcRenderer.invoke("open-devtools"),
-  openOAuth:        (url)     => ipcRenderer.invoke("open-oauth", url),
-  installUpdate:    ()        => ipcRenderer.invoke("install-update"),
-  checkVersion:     ()        => ipcRenderer.invoke("check-version"),
-  registerHotkeys:  (kb)      => ipcRenderer.invoke("register-hotkeys", kb),
-  onUpdateError: (cb) => ipcRenderer.on("update-error", (_, v) => cb(v)),
-  uninstall: () => ipcRenderer.invoke('uninstall'),
-  onKeybindFired: (cb) => ipcRenderer.on("keybind-fired", (_, action) => cb(action)),
-  openReleases:  ()   => ipcRenderer.invoke("open-releases"),
+function safeOn(channel, cb) {
+  ipcRenderer.removeAllListeners(channel);
+  ipcRenderer.on(channel, (_, ...args) => cb(...args));
+}
 
-  onUpdateAvailable:  (cb) => ipcRenderer.on("update-available",  (_, v) => cb(v)),
-  onUpdateDownloaded: (cb) => ipcRenderer.on("update-downloaded", (_, v) => cb(v)),
-  onToast:            (cb) => ipcRenderer.on("toast",             (_, d) => cb(d)),
-  onCooldownStart:    (cb) => ipcRenderer.on("cooldown-start",    (_, s) => cb(s)),
-  onCooldownEnd:      (cb) => ipcRenderer.on("cooldown-end",      ()     => cb()),
-  onPitStateChanged:  (cb) => ipcRenderer.on("pit-state-changed", (_, v) => cb(v)),
-  onFlagEvent:        (cb) => ipcRenderer.on("flag-event",        (_, d) => cb(d)),
+contextBridge.exposeInMainWorld("api", {
+  getConfig:       ()    => ipcRenderer.invoke("get-config"),
+  saveConfig:      (cfg) => ipcRenderer.invoke("save-config", cfg),
+  sendAction:      (a)   => ipcRenderer.invoke("send-action", a),
+  togglePitting:   ()    => ipcRenderer.invoke("toggle-pitting"),
+  minimize:        ()    => ipcRenderer.invoke("minimize-app"),
+  close:           ()    => ipcRenderer.invoke("close-app"),
+  toggleTop:       ()    => ipcRenderer.invoke("toggle-top"),
+  openDevTools:    ()    => ipcRenderer.invoke("open-devtools"),
+  openOAuth:       (url) => ipcRenderer.invoke("open-oauth", url),
+  installUpdate:   ()    => ipcRenderer.invoke("install-update"),
+  checkVersion:    ()    => ipcRenderer.invoke("check-version"),
+  registerHotkeys: (kb)  => ipcRenderer.invoke("register-hotkeys", kb),
+  uninstall:       ()    => ipcRenderer.invoke("uninstall"),
+  openReleases:    ()    => ipcRenderer.invoke("open-releases"),
+
+  onUpdateAvailable:  (cb) => safeOn("update-available",  cb),
+  onUpdateDownloaded: (cb) => safeOn("update-downloaded", cb),
+  onUpdateError:      (cb) => safeOn("update-error",      cb),
+  onToast:            (cb) => safeOn("toast",             cb),
+  onCooldownStart:    (cb) => safeOn("cooldown-start",    cb),
+  onCooldownEnd:      (cb) => safeOn("cooldown-end",      cb),
+  onPitStateChanged:  (cb) => safeOn("pit-state-changed", cb),
+  onFlagEvent:        (cb) => safeOn("flag-event",        cb),
+  onKeybindFired:     (cb) => safeOn("keybind-fired",     cb),
+  devAuthPassword:    ()   => ipcRenderer.invoke("dev-auth-password"),
 });
