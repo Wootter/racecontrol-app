@@ -253,6 +253,11 @@ ipcMain.handle("save-config",    (_, cfg) => { config = { ...config, ...cfg }; s
 ipcMain.handle("send-action",    (_, action) => sendDriverAction(action));
 ipcMain.handle("toggle-pitting", () => { inPits = !inPits; sendDriverAction(inPits ? "pitting" : "in_race"); mainWindow?.webContents.send("pit-state-changed", inPits); return inPits; });
 ipcMain.handle("minimize-app",   () => mainWindow?.minimize());
+ipcMain.handle("dev-auth-password", () => {
+  let secrets = {};
+  try { secrets = require("./secrets.json"); } catch {}
+  return process.env.ADMIN_PASSWORD || secrets.adminPassword || null;
+});
 ipcMain.handle("close-app",      () => { globalShortcut.unregisterAll(); app.quit(); });
 ipcMain.handle("toggle-top",     () => { config.alwaysOnTop = !config.alwaysOnTop; mainWindow?.setAlwaysOnTop(config.alwaysOnTop); saveConfig(config); return config.alwaysOnTop; });
 ipcMain.handle("open-devtools",  () => mainWindow?.webContents.openDevTools());
