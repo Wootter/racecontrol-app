@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld("api", {
   registerHotkeys: (kb)  => ipcRenderer.invoke("register-hotkeys", kb),
   uninstall:       ()    => ipcRenderer.invoke("uninstall"),
   openReleases:    ()    => ipcRenderer.invoke("open-releases"),
+  devAuthPassword: () => ipcRenderer.invoke("dev-auth-password"),
 
   onUpdateAvailable:  (cb) => safeOn("update-available",  cb),
   onUpdateDownloaded: (cb) => safeOn("update-downloaded", cb),
