@@ -23,6 +23,10 @@
     .tb-btn:hover{background:var(--border);color:var(--text);}
     .tb-btn.close-btn:hover{background:var(--red);color:#fff;}
 
+    .sector-btn{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:7px;cursor:pointer;color:var(--text);font-family:'Oxanium',sans-serif;transition:border-color 0.15s,background 0.15s;width:100%;}
+    .sector-btn:hover{border-color:var(--yellow);background:rgba(255,214,0,0.07);}
+    .sector-btn:active{transform:scale(0.97);}
+
     #panel-switcher{display:none;align-items:center;gap:4px;-webkit-app-region:no-drag;}
     .switch-btn{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);font-family:'Oxanium',sans-serif;transition:all 0.15s;}
     .switch-btn.active{color:var(--text);border-color:var(--blue);background:rgba(41,121,255,0.1);}
@@ -294,7 +298,7 @@
       <div class="flag-grid">
         <button class="flag-btn green"  onclick="triggerFlag('green')"><span class="fi">🟢</span><span class="fn">Green</span></button>
         <button class="flag-btn red"    onclick="triggerFlag('red')"><span class="fi">🔴</span><span class="fn">Red</span></button>
-        <button class="flag-btn yellow" onclick="triggerFlag('yellow')"><span class="fi">🟡</span><span class="fn">Yellow</span></button>
+        <button class="flag-btn yellow" onclick="openSectorModal()"><span class="fi">🟡</span><span class="fn">Yellow</span></button>
         <button class="flag-btn yellow" onclick="triggerFlag('fcy')"><span class="fi">🟡</span><span class="fn">FCY</span></button>
       </div>
     </div>
@@ -583,9 +587,41 @@
 
     <button onclick="submitBugReport()" id="bug-submit-btn" style="width:100%;padding:10px;background:rgba(255,23,68,0.15);border:1px solid rgba(255,23,68,0.4);color:var(--red);font-family:'Oxanium',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--radius);cursor:pointer;">
       🐛 Submit Report
-    </button>
+</button>
   </div>
 </div>
+
+<!-- Sector Picker Modal -->
+<div id="sector-modal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;width:100%;max-width:320px;display:flex;flex-direction:column;gap:10px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:18px;">🟡</span>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:var(--yellow);">YELLOW FLAG</div>
+          <div style="font-size:9px;color:var(--muted);">Select a sector</div>
+        </div>
+      </div>
+      <button onclick="closeSectorModal()" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+      <button onclick="triggerSectorFlag('yellow_s1')" class="sector-btn">
+        <span style="font-size:16px;">🟡</span>
+        <div><div style="font-size:12px;font-weight:700;">Sector 1</div></div>
+      </button>
+      <button onclick="triggerSectorFlag('yellow_s2')" class="sector-btn">
+        <span style="font-size:16px;">🟡</span>
+        <div><div style="font-size:12px;font-weight:700;">Sector 2</div></div>
+      </button>
+      <button onclick="triggerSectorFlag('yellow_s3')" class="sector-btn">
+        <span style="font-size:16px;">🟡</span>
+        <div><div style="font-size:12px;font-weight:700;">Sector 3</div></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
 
 <script>
 const DRIVER_ROLE   = "1464790972679454903";
@@ -701,6 +737,29 @@ function resetFlagSound(flag) {
   showToast(`✓ Sound reset for ${flag}`, "ok");
 }
 
+  function openSectorModal() {
+  document.getElementById("sector-modal").style.display = "flex";
+}
+
+function closeSectorModal() {
+  document.getElementById("sector-modal").style.display = "none";
+}
+
+async function triggerSectorFlag(flag) {
+  closeSectorModal();
+  if (!user?.token) return;
+  try {
+    const res = await fetch(`${apiUrl}/flag`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json","x-discord-id":user.id,"x-discord-token":user.token},
+      body: JSON.stringify({ flag, username: user.username }),
+    });
+    const data = await res.json();
+    if (res.ok) showToast(`✓ Yellow Flag — ${flag==='yellow_s1'?'Sector 1':flag==='yellow_s2'?'Sector 2':'Sector 3'}`, "ok");
+    else showToast(`✗ ${data.error}`, "err");
+  } catch { showToast("✗ Bot unreachable", "err"); }
+}
+  
 function uninstallApp() {
   const confirmed = confirm("Are you sure you want to uninstall RaceLeague Control?\n\nThis will remove the app and all its data.");
   if (!confirmed) return;
@@ -919,7 +978,7 @@ function showEngineerScreen() {
     </div>`;
   showScreen("screen-login");
 }
-
+  
 let _flagSounds        = {};
 let _currentFlagPick   = null;
 
