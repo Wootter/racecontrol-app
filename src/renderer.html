@@ -170,10 +170,6 @@
     #toast.ok{border-color:var(--green);color:var(--green);}
     #toast.err{border-color:var(--red);color:var(--red);}
 
-    #lights-overlay{display:none;position:fixed;inset:0;z-index:1000;background:#000;flex-direction:column;align-items:center;justify-content:center;gap:28px;}
-    .f1-light{width:48px;height:48px;border-radius:50%;background:#1a0000;border:3px solid #330000;box-shadow:inset 0 0 10px rgba(0,0,0,0.8);transition:background 0.12s,border-color 0.12s,box-shadow 0.12s;}
-    .f1-light.lit{background:#cc0000;border-color:#ff2200;box-shadow:0 0 18px #ff0000,0 0 40px rgba(255,0,0,0.35),inset 0 0 8px rgba(255,100,100,0.3);}
-    #lights-label{font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);min-height:18px;}
   </style>
 </head>
 <body>
@@ -503,18 +499,6 @@
   </div>
 </div>
 
-<div id="lights-overlay">
-  <div style="font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,0.25);">RaceLeague · Race Control</div>
-  <div style="display:flex;gap:14px;align-items:center;justify-content:center;">
-    <div class="f1-light" id="light-1"></div>
-    <div class="f1-light" id="light-2"></div>
-    <div class="f1-light" id="light-3"></div>
-    <div class="f1-light" id="light-4"></div>
-    <div class="f1-light" id="light-5"></div>
-  </div>
-  <div id="lights-label">Prepare to race</div>
-</div>
-
 <div id="update-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(0,230,118,0.12);border-top:1px solid rgba(0,230,118,0.4);padding:8px 14px;align-items:center;justify-content:space-between;gap:10px;z-index:1000;">
   <div style="font-size:11px;color:var(--green);font-weight:700;" id="update-text">🔄 Downloading update...</div>
   <button id="update-install-btn" onclick="installUpdate()" disabled style="background:var(--muted);border:none;color:#000;font-family:'Oxanium',sans-serif;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:4px;cursor:not-allowed;opacity:0.5;transition:all 0.2s;">Install & Restart</button>
@@ -659,7 +643,6 @@ let bfKnownIds    = new Set();
 let bfAlertInterval = null;
 let _lastFlagTimestamp = null;
 let _lastRaceState     = null;
-let _lightsOutShown    = false;
 let isEngineer         = false;
 let _driverPollInterval  = null;
 let _marshalPollInterval = null;
@@ -804,7 +787,6 @@ if (apiUrl) {
     evtSource.addEventListener("flag", e => {
       try {
         const d = JSON.parse(e.data);
-        if (d.type === "race_start") { if (!_lightsOutShown) triggerLightsOut(d.startAt); }
         else { onFlagEvent(d.flag, d); }
       } catch(err) { console.error("[SSE] Parse error:", err); }
     });
@@ -1218,7 +1200,6 @@ async function pollDriverState() {
     if (res.status===403) return;
     const data = await res.json();
     if (_lastRaceState && !_lastRaceState.raceStarted && data.raceStarted)
-      triggerLightsOut(data.startAt||Date.now()+3000);
     _lastRaceState = data;
     renderLeaderboard(data);
 const panelOn = data.webPanelEnabled!==false, raceOn = data.raceStarted;
@@ -1450,54 +1431,6 @@ function showMarshalDisabledScreen() {
 function hideMarshalDisabledScreen() {
   const overlay = document.getElementById("marshal-disabled-overlay");
   if (overlay) overlay.remove();
-}
-  
-function triggerLightsOut(startAt) {
-  if (_lightsOutShown) return;
-  _lightsOutShown = true;
-
-  const now = Date.now();
-  
-  if (startAt <= now) {
-    startGoSequence();
-    return;
-  }
-
-  const overlay = document.getElementById("lights-overlay");
-  const label   = document.getElementById("lights-label");
-  overlay.style.display = "flex";
-  for (let i=1;i<=5;i++) document.getElementById(`light-${i}`).classList.remove("lit");
-  label.textContent = "Prepare to race";
-  label.style.color = "rgba(255,255,255,0.2)";
-  label.style.fontSize = "12px";
-
-  const SEQUENCE_DURATION = 10000;
-  const lightInterval     = SEQUENCE_DURATION / 5;
-  const sequenceStart     = startAt - SEQUENCE_DURATION;
-
-  for (let i = 1; i <= 5; i++) {
-    const fireAt = sequenceStart + (lightInterval * i);
-    const delay  = Math.max(0, fireAt - now);
-    setTimeout(() => {
-      document.getElementById(`light-${i}`)?.classList.add("lit");
-      if (i === 5) {
-        const goDelay = Math.max(0, startAt - Date.now());
-        setTimeout(startGoSequence, goDelay);
-      }
-    }, delay);
-  }
-}
-
-function startGoSequence() {
-  const overlay=document.getElementById("lights-overlay"), label=document.getElementById("lights-label");
-  for(let i=1;i<=5;i++) document.getElementById(`light-${i}`).classList.remove("lit");
-  overlay.style.background="#000"; label.textContent="GO!"; label.style.color="#00e676"; label.style.fontSize="48px";
-  let flashes=0;
-  function doFlash(){
-    overlay.style.background="#002200";
-    setTimeout(()=>{overlay.style.background="#000";flashes++;if(flashes<3)setTimeout(doFlash,220);else setTimeout(()=>{overlay.style.display="none";overlay.style.background="#000";label.style.fontSize="12px";},400);},180);
-  }
-  doFlash();
 }
 
 function doAction(action) {
