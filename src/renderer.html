@@ -434,13 +434,11 @@
   <div id="dev-flag-status" style="font-size:9px;color:var(--muted);margin-top:4px;"></div>
 </div>
 
-    <!-- Audit Log -->
     <div class="dev-card">
       <div class="dev-title">Audit Log</div>
       <div id="dev-audit" style="max-height:150px;overflow-y:auto;font-size:10px;color:var(--muted);">Loading...</div>
     </div>
 
-    <!-- Sessions -->
     <div class="dev-card">
       <div class="dev-title">Active Sessions</div>
       <div id="dev-sessions" style="font-size:10px;color:var(--muted);">Loading...</div>
@@ -453,7 +451,6 @@
   </div>
 </div>
 
-<!-- Toolbox Modal -->
 <div id="toolbox-modal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;width:320px;max-height:80vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
     <div style="font-size:12px;font-weight:800;color:var(--red);">🧰 TOOLBOX</div>
@@ -462,7 +459,6 @@
   </div>
 </div>
 
-<!-- SETTINGS -->
 <div class="screen" id="screen-settings">
   <div class="scroll-body">
     <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -507,7 +503,6 @@
   </div>
 </div>
 
-<!-- F1 Lights Out Overlay -->
 <div id="lights-overlay">
   <div style="font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,0.25);">RaceLeague · Race Control</div>
   <div style="display:flex;gap:14px;align-items:center;justify-content:center;">
@@ -520,7 +515,6 @@
   <div id="lights-label">Prepare to race</div>
 </div>
 
-<!-- Update banner -->
 <div id="update-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(0,230,118,0.12);border-top:1px solid rgba(0,230,118,0.4);padding:8px 14px;align-items:center;justify-content:space-between;gap:10px;z-index:1000;">
   <div style="font-size:11px;color:var(--green);font-weight:700;" id="update-text">🔄 Downloading update...</div>
   <button id="update-install-btn" onclick="installUpdate()" disabled style="background:var(--muted);border:none;color:#000;font-family:'Oxanium',sans-serif;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:4px;cursor:not-allowed;opacity:0.5;transition:all 0.2s;">Install & Restart</button>
@@ -529,7 +523,6 @@
 <input type="file" id="flag-sound-picker" accept="audio/*" style="display:none;"/>
 <div id="toast"></div>
 
-<!-- Bug Report Modal -->
 <div id="bug-modal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;overflow-y:auto;padding:20px;">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:10px;">
     <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -539,19 +532,16 @@
 
     <div style="font-size:9px;color:var(--muted);">All reports are sent directly to the developer.</div>
 
-    <!-- What happened -->
     <div style="display:flex;flex-direction:column;gap:4px;">
       <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">What happened?</label>
       <textarea id="bug-what" placeholder="Describe the bug..." style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Oxanium',sans-serif;font-size:11px;padding:8px;border-radius:var(--radius);outline:none;resize:none;height:70px;"></textarea>
     </div>
 
-    <!-- Steps to reproduce -->
     <div style="display:flex;flex-direction:column;gap:4px;">
       <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">Steps to reproduce</label>
       <textarea id="bug-steps" placeholder="1. I clicked...\n2. Then..." style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Oxanium',sans-serif;font-size:11px;padding:8px;border-radius:var(--radius);outline:none;resize:none;height:60px;"></textarea>
     </div>
 
-    <!-- Expected vs actual -->
     <div style="display:flex;gap:8px;">
       <div style="display:flex;flex-direction:column;gap:4px;flex:1;">
         <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">Expected</label>
@@ -563,7 +553,6 @@
       </div>
     </div>
 
-    <!-- How often -->
     <div style="display:flex;flex-direction:column;gap:4px;">
       <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">How often does this happen?</label>
       <select id="bug-frequency" style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Oxanium',sans-serif;font-size:11px;padding:8px;border-radius:var(--radius);outline:none;">
@@ -574,7 +563,6 @@
       </select>
     </div>
 
-    <!-- Panel they were on -->
     <div style="display:flex;flex-direction:column;gap:4px;">
       <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">Which panel were you on?</label>
       <select id="bug-panel" style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Oxanium',sans-serif;font-size:11px;padding:8px;border-radius:var(--radius);outline:none;">
@@ -587,7 +575,6 @@
       </select>
     </div>
 
-    <!-- Screenshot -->
     <div style="display:flex;flex-direction:column;gap:4px;">
       <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">Screenshot (optional)</label>
       <div id="bug-img-drop" onclick="document.getElementById('bug-img-input').click()" style="border:1px dashed var(--border);border-radius:var(--radius);padding:12px;text-align:center;font-size:10px;color:var(--muted);cursor:pointer;">
@@ -600,7 +587,6 @@
       </div>
     </div>
 
-    <!-- Dev logs toggle -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);">
       <div>
         <div style="font-size:10px;font-weight:700;">Include dev logs</div>
@@ -678,10 +664,8 @@ let isEngineer         = false;
 let _driverPollInterval  = null;
 let _marshalPollInterval = null;
 
-// ── Holographic mode state (single declaration) ───────────────────────────
 let _holoMode = false;
 
-// ── Preview + holo toggle ─────────────────────────────────────────────────
 function updatePreview() {
   const hexInput   = document.getElementById("dev-flag-hex");
   const emojiInput = document.getElementById("dev-flag-emoji");
@@ -832,7 +816,6 @@ if (apiUrl) {
     if (el) el.textContent = `v${v}`;
   });
 
-  // Wire up preview inputs
   setTimeout(() => {
     document.getElementById("dev-flag-hex")?.addEventListener("input",   updatePreview);
     document.getElementById("dev-flag-emoji")?.addEventListener("input", updatePreview);
@@ -972,12 +955,10 @@ function updateFlagSoundBtnLabels() {
   });
 }
 
-// ── Bug Report ────────────────────────────────────────────────────────────
 let _bugImageData = null;
 const _devLogs    = [];
 const _origConsole = { log: console.log, warn: console.warn, error: console.error };
 
-// Intercept console logs to capture them
 (function captureLogs() {
   ["log","warn","error"].forEach(level => {
     console[level] = (...args) => {
@@ -990,7 +971,6 @@ const _origConsole = { log: console.log, warn: console.warn, error: console.erro
 
 function openBugReport() {
   document.getElementById("bug-modal").style.display = "flex";
-  // Pre-select current panel
   const panelSelect = document.getElementById("bug-panel");
   if (panelSelect && currentPanel) panelSelect.value = currentPanel;
 }
@@ -1066,7 +1046,6 @@ async function submitBugReport() {
       statusEl.textContent = "✅ Report sent! Thank you.";
       setTimeout(() => {
         closeBugReport();
-        // Clear form
         ["bug-what","bug-steps","bug-expected","bug-actual"].forEach(id => { const el=document.getElementById(id); if(el) el.value=""; });
         clearBugImage();
         submitBtn.disabled = false;
@@ -1083,7 +1062,6 @@ async function submitBugReport() {
   }
 }
 
-// Drag and drop for bug image
 setTimeout(() => {
   const drop = document.getElementById("bug-img-drop");
   if (!drop) return;
@@ -1480,7 +1458,6 @@ function triggerLightsOut(startAt) {
 
   const now = Date.now();
   
-  // If we missed the whole sequence, go straight to GO
   if (startAt <= now) {
     startGoSequence();
     return;
@@ -1572,7 +1549,6 @@ async function marshalResetRace() {
 async function pollBlueFlagRequests() {
   if (!user?.token||currentPanel!=="marshal") return;
   try {
-    // Check panel status first
     const statusRes = await fetch(`${apiUrl}/panel-status`);
     const statusData = await statusRes.json();
 if (!statusData.marshal && !hasDev) {
@@ -1681,7 +1657,6 @@ document.getElementById("dev-stats").innerHTML=`
 
     renderMockLb();
     
-// Engineering assignments
 const engEl = document.getElementById("dev-engineers");
 const engineers = (dl.logins || []).filter(l => l.engineer);
 engEl.innerHTML = engineers.length ? engineers.map(l => `
@@ -1756,7 +1731,6 @@ function clearFlagBgImage() {
   document.getElementById("dev-flag-bg-input").value = "";
   updatePreview();
 }
-// ── Mock Leaderboard ──────────────────────────────────────────────────────
 let _mockDrivers = [];
 
 function renderMockLb() {
@@ -1923,7 +1897,6 @@ document.addEventListener("keydown",e=>{
 async function playFlagAudio(soundFile) {
   if (!soundFile) return;
 
-  // Check for local override first
   const flagKey = Object.keys(FLAG_DEFS).find(k => FLAG_DEFS[k].sound === soundFile);
   if (flagKey && _flagSounds[flagKey]) {
     try {
@@ -1934,7 +1907,6 @@ async function playFlagAudio(soundFile) {
     return;
   }
 
-  // Fall back to server sound
   if (!apiUrl) return;
   try {
     const res  = await fetch(`${apiUrl}/sounds/${soundFile}`);
@@ -1956,7 +1928,6 @@ function showToast(msg,type=""){
 }
 
 
-// Flag background image drag-and-drop
 setTimeout(()=>{
   const flagBgDrop = document.getElementById("dev-flag-bg-drop");
   if (flagBgDrop) {
