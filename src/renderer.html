@@ -784,10 +784,10 @@ window.addEventListener("DOMContentLoaded", async () => {
 
 if (apiUrl) {
     const evtSource = new EventSource(`${apiUrl}/events`);
-    evtSource.addEventListener("flag", e => {
+evtSource.addEventListener("flag", e => {
       try {
         const d = JSON.parse(e.data);
-        else { onFlagEvent(d.flag, d); }
+        onFlagEvent(d.flag, d);
       } catch(err) { console.error("[SSE] Parse error:", err); }
     });
     evtSource.onerror = () => console.warn("[SSE] Connection lost — will retry automatically");
@@ -1199,8 +1199,7 @@ async function pollDriverState() {
     const res  = await fetch(`${apiUrl}/driver/state`, { headers:{"x-discord-id":user?.id||""} });
     if (res.status===403) return;
     const data = await res.json();
-    if (_lastRaceState && !_lastRaceState.raceStarted && data.raceStarted)
-    _lastRaceState = data;
+_lastRaceState = data;
     renderLeaderboard(data);
 const panelOn = data.webPanelEnabled!==false, raceOn = data.raceStarted;
 if (!panelOn && !hasDev) {
