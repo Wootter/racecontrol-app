@@ -971,6 +971,8 @@ async function afterLogin() {
 }
 
 function showEngineerScreen() {
+  config.driver = ""; 
+  isEngineer = true;
   const screen = document.getElementById("screen-login");
   screen.innerHTML = `
     <div class="login-logo">Race<span>Control</span></div>
