@@ -1466,16 +1466,24 @@ function showDisabledScreen() {
   if (document.getElementById("panel-disabled-overlay")) return;
   const overlay = document.createElement("div");
   overlay.id = "panel-disabled-overlay";
-  overlay.style.cssText = "position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;";
+  overlay.style.cssText = "position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:24px;text-align:center;";
   overlay.innerHTML = `
-    <div style="font-size:32px;">🛠️</div>
-    <div style="font-size:14px;font-weight:800;color:var(--yellow);text-transform:uppercase;letter-spacing:1px;">Temporarily Shut Down 🛠️</div>
-    <div style="font-size:11px;color:var(--muted);max-width:240px;line-height:1.6;">
-      This panel is currently shutdown for bug fixes or modifications.<br/>
-      For more info, check out <a href="https://discord.gg/w6AHaqUJeq" target="_blank" style="color:var(--blue);text-decoration:underline;">our Discord</a>.<br/><br/>
-      Please try again later!
-    </div>
-    <div style="font-size:9px;color:var(--border);margin-top:4px;">Checking every 3 seconds...</div>`;
+    <div style="background:var(--surface);border:1px solid rgba(255,214,0,0.25);border-radius:16px;padding:32px 28px;max-width:280px;width:100%;display:flex;flex-direction:column;align-items:center;gap:16px;">
+      <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,214,0,0.1);border:1px solid rgba(255,214,0,0.3);display:flex;align-items:center;justify-content:center;font-size:26px;">🛠️</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="font-size:13px;font-weight:800;color:var(--yellow);text-transform:uppercase;letter-spacing:1.5px;">Temporarily Shut Down</div>
+        <div style="width:32px;height:2px;background:rgba(255,214,0,0.4);margin:0 auto;border-radius:2px;"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.7;">
+        This panel is currently offline for<br/>bug fixes or modifications.
+      </div>
+      <a href="https://discord.gg/w6AHaqUJeq" target="_blank"
+        style="display:flex;align-items:center;gap:6px;background:rgba(88,101,242,0.15);border:1px solid rgba(88,101,242,0.35);color:#5865F2;font-family:'Oxanium',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 14px;border-radius:6px;text-decoration:none;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        Join our Discord
+      </a>
+      <div style="font-size:9px;color:var(--border);letter-spacing:1px;">CHECKING EVERY 3 SECONDS</div>
+    </div>`;
   document.body.appendChild(overlay);
 }
 
@@ -1629,16 +1637,24 @@ function showMarshalDisabledScreen() {
   if (document.getElementById("marshal-disabled-overlay")) return;
   const overlay = document.createElement("div");
   overlay.id = "marshal-disabled-overlay";
-  overlay.style.cssText = "position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;";
+  overlay.style.cssText = "position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:24px;text-align:center;";
   overlay.innerHTML = `
-    <div style="font-size:32px;">🛠️</div>
-    <div style="font-size:14px;font-weight:800;color:var(--yellow);text-transform:uppercase;letter-spacing:1px;">Temporarily Shut Down 🛠️</div>
-    <div style="font-size:11px;color:var(--muted);max-width:240px;line-height:1.6;">
-      This panel is currently shutdown for bug fixes or modifications.<br/>
-      For more info, check out <a href="https://discord.gg/w6AHaqUJeq" target="_blank" style="color:var(--blue);text-decoration:underline;">our Discord</a>.<br/><br/>
-      Please try again later!
-    </div>
-    <div style="font-size:9px;color:var(--border);margin-top:4px;">Checking every 3 seconds...</div>`;
+    <div style="background:var(--surface);border:1px solid rgba(255,214,0,0.25);border-radius:16px;padding:32px 28px;max-width:280px;width:100%;display:flex;flex-direction:column;align-items:center;gap:16px;">
+      <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,214,0,0.1);border:1px solid rgba(255,214,0,0.3);display:flex;align-items:center;justify-content:center;font-size:26px;">🛠️</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="font-size:13px;font-weight:800;color:var(--yellow);text-transform:uppercase;letter-spacing:1.5px;">Temporarily Shut Down</div>
+        <div style="width:32px;height:2px;background:rgba(255,214,0,0.4);margin:0 auto;border-radius:2px;"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.7;">
+        This panel is currently offline for<br/>bug fixes or modifications.
+      </div>
+      <a href="https://discord.gg/w6AHaqUJeq" target="_blank"
+        style="display:flex;align-items:center;gap:6px;background:rgba(88,101,242,0.15);border:1px solid rgba(88,101,242,0.35);color:#5865F2;font-family:'Oxanium',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 14px;border-radius:6px;text-decoration:none;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        Join our Discord
+      </a>
+      <div style="font-size:9px;color:var(--border);letter-spacing:1px;">CHECKING EVERY 3 SECONDS</div>
+    </div>`;
   document.body.appendChild(overlay);
 }
 
@@ -1654,7 +1670,7 @@ function showShutdownBanner(panel) {
   if (document.getElementById(existingId)) return;
   const notif = document.createElement("div");
   notif.id = existingId;
-  notif.style.cssText = "position:fixed;top:36px;left:0;right:0;z-index:400;padding:6px 10px;";
+  notif.style.cssText = "position:fixed;top:36px;left:0;right:0;z-index:600;padding:6px 10px;";
   notif.innerHTML = `
     <div class="flag-card yellow" style="justify-content:space-between;">
       <div style="display:flex;align-items:center;gap:10px;">
@@ -1680,13 +1696,15 @@ function toggleDevBypass(panel) {
   _devBypassShutdown[panel] = !_devBypassShutdown[panel];
   const btn = document.getElementById(`bypass-btn-${panel}`);
   if (_devBypassShutdown[panel]) {
-    if (btn) { btn.textContent = "🚫 SHUTDOWN VIEW"; btn.style.background = "rgba(255,23,68,0.15)"; btn.style.borderColor = "var(--red)"; btn.style.color = "var(--red)"; }
+    if (btn) { btn.textContent = "🚫 SEE SHUTDOWN"; btn.style.background = "rgba(255,23,68,0.15)"; btn.style.borderColor = "var(--red)"; btn.style.color = "var(--red)"; }
     if (panel === "driver") showDisabledScreen();
     if (panel === "marshal") showMarshalDisabledScreen();
+    document.querySelector(".titlebar").style.zIndex = "600";
   } else {
     if (btn) { btn.textContent = "👁 VIEWING"; btn.style.background = "rgba(255,214,0,0.15)"; btn.style.borderColor = "var(--yellow)"; btn.style.color = "var(--yellow)"; }
     if (panel === "driver") hideDisabledScreen();
     if (panel === "marshal") hideMarshalDisabledScreen();
+    document.querySelector(".titlebar").style.zIndex = "";
   }
 }
 	
