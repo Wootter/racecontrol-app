@@ -1241,7 +1241,7 @@ function goBack() {
 function updateSwitcher() {
   const show = hasDriver||hasMarshal||hasDev;
   document.getElementById("panel-switcher").style.display = show ? "flex" : "none";
-  document.getElementById("sw-driver").style.display  = (hasDriver && config.driver) ? "" : "none";
+  document.getElementById("sw-driver").style.display  = (hasDriver && (config.driver || engineerPending)) ? "" : "none";
   document.getElementById("sw-dev").style.display     = hasDev    ? "" : "none";
   document.querySelectorAll(".switch-btn").forEach(b => b.classList.remove("active"));
   const aId = currentPanel==="driver"?"sw-driver":currentPanel==="marshal"?"sw-marshal":"sw-dev";
@@ -1624,8 +1624,11 @@ async function devAutoAuth() {
 }
 
 async function loadDevInfo() {
-  if (user?.id !== DEV_USER_ID) { showToast("❌ Dev access denied","err"); return; }
   if (!apiUrl) return;
+  if (!user?.token && !user?.marshalToken) {
+    showToast("❌ Marshal login required for Dev panel", "err");
+    return;
+  }
   if (!user?.token) { const ok=await devAutoAuth(); if(!ok){showToast("❌ Dev auth failed","err");return;} }
   try {
     const headers={"x-discord-id":user.id,"x-discord-token":user.token};
