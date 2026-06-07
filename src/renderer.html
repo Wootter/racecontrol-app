@@ -916,10 +916,12 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
 const saved = sessionStorage.getItem("rc_user") || localStorage.getItem("rc_user");
-  if (saved && apiUrl) { 
-    user = JSON.parse(saved); 
-    await afterLogin(); 
-  }
+if (saved && apiUrl) { 
+  user = JSON.parse(saved);
+  delete user.isAdmin;
+  delete user.roles;
+  await afterLogin(); 
+}
   if (apiUrl) {
     const evtSource = new EventSource(`${apiUrl}/events`);
     evtSource.addEventListener("flag", e => {
@@ -983,9 +985,18 @@ async function loginWithDiscord() {
     } else {
       errEl.style.color="var(--red)"; errEl.textContent="❌ "+(dData.error||"Access denied."); return;
     }
-    user.discordId = user.id;
-    sessionStorage.setItem("rc_user", JSON.stringify(user));
-    localStorage.setItem("rc_user", JSON.stringify(user));
+user.discordId = user.id;
+const safeUser = {
+  id:           user.id,
+  discordId:    user.id,
+  username:     user.username,
+  avatar:       user.avatar,
+  token:        user.token,
+  marshalToken: user.marshalToken,
+};
+sessionStorage.setItem("rc_user", JSON.stringify(safeUser));
+localStorage.setItem("rc_user", JSON.stringify(safeUser));
+user = { ...user, ...safeUser };
     errEl.textContent = "";
     await afterLogin();
   } catch(err) { errEl.style.color="var(--red)"; errEl.textContent="❌ Unexpected error: "+err.message; }
@@ -1019,7 +1030,8 @@ async function resetApiUrl() {
 
 async function afterLogin() {
   const driverName = DRIVER_IDS[user.id];
-  hasDriver = true; hasDev = user.id === DEV_USER_ID;
+  hasDriver = true;
+  hasDev = user.id === DEV_USER_ID;
   if (hasDev) {
     document.getElementById("api-url-display").style.display = "block";
     document.getElementById("change-url-btn").style.display  = "block";
@@ -1292,11 +1304,23 @@ async function submitPassword() {
     });
     const data = await res.json();
     if (!res.ok) { document.getElementById("pw-error").textContent = "❌ "+(data.error||"Wrong password"); return; }
-    user.isAdmin=data.isAdmin; user.roles=data.roles||[]; user.token=user.marshalToken;
-	hasMarshal=true; hasDev=hasDev||user.isAdmin||user.id===DEV_USER_ID;
+user.isAdmin=data.isAdmin; user.roles=data.roles||[]; user.token=user.marshalToken;
+hasMarshal=true;
+hasDev = user.id === DEV_USER_ID;
     engineerPending=false;
-    sessionStorage.setItem("rc_user", JSON.stringify(user));
-    updateSwitcher(); launchMarshalPanel();
+const safeUser = {
+  id:           user.id,
+  discordId:    user.id,
+  username:     user.username,
+  avatar:       user.avatar,
+  token:        user.token,
+  marshalToken: user.marshalToken,
+  isAdmin:      user.isAdmin,
+  roles:        user.roles,
+};
+sessionStorage.setItem("rc_user", JSON.stringify(safeUser));
+localStorage.setItem("rc_user", JSON.stringify(safeUser));
+updateSwitcher(); launchMarshalPanel();
   } catch(err) { document.getElementById("pw-error").textContent = "❌ "+err.message; }
 }
 
