@@ -1205,7 +1205,7 @@ async function submitPassword() {
 }
 
 function switchPanel(panel) {
-  if (panel === "marshal" && currentPanel === "login" && !config.driver) {
+  if ((panel === "marshal" || panel === "driver") && isEngineer && !config.driver) {
     showToast("⚠️ Select a driver first", "err");
     return;
   }
