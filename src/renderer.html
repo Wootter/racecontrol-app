@@ -991,8 +991,8 @@ const safeUser = {
   discordId:    user.id,
   username:     user.username,
   avatar:       user.avatar,
-  token:        user.token,
-  marshalToken: user.marshalToken,
+  token:        user.token        || null,
+  marshalToken: user.marshalToken || user.token || null,
 };
 sessionStorage.setItem("rc_user", JSON.stringify(safeUser));
 localStorage.setItem("rc_user", JSON.stringify(safeUser));
