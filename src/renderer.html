@@ -715,6 +715,7 @@ let listeningKey  = null;
 let bfKnownIds    = new Set();
 let bfAlertInterval = null;
 let _lastFlagTimestamp = null;
+let _lastMarshalTriggeredFlag = null;
 let _lastRaceState     = null;
 let _lastBlueFlagDriver = null;
 let isEngineer         = false;
@@ -1728,7 +1729,7 @@ const html = `<div class="flag-card ${def.color}"><span class="fc-emoji">${def.e
 document.getElementById("flag-notif-driver").innerHTML  = html;
 document.getElementById("flag-notif-marshal").innerHTML = html;
 document.getElementById("flag-notif-marshal").style.display = "block";
-if (def.sound) playFlagAudio(def.sound);
+if (def.sound && currentPanel !== "marshal" && _lastMarshalTriggeredFlag !== flag) playFlagAudio(def.sound);
   const colors={green:"var(--green)",yellow:"var(--yellow)",red:"var(--red)",orange:"var(--orange)",blue:"var(--blue)",white:"#fff"};
   ["d-race-pill","m-race-pill"].forEach(id=>{
     const el=document.getElementById(id);
@@ -1833,10 +1834,12 @@ async function triggerFlag(flag) {
       body: JSON.stringify({flag, username:user.username}),
     });
     const data = await res.json();
-    if (res.ok) {
-      showToast(`✓ ${FLAG_DEFS[flag]?.title||flag}`, "ok");
-      onFlagEvent(flag, null); 
-    }
+if (res.ok) {
+  showToast(`✓ ${FLAG_DEFS[flag]?.title||flag}`, "ok");
+  onFlagEvent(flag, null);
+  _lastMarshalTriggeredFlag = flag;
+  setTimeout(() => { _lastMarshalTriggeredFlag = null; }, 3000);
+}
     else showToast(`✗ ${data.error}`, "err");
   } catch { showToast("✗ Bot unreachable","err"); }
 }
