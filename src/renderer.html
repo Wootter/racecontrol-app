@@ -1107,13 +1107,12 @@ const _origConsole = { log: console.log, warn: console.warn, error: console.erro
 
 function skipEngineerScreen() {
   engineerPending = false;
-  config.driver = "";
+  config.driver = "__dev__";
   config.engineer = false;
   isEngineer = false;
-  hasDriver = false;
+  hasDriver = true;
   updateSwitcher();
-  if (hasMarshal) launchMarshalPanel(false);
-  else switchPanel("dev");
+  launchDriverPanel();
 }
 	
 function openBugReport() {
