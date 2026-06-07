@@ -750,7 +750,6 @@ function devToggleTab(tab) {
   const visible = _devTabVisible[tab];
   localStorage.setItem("rc_dev_tabs", JSON.stringify(_devTabVisible));
 
-  // Show/hide the switcher button
   const swBtn = document.getElementById(`sw-${tab}`);
   if (swBtn) swBtn.style.display = visible ? "" : "none";
 
@@ -759,6 +758,11 @@ function devToggleTab(tab) {
   if (!visible && currentPanel === tab) {
     if (tab === "driver" && hasMarshal) launchMarshalPanel(false);
     else if (tab === "marshal" && hasDriver) launchDriverPanel(false);
+  }
+	
+  if (visible && tab === "driver" && !config.driver) {
+    hasDriver = true;
+    showEngineerScreen();
   }
 
   showToast(`✓ ${tab} tab ${visible ? "shown" : "hidden"}`, "ok");
@@ -1049,7 +1053,8 @@ function showEngineerScreen() {
           `<option value="${name}">${name} #${info.number} (${info.callsign})</option>`
         ).join("")}
       </select>
-      <button class="pw-btn" onclick="confirmEngineer()">Continue →</button>
+<button class="pw-btn" onclick="confirmEngineer()">Continue →</button>
+      ${hasDev ? `<button onclick="skipEngineerScreen()" style="background:none;border:none;color:var(--muted);font-family:'Oxanium',sans-serif;font-size:9px;cursor:pointer;text-decoration:underline;margin-top:4px;">⚙️ Skip (dev only)</button>` : ""}
       <div class="login-error" id="eng-error"></div>
     </div>`;
   showScreen("screen-login");
@@ -1088,6 +1093,17 @@ const _origConsole = { log: console.log, warn: console.warn, error: console.erro
   });
 })();
 
+function skipEngineerScreen() {
+  engineerPending = false;
+  config.driver = "";
+  config.engineer = false;
+  isEngineer = false;
+  hasDriver = false;
+  updateSwitcher();
+  if (hasMarshal) launchMarshalPanel(false);
+  else switchPanel("dev");
+}
+	
 function openBugReport() {
   document.getElementById("bug-modal").style.display = "flex";
   const panelSelect = document.getElementById("bug-panel");
