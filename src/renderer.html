@@ -1205,6 +1205,10 @@ async function submitPassword() {
 }
 
 function switchPanel(panel) {
+  if (panel === "marshal" && currentPanel === "login" && !config.driver) {
+    showToast("⚠️ Select a driver first", "err");
+    return;
+  }
   if      (panel==="driver")   launchDriverPanel(false);
   else if (panel==="marshal")  hasMarshal ? launchMarshalPanel(false) : showPasswordScreen();
   else if (panel==="dev")      { showScreen("screen-dev"); currentPanel="dev"; updateSwitcher(); loadDevInfo(); }
