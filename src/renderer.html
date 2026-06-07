@@ -674,6 +674,7 @@ const DRIVER_IDS = {
 let config        = {};
 let user          = null;
 let apiUrl        = "";
+let engineerPending = false;
 let currentPanel  = "login";
 let prevPanel     = "login";
 let hasDriver     = false;
@@ -971,8 +972,9 @@ async function afterLogin() {
 }
 
 function showEngineerScreen() {
-  config.driver = ""; 
-  isEngineer = true;
+  config.driver = "";
+  engineerPending = true; 
+  isEngineer = false; 
   const screen = document.getElementById("screen-login");
   screen.innerHTML = `
     <div class="login-logo">Race<span>Control</span></div>
@@ -1167,6 +1169,7 @@ function confirmEngineer() {
   const info = DRIVER_INFO[name];
   config.driver=name; config.number=info.number; config.callsign=info.callsign;
   config.discordId=user.id; config.engineer=true; isEngineer=true;
+  engineerPending = false;  // add this
   window.api.saveConfig(config); updateSwitcher(); launchDriverPanel();
 }
 
@@ -1207,7 +1210,7 @@ async function submitPassword() {
 }
 
 function switchPanel(panel) {
-  if ((panel === "marshal" || panel === "driver") && isEngineer && !config.driver) {
+  if ((panel === "driver") && engineerPending && !config.driver) {
     showToast("⚠️ Select a driver first", "err");
     return;
   }
