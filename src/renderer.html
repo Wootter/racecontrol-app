@@ -678,7 +678,7 @@ const DRIVER_IDS = {
       "LAMAR":       { number: "01",  callsign: "MAR-01"  }, 
 	  "COOLCAT":     { number: "27",  callsign: "MIS-27"  },
       "QUAH":        { number: "28",  callsign: "LOT-28"  },
-      "SETH":        { number: "33",  callsign: "LOT-33"  },
+      "SETH":        { number: "03",  callsign: "LOT-33"  },
       "SHADOW":      { number: "18",  callsign: "ST-18"   },
       "SUPA":        { number: "05",  callsign: "ST-05"  },
       "UNLIMITED":   { number: "12",  callsign: "AWR-12"  },
@@ -1403,9 +1403,17 @@ async function pollDriverState() {
 _lastRaceState = data;
     renderLeaderboard(data);
 const panelOn = data.webPanelEnabled!==false, raceOn = data.raceStarted;
-if (!panelOn && !hasDev) {
-  showDisabledScreen();
+if (!panelOn) {
+  if (hasDev) {
+    showShutdownBanner("driver");
+    if (_devBypassShutdown.driver) showDisabledScreen();
+    else hideDisabledScreen();
+  } else {
+    hideShutdownBanner("driver");
+    showDisabledScreen();
+  }
 } else {
+  hideShutdownBanner("driver");
   hideDisabledScreen();
   if (isEngineer) {
     setDriverBtnsEnabled(raceOn);
@@ -1449,6 +1457,8 @@ const TOOLBOX_SECTIONS = [
   { id:"dev-audio-drop",    label:"Custom Audio Player" },
   { id:"dev-mock-lb",       label:"Mock Leaderboard (dev)" },
   { id:"dev-flag-text",     label:"Custom Flag (dev)" },
+  { id:"dev-engineers",     label:"Engineering Assignments" },
+  { id:"dev-toggle-driver-tab", label:"Tab Visibility" },
 ];
 let _toolboxVisible = {};
 
@@ -1456,14 +1466,16 @@ function showDisabledScreen() {
   if (document.getElementById("panel-disabled-overlay")) return;
   const overlay = document.createElement("div");
   overlay.id = "panel-disabled-overlay";
-  overlay.style.cssText = "position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;";
+  overlay.style.cssText = "position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;";
   overlay.innerHTML = `
-    <div style="font-size:32px;">⛔</div>
-    <div style="font-size:14px;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:1px;">Panel Disabled</div>
-    <div style="font-size:11px;color:var(--muted);text-align:center;max-width:220px;line-height:1.5;">
-      The driver panel has been disabled by race control.<br/>Please wait.
+    <div style="font-size:32px;">🛠️</div>
+    <div style="font-size:14px;font-weight:800;color:var(--yellow);text-transform:uppercase;letter-spacing:1px;">Temporarily Shut Down 🛠️</div>
+    <div style="font-size:11px;color:var(--muted);max-width:240px;line-height:1.6;">
+      This panel is currently shutdown for bug fixes or modifications.<br/>
+      For more info, check out <a href="https://discord.gg/w6AHaqUJeq" target="_blank" style="color:var(--blue);text-decoration:underline;">our Discord</a>.<br/><br/>
+      Please try again later!
     </div>
-    <div style="font-size:9px;color:var(--border);margin-top:8px;">Checking every 3 seconds...</div>`;
+    <div style="font-size:9px;color:var(--border);margin-top:4px;">Checking every 3 seconds...</div>`;
   document.body.appendChild(overlay);
 }
 
@@ -1617,14 +1629,16 @@ function showMarshalDisabledScreen() {
   if (document.getElementById("marshal-disabled-overlay")) return;
   const overlay = document.createElement("div");
   overlay.id = "marshal-disabled-overlay";
-  overlay.style.cssText = "position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;";
+  overlay.style.cssText = "position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;";
   overlay.innerHTML = `
-    <div style="font-size:32px;">🔒</div>
-    <div style="font-size:14px;font-weight:800;color:var(--yellow);text-transform:uppercase;letter-spacing:1px;">Marshal Panel Disabled</div>
-    <div style="font-size:11px;color:var(--muted);text-align:center;max-width:220px;line-height:1.5;">
-      The marshal panel has been disabled by an administrator.<br/>Please wait.
+    <div style="font-size:32px;">🛠️</div>
+    <div style="font-size:14px;font-weight:800;color:var(--yellow);text-transform:uppercase;letter-spacing:1px;">Temporarily Shut Down 🛠️</div>
+    <div style="font-size:11px;color:var(--muted);max-width:240px;line-height:1.6;">
+      This panel is currently shutdown for bug fixes or modifications.<br/>
+      For more info, check out <a href="https://discord.gg/w6AHaqUJeq" target="_blank" style="color:var(--blue);text-decoration:underline;">our Discord</a>.<br/><br/>
+      Please try again later!
     </div>
-    <div style="font-size:9px;color:var(--border);margin-top:8px;">Checking every 3 seconds...</div>`;
+    <div style="font-size:9px;color:var(--border);margin-top:4px;">Checking every 3 seconds...</div>`;
   document.body.appendChild(overlay);
 }
 
@@ -1633,6 +1647,49 @@ function hideMarshalDisabledScreen() {
   if (overlay) overlay.remove();
 }
 
+let _devBypassShutdown = { driver: false, marshal: false };
+
+function showShutdownBanner(panel) {
+  const existingId = `shutdown-banner-${panel}`;
+  if (document.getElementById(existingId)) return;
+  const notif = document.createElement("div");
+  notif.id = existingId;
+  notif.style.cssText = "position:fixed;top:36px;left:0;right:0;z-index:400;padding:6px 10px;";
+  notif.innerHTML = `
+    <div class="flag-card yellow" style="justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="fc-emoji">🛠️</span>
+        <div>
+          <div class="fc-title">Panel Shutdown</div>
+          <div class="fc-sub">This panel is currently shut down for everyone else.</div>
+        </div>
+      </div>
+      <button onclick="toggleDevBypass('${panel}')" id="bypass-btn-${panel}"
+        style="font-size:9px;font-weight:800;padding:3px 8px;border-radius:4px;border:1px solid;cursor:pointer;font-family:'Oxanium',sans-serif;background:rgba(255,214,0,0.15);border-color:var(--yellow);color:var(--yellow);white-space:nowrap;">
+        👁 VIEWING
+      </button>
+    </div>`;
+  document.body.appendChild(notif);
+}
+
+function hideShutdownBanner(panel) {
+  document.getElementById(`shutdown-banner-${panel}`)?.remove();
+}
+
+function toggleDevBypass(panel) {
+  _devBypassShutdown[panel] = !_devBypassShutdown[panel];
+  const btn = document.getElementById(`bypass-btn-${panel}`);
+  if (_devBypassShutdown[panel]) {
+    if (btn) { btn.textContent = "🚫 SHUTDOWN VIEW"; btn.style.background = "rgba(255,23,68,0.15)"; btn.style.borderColor = "var(--red)"; btn.style.color = "var(--red)"; }
+    if (panel === "driver") showDisabledScreen();
+    if (panel === "marshal") showMarshalDisabledScreen();
+  } else {
+    if (btn) { btn.textContent = "👁 VIEWING"; btn.style.background = "rgba(255,214,0,0.15)"; btn.style.borderColor = "var(--yellow)"; btn.style.color = "var(--yellow)"; }
+    if (panel === "driver") hideDisabledScreen();
+    if (panel === "marshal") hideMarshalDisabledScreen();
+  }
+}
+	
 function doAction(action) {
   playKeybindSound(action);
   const btn = document.getElementById(`btn-${action}`);
@@ -1687,11 +1744,23 @@ async function pollBlueFlagRequests() {
   try {
     const statusRes = await fetch(`${apiUrl}/panel-status`);
     const statusData = await statusRes.json();
-if (!statusData.marshal && !hasDev) {
-  showMarshalDisabledScreen();
-  return;
-}
+if (!statusData.marshal) {
+  if (hasDev) {
+    showShutdownBanner("marshal");
+    if (_devBypassShutdown.marshal) {
+      showMarshalDisabledScreen();
+      return;
+    }
     hideMarshalDisabledScreen();
+  } else {
+    hideShutdownBanner("marshal");
+    showMarshalDisabledScreen();
+    return;
+  }
+} else {
+  hideShutdownBanner("marshal");
+  hideMarshalDisabledScreen();
+}
 
     const res=await fetch(`${apiUrl}/driver/blue-flags`,{headers:{"x-discord-id":user.id,"x-discord-token":user.token}});
     const data=await res.json();
