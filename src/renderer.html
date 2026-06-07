@@ -648,7 +648,7 @@ const DRIVER_IDS = {
   "884223249939050507":"ACHILLES","799844642984034314":"AUBRN","1487269583898284183":"BRYAN",
   "749509586800869418":"CHASE","660419748894343169":"CODA","1228434328653140162":"LAMAR","852652597315240028":"QUAH","763093725903585291":"SETH",
   "1112809205771010150":"SHADOW","1127975831197724813":"SUPA","1036614995737321552":"SWEATER", "756781169550295061":"VSCO", "1122883570021695548":"KEBAB", "776108630415376385":"TON", 
-  "1081740933021835354":"UNLIMITED","1211381460406116375":"COOLAT","529122061411549185":"HIDDEN",
+  "1081740933021835354":"UNLIMITED","1211381460406116375":"COOLCAT","529122061411549185":"HIDDEN",
 };
 
     const DRIVER_INFO = {
@@ -1156,11 +1156,10 @@ document.getElementById("flag-sound-picker")?.addEventListener("change", functio
   
 function reLogin() {
   sessionStorage.removeItem("rc_user"); localStorage.removeItem("rc_user");
-  user=null; hasDriver=false; hasMarshal=false; hasDev=false;
+  user=null; hasDriver=false; hasMarshal=false; hasDev=false; isEngineer=false; engineerPending=false;
   document.getElementById("panel-switcher").style.display = "none";
   document.getElementById("mode-badge").style.display     = "none";
-  showScreen("screen-login");
-  document.getElementById("login-error").textContent = "";
+  location.reload();
 }
 
 function confirmEngineer() {
@@ -1203,7 +1202,8 @@ async function submitPassword() {
     const data = await res.json();
     if (!res.ok) { document.getElementById("pw-error").textContent = "❌ "+(data.error||"Wrong password"); return; }
     user.isAdmin=data.isAdmin; user.roles=data.roles||[]; user.token=user.marshalToken;
-    hasMarshal=true; hasDev=hasDev||user.isAdmin||user.id===DEV_USER_ID;
+	hasMarshal=true; hasDev=hasDev||user.isAdmin||user.id===DEV_USER_ID;
+    engineerPending=false;
     sessionStorage.setItem("rc_user", JSON.stringify(user));
     updateSwitcher(); launchMarshalPanel();
   } catch(err) { document.getElementById("pw-error").textContent = "❌ "+err.message; }
@@ -1239,7 +1239,7 @@ function goBack() {
 function updateSwitcher() {
   const show = hasDriver||hasMarshal||hasDev;
   document.getElementById("panel-switcher").style.display = show ? "flex" : "none";
-  document.getElementById("sw-driver").style.display  = hasDriver ? "" : "none";
+  document.getElementById("sw-driver").style.display  = (hasDriver && config.driver) ? "" : "none";
   document.getElementById("sw-dev").style.display     = hasDev    ? "" : "none";
   document.querySelectorAll(".switch-btn").forEach(b => b.classList.remove("active"));
   const aId = currentPanel==="driver"?"sw-driver":currentPanel==="marshal"?"sw-marshal":"sw-dev";
