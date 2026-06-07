@@ -1764,7 +1764,9 @@ document.getElementById("dev-stats").innerHTML=`
     renderMockLb();
     
 const engEl = document.getElementById("dev-engineers");
+console.log("[Engineers] all logins:", JSON.stringify(dl.logins));
 const engineers = (dl.logins || []).filter(l => l.engineer);
+console.log("[Engineers] filtered:", JSON.stringify(engineers));
 engEl.innerHTML = engineers.length ? engineers.map(l => `
   <div style="padding:3px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;">
     <span style="font-weight:700;">${l.username}</span>
