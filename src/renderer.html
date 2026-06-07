@@ -294,12 +294,13 @@
     <div id="m-bf-container" style="display:flex;flex-direction:column;gap:4px;"></div>
     <div>
       <div class="sec-label">Global Flags</div>
-      <div class="flag-grid">
-        <button class="flag-btn green"  onclick="triggerFlag('green')"><span class="fi">🟢</span><span class="fn">Green</span></button>
-        <button class="flag-btn red"    onclick="triggerFlag('red')"><span class="fi">🔴</span><span class="fn">Red</span></button>
-        <button class="flag-btn yellow" onclick="openSectorModal()"><span class="fi">🟡</span><span class="fn">Yellow</span></button>
-        <button class="flag-btn yellow" onclick="triggerFlag('fcy')"><span class="fi">🟡</span><span class="fn">FCY</span></button>
-      </div>
+<div class="flag-grid">
+  <button class="flag-btn green"  onclick="triggerFlag('green')"><span class="fi">🟢</span><span class="fn">Green</span></button>
+  <button class="flag-btn red"    onclick="triggerFlag('red')"><span class="fi">🔴</span><span class="fn">Red</span></button>
+  <button class="flag-btn yellow" onclick="openSectorModal()"><span class="fi">🟡</span><span class="fn">Yellow</span></button>
+  <button class="flag-btn yellow" onclick="triggerFlag('fcy')"><span class="fi">🟡</span><span class="fn">FCY</span></button>
+  <button class="flag-btn blue" onclick="openBlueFlagModal()" style="grid-column:span 2;"><span class="fi">🔵</span><span class="fn">Blue Flag</span></button>
+</div>
     </div>
     <div class="divider"></div>
     <div>
@@ -605,7 +606,22 @@
   </div>
 </div>
 
-<!-- Sector Picker Modal -->
+<div id="blueflag-modal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid rgba(41,121,255,0.3);border-radius:10px;padding:20px;width:100%;max-width:320px;display:flex;flex-direction:column;gap:10px;max-height:80vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:18px;">🔵</span>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:var(--blue);">BLUE FLAG</div>
+          <div style="font-size:9px;color:var(--muted);">Select a driver to blue flag</div>
+        </div>
+      </div>
+      <button onclick="closeBlueFlagModal()" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;">✕</button>
+    </div>
+    <div id="blueflag-driver-list" style="display:flex;flex-direction:column;gap:6px;margin-top:4px;"></div>
+  </div>
+</div>
+	
 <div id="sector-modal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;width:100%;max-width:320px;display:flex;flex-direction:column;gap:10px;">
     <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -808,6 +824,63 @@ function resetKeybindSound(action) {
   localStorage.setItem("rc_keybind_sounds", JSON.stringify(_keybindSounds));
   updateSoundBtnLabels();
   showToast(`✓ Sound reset for ${action}`, "ok");
+}
+
+function openBlueFlagModal() {
+  const list = document.getElementById("blueflag-driver-list");
+  
+  // Get current drivers from last race state if available, else use DRIVER_INFO
+  const activePlayers = _lastRaceState?.drivers?.length
+    ? _lastRaceState.drivers
+    : Object.entries(DRIVER_INFO).sort((a,b) => parseInt(a[1].number) - parseInt(b[1].number))
+        .map(([name, info]) => ({ name, number: info.number, callsign: info.callsign }));
+
+  list.innerHTML = activePlayers.map(d => `
+    <button onclick="triggerBlueFlagForDriver('${d.name}', '${d.number}', '${d.callsign}')"
+      style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:7px;cursor:pointer;color:var(--text);font-family:'Oxanium',sans-serif;transition:border-color 0.15s,background 0.15s;width:100%;"
+      onmouseover="this.style.borderColor='var(--blue)';this.style.background='rgba(41,121,255,0.07)'"
+      onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg)'">
+      <div style="width:28px;height:28px;border-radius:4px;background:rgba(41,121,255,0.1);border:1px solid rgba(41,121,255,0.3);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:var(--blue);flex-shrink:0;">#${d.number}</div>
+      <div style="text-align:left;">
+        <div style="font-size:12px;font-weight:700;">${d.name}</div>
+        <div style="font-size:9px;color:var(--muted);">${d.callsign}</div>
+      </div>
+      <div style="margin-left:auto;font-size:16px;">🔵</div>
+    </button>`).join("");
+
+  document.getElementById("blueflag-modal").style.display = "flex";
+}
+
+function closeBlueFlagModal() {
+  document.getElementById("blueflag-modal").style.display = "none";
+}
+
+async function triggerBlueFlagForDriver(name, number, callsign) {
+  closeBlueFlagModal();
+  if (!user?.token) return showToast("✗ Not authenticated as marshal", "err");
+  try {
+    const res = await fetch(`${apiUrl}/flag`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+      body: JSON.stringify({ flag: "blue", driver: name, number, callsign, username: user.username }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showToast(`✓ Blue Flag — ${name}`, "ok");
+      const html = `<div class="flag-card blue">
+        <span class="fc-emoji">🔵</span>
+        <div>
+          <div class="fc-title">Blue Flag — ${name}</div>
+          <div class="fc-sub">#${number} · ${callsign} — let the leaders past.</div>
+        </div>
+      </div>`;
+      document.getElementById("flag-notif-driver").innerHTML  = html;
+      document.getElementById("flag-notif-marshal").innerHTML = html;
+      playFlagAudio(`BlueFlag_${name}.mp4`);
+    } else {
+      showToast(`✗ ${data.error}`, "err");
+    }
+  } catch { showToast("✗ Bot unreachable", "err"); }
 }
 
 function resetFlagSound(flag) {
@@ -2157,8 +2230,13 @@ async function playFlagAudio(soundFile) {
 
   if (!apiUrl) return;
   try {
-    const res  = await fetch(`${apiUrl}/sounds/${soundFile}`);
-    if (!res.ok) return;
+    const res = await fetch(`${apiUrl}/sounds/${soundFile}`);
+    if (!res.ok) {
+      if (soundFile.startsWith("BlueFlag_")) {
+        await playFlagAudio("LappedCars.mp4");
+      }
+      return;
+    }
     const blob = await res.blob();
     const url  = URL.createObjectURL(blob);
     const audio = new Audio(url);
