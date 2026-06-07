@@ -747,6 +747,7 @@ function closeSectorModal() {
 }
 
 async function triggerSectorFlag(flag) {
+  console.log("sector flag fired:", flag, "token:", user?.token);
   closeSectorModal();
   if (!user?.token) return showToast("✗ Not authenticated as marshal", "err");
   try {
