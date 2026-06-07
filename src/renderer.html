@@ -1333,9 +1333,15 @@ function switchPanel(panel) {
   }
   if      (panel==="driver")   launchDriverPanel(false);
   else if (panel==="marshal")  hasMarshal ? launchMarshalPanel(false) : showPasswordScreen();
-  else if (panel==="dev")      { showScreen("screen-dev"); currentPanel="dev"; updateSwitcher(); loadDevInfo(); updateDevTabBtns(); }
-  else if (panel==="settings") {
-    prevPanel = (currentPanel && currentPanel!=="settings") ? currentPanel : (hasDriver?"driver":hasMarshal?"marshal":"login");
+  else if (panel==="dev")      {
+  document.getElementById("shutdown-banner-driver")  && (document.getElementById("shutdown-banner-driver").style.display  = "none");
+  document.getElementById("shutdown-banner-marshal") && (document.getElementById("shutdown-banner-marshal").style.display = "none");
+  showScreen("screen-dev"); currentPanel="dev"; updateSwitcher(); loadDevInfo(); updateDevTabBtns();
+}
+else if (panel==="settings") {
+  document.getElementById("shutdown-banner-driver")  && (document.getElementById("shutdown-banner-driver").style.display  = "none");
+  document.getElementById("shutdown-banner-marshal") && (document.getElementById("shutdown-banner-marshal").style.display = "none");
+  prevPanel = (currentPanel && currentPanel!=="settings") ? currentPanel : (hasDriver?"driver":hasMarshal?"marshal":"login");
     document.getElementById("s-api").value        = config.apiUrl || "";
     document.getElementById("kb-blue_flag").value = config.keybinds?.blue_flag || "F1";
     document.getElementById("kb-next_lap").value  = config.keybinds?.next_lap  || "F2";
@@ -1369,6 +1375,8 @@ function updateSwitcher() {
 
 function launchDriverPanel(startPoll=true) {
   showScreen("screen-driver"); currentPanel="driver";
+  document.getElementById("shutdown-banner-driver")  && (document.getElementById("shutdown-banner-driver").style.display  = "");
+  document.getElementById("shutdown-banner-marshal") && (document.getElementById("shutdown-banner-marshal").style.display = "none");
   updateSwitcher(); updateKeybindLabels();
   const actSection = document.getElementById("d-actions-section");
   const kbSection  = document.getElementById("d-keybind-info");
@@ -1383,6 +1391,8 @@ function launchDriverPanel(startPoll=true) {
 
 function launchMarshalPanel(startPoll=true) {
   showScreen("screen-marshal"); currentPanel="marshal";
+  document.getElementById("shutdown-banner-marshal") && (document.getElementById("shutdown-banner-marshal").style.display = "");
+  document.getElementById("shutdown-banner-driver")  && (document.getElementById("shutdown-banner-driver").style.display  = "none");
   document.getElementById("sw-marshal").textContent = "🏁 Marshal";
   updateSwitcher();
   if (user?.roles?.includes(DIRECTOR_ROLE)||user?.isAdmin)
