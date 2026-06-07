@@ -353,6 +353,7 @@
 <div class="dev-card">
   <div class="dev-title">Engineering Assignments</div>
   <div id="dev-engineers" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;font-size:10px;color:var(--muted);">Loading...</div>
+  <button class="dev-btn" onclick="clearLocalEngineers()" style="margin-top:4px;font-size:9px;">🗑️ Clear Local Engineers</button>
 </div>
 
 
@@ -768,6 +769,13 @@ function devToggleTab(tab) {
   showToast(`✓ ${tab} tab ${visible ? "shown" : "hidden"}`, "ok");
 }
 
+function clearLocalEngineers() {
+  localStorage.removeItem("rc_engineers");
+  const engEl = document.getElementById("dev-engineers");
+  if (engEl) engEl.innerHTML = '<div style="color:var(--muted);">No engineers active.</div>';
+  showToast("✓ Local engineers cleared", "ok");
+}
+	
 function updateDevTabBtns() {
   ["driver", "marshal"].forEach(tab => {
     const btn = document.getElementById(`dev-toggle-${tab}-tab`);
@@ -1256,19 +1264,12 @@ async function confirmEngineer() {
   engineerPending = false;
   window.api.saveConfig(config);
 
-  try {
-    await fetch(`${apiUrl}/driver/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        discordId:   user.id,
-        username:    user.username,
-        avatar:      user.avatar,
-        engineer:    true,
-        engineerFor: name,
-      }),
-    });
-  } catch {}
+  const engineers = JSON.parse(localStorage.getItem("rc_engineers") || "[]");
+  const existing = engineers.findIndex(e => e.discordId === user.id);
+  const entry = { discordId: user.id, username: user.username, avatar: user.avatar, engineer: true, engineerFor: name, timestamp: Date.now() };
+  if (existing >= 0) engineers[existing] = entry;
+  else engineers.push(entry);
+  localStorage.setItem("rc_engineers", JSON.stringify(engineers));
 
   updateSwitcher();
   launchDriverPanel();
@@ -1803,10 +1804,13 @@ document.getElementById("dev-stats").innerHTML=`
     renderMockLb();
     
 const engEl = document.getElementById("dev-engineers");
-console.log("[Engineers] all logins:", JSON.stringify(dl.logins));
-const engineers = (dl.logins || []).filter(l => l.engineer);
-console.log("[Engineers] filtered:", JSON.stringify(engineers));
-engEl.innerHTML = engineers.length ? engineers.map(l => `
+const serverEngineers = (dl.logins || []).filter(l => l.engineer);
+const localEngineers  = JSON.parse(localStorage.getItem("rc_engineers") || "[]");
+const allEngineers = [...serverEngineers];
+localEngineers.forEach(le => {
+  if (!allEngineers.find(e => e.discordId === le.discordId)) allEngineers.push(le);
+});
+engEl.innerHTML = allEngineers.length ? allEngineers.map(l => `
   <div style="padding:3px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;">
     <span style="font-weight:700;">${l.username}</span>
     <span style="color:var(--muted);">→ engineering for <span style="color:var(--text);font-weight:700;">${l.engineerFor||"?"}</span></span>
