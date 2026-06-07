@@ -328,12 +328,11 @@
   </div>
 </div>
 
-<!-- DEV PANEL -->
+
 <div class="screen" id="screen-dev">
   <div class="scroll-body">
     <div style="font-size:14px;font-weight:800;color:var(--red);">⚙️ Developer Panel</div>
 
-    <!-- Panel Controls -->
     <div class="dev-card">
       <div class="dev-title">Panel Controls</div>
       <div style="display:flex;gap:6px;margin-top:4px;">
@@ -351,25 +350,40 @@
       <div id="dev-panel-status" style="font-size:9px;color:var(--muted);margin-top:4px;"></div>
     </div>
 
-    <!-- Engineering -->
 <div class="dev-card">
   <div class="dev-title">Engineering Assignments</div>
   <div id="dev-engineers" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;font-size:10px;color:var(--muted);">Loading...</div>
 </div>
+
+
+<div class="dev-card">
+  <div class="dev-title">Tab Visibility</div>
+  <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;">
+      <span style="font-size:11px;">🏎️ Driver Tab</span>
+      <button id="dev-toggle-driver-tab" onclick="devToggleTab('driver')"
+        style="font-size:9px;font-weight:800;padding:3px 10px;border-radius:4px;border:1px solid;cursor:pointer;font-family:'Oxanium',sans-serif;">
+      </button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;">
+      <span style="font-size:11px;">🏁 Marshal Tab</span>
+      <button id="dev-toggle-marshal-tab" onclick="devToggleTab('marshal')"
+        style="font-size:9px;font-weight:800;padding:3px 10px;border-radius:4px;border:1px solid;cursor:pointer;font-family:'Oxanium',sans-serif;">
+      </button>
+    </div>
+  </div>
+</div>
     
-    <!-- API Stats -->
     <div class="dev-card">
       <div class="dev-title">API Stats</div>
       <div id="dev-stats"><div class="dev-stat">Loading...</div></div>
     </div>
 
-    <!-- Voice Channels -->
     <div class="dev-card">
       <div class="dev-title">Voice Channels</div>
       <div id="dev-vcs" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;">Loading...</div>
     </div>
 
-    <!-- Blacklist -->
     <div class="dev-card">
       <div class="dev-title">Blacklist</div>
       <div id="dev-blacklist" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;max-height:120px;overflow-y:auto;">Loading...</div>
@@ -379,13 +393,13 @@
       </div>
     </div>
 
-    <!-- Driver Logins -->
+
     <div class="dev-card">
       <div class="dev-title">Driver Panel Logins</div>
       <div id="dev-driver-logins" style="max-height:120px;overflow-y:auto;font-size:10px;color:var(--muted);">Loading...</div>
     </div>
 
-    <!-- Custom Audio -->
+
     <div class="dev-card">
       <div class="dev-title">Play Custom Audio</div>
       <div id="dev-audio-drop" onclick="document.getElementById('dev-audio-input').click()" style="border:1px dashed var(--border);border-radius:6px;padding:16px;text-align:center;cursor:pointer;font-size:10px;color:var(--muted);margin-top:4px;">
@@ -396,7 +410,7 @@
       <button class="dev-btn" onclick="devStopAudio()" style="margin-top:4px;">⏹ Stop Audio</button>
     </div>
 
-<!-- Mock Leaderboard -->
+
 <div class="dev-card">
   <div class="dev-title">Mock Leaderboard</div>
   <div id="dev-mock-lb" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;max-height:200px;overflow-y:auto;"></div>
@@ -408,7 +422,7 @@
   <div id="dev-mock-status" style="font-size:9px;color:var(--muted);margin-top:2px;"></div>
 </div>
 
-<!-- Custom Flag -->
+
 <div class="dev-card">
   <div class="dev-title">Custom Flag Notification</div>
   <input type="text" id="dev-flag-text" placeholder="Flag name e.g. Purple Flag" style="margin-top:4px;font-size:11px;"/>
@@ -418,7 +432,7 @@
     <button id="dev-holo-btn" onclick="toggleHoloMode()" style="flex:0 0 auto;height:36px;padding:0 8px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);color:var(--muted);font-family:'Oxanium',sans-serif;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:0.5px;">🌈 HOLO</button>
     <div id="dev-flag-preview" style="flex:1;border-radius:var(--radius);border:1px solid var(--border);padding:6px 10px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:6px;">Preview</div>
   </div>
-  <!-- Background image drop zone -->
+
   <div id="dev-flag-bg-drop" style="margin-top:6px;border:1px dashed var(--border);border-radius:var(--radius);padding:10px;text-align:center;font-size:9px;color:var(--muted);cursor:pointer;transition:border-color 0.2s;" onclick="document.getElementById('dev-flag-bg-input').click()">
     🖼️ Drop or click to set background image
   </div>
@@ -729,6 +743,54 @@ function updatePreview() {
   }
 }
 
+let _devTabVisible = { driver: true, marshal: true };
+
+function devToggleTab(tab) {
+  _devTabVisible[tab] = !_devTabVisible[tab];
+  const visible = _devTabVisible[tab];
+  localStorage.setItem("rc_dev_tabs", JSON.stringify(_devTabVisible));
+
+  // Show/hide the switcher button
+  const swBtn = document.getElementById(`sw-${tab}`);
+  if (swBtn) swBtn.style.display = visible ? "" : "none";
+
+  updateDevTabBtns();
+
+  if (!visible && currentPanel === tab) {
+    if (tab === "driver" && hasMarshal) launchMarshalPanel(false);
+    else if (tab === "marshal" && hasDriver) launchDriverPanel(false);
+  }
+
+  showToast(`✓ ${tab} tab ${visible ? "shown" : "hidden"}`, "ok");
+}
+
+function updateDevTabBtns() {
+  ["driver", "marshal"].forEach(tab => {
+    const btn = document.getElementById(`dev-toggle-${tab}-tab`);
+    if (!btn) return;
+    const visible = _devTabVisible[tab] !== false;
+    btn.textContent = visible ? "VISIBLE" : "HIDDEN";
+    btn.style.background   = visible ? "rgba(0,230,118,0.15)" : "rgba(255,23,68,0.15)";
+    btn.style.borderColor  = visible ? "var(--green)" : "var(--red)";
+    btn.style.color        = visible ? "var(--green)" : "var(--red)";
+  });
+}
+
+function loadDevTabPrefs() {
+  try {
+    const saved = localStorage.getItem("rc_dev_tabs");
+    if (saved) {
+      _devTabVisible = JSON.parse(saved);
+      ["driver", "marshal"].forEach(tab => {
+        if (_devTabVisible[tab] === false) {
+          const swBtn = document.getElementById(`sw-${tab}`);
+          if (swBtn) swBtn.style.display = "none";
+        }
+      });
+    }
+  } catch {}
+}
+	
 function resetKeybindSound(action) {
   delete _keybindSounds[action];
   localStorage.setItem("rc_keybind_sounds", JSON.stringify(_keybindSounds));
@@ -873,7 +935,8 @@ const saved = sessionStorage.getItem("rc_user") || localStorage.getItem("rc_user
     document.getElementById("dev-flag-text")?.addEventListener("input",  updatePreview);
     updatePreview();
   }, 600);
-  
+	
+  loadDevTabPrefs();
   loadFlagSounds()
   loadToolboxPrefs();
   loadKeybindSounds();
@@ -1157,14 +1220,31 @@ function reLogin() {
   location.reload();
 }
 
-function confirmEngineer() {
+async function confirmEngineer() {
   const name = document.getElementById("eng-driver-select")?.value;
   if (!name) { document.getElementById("eng-error").textContent = "Please select a driver."; return; }
   const info = DRIVER_INFO[name];
   config.driver=name; config.number=info.number; config.callsign=info.callsign;
   config.discordId=user.id; config.engineer=true; isEngineer=true;
-  engineerPending = false;  // add this
-  window.api.saveConfig(config); updateSwitcher(); launchDriverPanel();
+  engineerPending = false;
+  window.api.saveConfig(config);
+
+  try {
+    await fetch(`${apiUrl}/driver/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        discordId:   user.id,
+        username:    user.username,
+        avatar:      user.avatar,
+        engineer:    true,
+        engineerFor: name,
+      }),
+    });
+  } catch {}
+
+  updateSwitcher();
+  launchDriverPanel();
 }
 
 function showPasswordScreen() {
@@ -1213,7 +1293,7 @@ function switchPanel(panel) {
   }
   if      (panel==="driver")   launchDriverPanel(false);
   else if (panel==="marshal")  hasMarshal ? launchMarshalPanel(false) : showPasswordScreen();
-  else if (panel==="dev")      { showScreen("screen-dev"); currentPanel="dev"; updateSwitcher(); loadDevInfo(); }
+  else if (panel==="dev")      { showScreen("screen-dev"); currentPanel="dev"; updateSwitcher(); loadDevInfo(); updateDevTabBtns(); }
   else if (panel==="settings") {
     prevPanel = (currentPanel && currentPanel!=="settings") ? currentPanel : (hasDriver?"driver":hasMarshal?"marshal":"login");
     document.getElementById("s-api").value        = config.apiUrl || "";
@@ -1236,7 +1316,7 @@ function goBack() {
 function updateSwitcher() {
   const show = hasDriver||hasMarshal||hasDev;
   document.getElementById("panel-switcher").style.display = show ? "flex" : "none";
-  document.getElementById("sw-driver").style.display  = (hasDriver && (config.driver || engineerPending)) ? "" : "none";
+  const driverTabAllowed = hasDriver && (config.driver || engineerPending); document.getElementById("sw-driver").style.display  = (driverTabAllowed && _devTabVisible.driver !== false) ? "" : "none"; document.getElementById("sw-marshal").style.display = _devTabVisible.marshal !== false ? "" : "none";
   document.getElementById("sw-dev").style.display     = hasDev    ? "" : "none";
   document.querySelectorAll(".switch-btn").forEach(b => b.classList.remove("active"));
   const aId = currentPanel==="driver"?"sw-driver":currentPanel==="marshal"?"sw-marshal":"sw-dev";
