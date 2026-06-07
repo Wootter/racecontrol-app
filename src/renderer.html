@@ -853,16 +853,15 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (apiDisplay) apiDisplay.textContent = apiUrl;
   }
 
-  const saved = sessionStorage.getItem("rc_user") || localStorage.getItem("rc_user");
-  if (saved && apiUrl) { user = JSON.parse(saved); await afterLogin(); }
-
-if (apiUrl) {
+const saved = sessionStorage.getItem("rc_user") || localStorage.getItem("rc_user");
+  if (saved && apiUrl) { 
+    user = JSON.parse(saved); 
+    await afterLogin(); 
+  }
+  if (apiUrl) {
     const evtSource = new EventSource(`${apiUrl}/events`);
-evtSource.addEventListener("flag", e => {
-      try {
-        const d = JSON.parse(e.data);
-        onFlagEvent(d.flag, d);
-      } catch(err) { console.error("[SSE] Parse error:", err); }
+    evtSource.addEventListener("flag", e => {
+      try { const d = JSON.parse(e.data); onFlagEvent(d.flag, d); } catch {}
     });
     evtSource.onerror = () => console.warn("[SSE] Connection lost — will retry automatically");
   }
@@ -1482,14 +1481,14 @@ html = `<div class="flag-card ${bgClass}" style="${bgStyle}"><span class="fc-emo
     }
     document.getElementById("flag-notif-driver").innerHTML  = html;
     document.getElementById("flag-notif-marshal").innerHTML = html;
-    document.getElementById("flag-notif-marshal").style.display = "";
+    document.getElementById("flag-notif-marshal").style.display = "block";
     return;
   }
   const def = FLAG_DEFS[flag]; if (!def) return;
   const html = `<div class="flag-card ${def.color}"><span class="fc-emoji">${def.emoji}</span><div><div class="fc-title">${def.title}</div><div class="fc-sub">${def.sub}</div></div></div>`;
   document.getElementById("flag-notif-driver").innerHTML  = html;
   document.getElementById("flag-notif-marshal").innerHTML = html;
-  document.getElementById("flag-notif-marshal").style.display = "";
+  document.getElementById("flag-notif-marshal").style.display = "block";
   if (def.sound) playFlagAudio(def.sound);
   const colors={green:"var(--green)",yellow:"var(--yellow)",red:"var(--red)",orange:"var(--orange)",blue:"var(--blue)",white:"#fff"};
   ["d-race-pill","m-race-pill"].forEach(id=>{
