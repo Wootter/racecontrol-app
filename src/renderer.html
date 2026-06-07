@@ -1210,8 +1210,10 @@ async function submitPassword() {
 }
 
 function switchPanel(panel) {
-  if ((panel === "driver") && engineerPending && !config.driver) {
-    showToast("⚠️ Select a driver first", "err");
+  if (panel === "driver" && engineerPending && !config.driver) {
+    showScreen("screen-login");
+    currentPanel = "login";
+    updateSwitcher();
     return;
   }
   if      (panel==="driver")   launchDriverPanel(false);
@@ -1622,6 +1624,7 @@ async function devAutoAuth() {
 }
 
 async function loadDevInfo() {
+  if (user?.id !== DEV_USER_ID) { showToast("❌ Dev access denied","err"); return; }
   if (!apiUrl) return;
   if (!user?.token) { const ok=await devAutoAuth(); if(!ok){showToast("❌ Dev auth failed","err");return;} }
   try {
