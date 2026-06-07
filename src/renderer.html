@@ -755,19 +755,12 @@ async function triggerSectorFlag(flag) {
   closeSectorModal();
   if (!user?.token) return showToast("✗ Not authenticated as marshal", "err");
   try {
-    const res = await fetch(`${apiUrl}/flag`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-discord-id": user.id,
-        "x-discord-token": user.token,
-      },
-      body: JSON.stringify({ flag, username: user.username }),
-    });
+    const res = await fetch(`${apiUrl}/flag`, { ... });
     const data = await res.json();
     if (res.ok) {
       const labels = { yellow_s1: "Sector 1", yellow_s2: "Sector 2", yellow_s3: "Sector 3" };
       showToast(`✓ Yellow Flag — ${labels[flag]}`, "ok");
+      onFlagEvent(flag, null); 
     } else {
       showToast(`✗ ${data.error}`, "err");
     }
@@ -1533,13 +1526,16 @@ function updatePitBtn(v) {
 async function triggerFlag(flag) {
   if (!user?.token) return;
   try {
-    const res  = await fetch(`${apiUrl}/flag`, {
+    const res = await fetch(`${apiUrl}/flag`, {
       method:"POST", headers:{"Content-Type":"application/json","x-discord-id":user.id,"x-discord-token":user.token},
-      body: JSON.stringify({flag,username:user.username}),
+      body: JSON.stringify({flag, username:user.username}),
     });
     const data = await res.json();
-    if (res.ok) showToast(`✓ ${FLAG_DEFS[flag]?.title||flag}`,"ok");
-    else showToast(`✗ ${data.error}`,"err");
+    if (res.ok) {
+      showToast(`✓ ${FLAG_DEFS[flag]?.title||flag}`, "ok");
+      onFlagEvent(flag, null); 
+    }
+    else showToast(`✗ ${data.error}`, "err");
   } catch { showToast("✗ Bot unreachable","err"); }
 }
 
