@@ -1438,9 +1438,7 @@ function goBack() {
 function updateSwitcher() {
   const show = hasDriver||hasMarshal||hasDev;
   document.getElementById("panel-switcher").style.display = show ? "flex" : "none";
-  const driverTabAllowed = hasDriver && (config.driver || engineerPending);
-document.getElementById("sw-driver").style.display  = (driverTabAllowed && _devTabVisible.driver  !== false) ? "" : "none";
-document.getElementById("sw-marshal").style.display = (hasMarshal      && _devTabVisible.marshal !== false) ? "" : "none";
+const driverTabAllowed = hasDriver && (config.driver || engineerPending); document.getElementById("sw-driver").style.display  = (driverTabAllowed && _devTabVisible.driver !== false) ? "" : "none"; document.getElementById("sw-marshal").style.display = _devTabVisible.marshal !== false ? "" : "none";
   document.getElementById("sw-dev").style.display     = hasDev    ? "" : "none";
   document.querySelectorAll(".switch-btn").forEach(b => b.classList.remove("active"));
   const aId = currentPanel==="driver"?"sw-driver":currentPanel==="marshal"?"sw-marshal":"sw-dev";
