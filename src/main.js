@@ -33,9 +33,21 @@ let oauthResolve = null;
 const oauthServer = http.createServer((req, res) => {
   const url  = new URL(req.url, `http://localhost:${OAUTH_PORT}`);
   const code = url.searchParams.get("code");
+
+  if (!code) {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
   res.writeHead(200, { "Content-Type": "text/html" });
   res.end("<html><body style='background:#0a0a0f;color:#e8e8f0;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;'><h2>✅ Logged in! You can close this window.</h2></body></html>");
-  if (code && oauthResolve) { oauthResolve(code); oauthResolve = null; }
+
+  if (oauthResolve) {
+    const resolveFn = oauthResolve;
+    oauthResolve = null;
+    resolveFn(code);
+  }
 });
 
 oauthServer.on("error", (err) => {
@@ -215,6 +227,7 @@ ipcMain.handle("open-oauth", (_, _url) => {
 
     oauthResolve = (code) => {
       console.log("[OAuth] Code received:", code ? "yes" : "no");
+      oauthResolve = null;
       if (authWin && !authWin.isDestroyed()) {
         setTimeout(() => authWin.destroy(), 1500);
       }
