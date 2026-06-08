@@ -711,6 +711,9 @@ let hasDriver     = false;
 let hasMarshal    = false;
 let hasDev        = false;
 let toastTimer;
+let _currentFlagAudio = null;
+let _lastPlayedSound  = null;
+let _lastPlayedTime   = 0;
 let listeningKey  = null;
 let bfKnownIds    = new Set();
 let bfAlertInterval = null;
@@ -899,10 +902,6 @@ function resetFlagSound(flag) {
 function closeSectorModal() {
   document.getElementById("sector-modal").style.display = "none";
 }
-
-let _currentFlagAudio = null;
-let _lastPlayedSound  = null;
-let _lastPlayedTime   = 0;
 
 async function playFlagAudio(soundFile) {
   if (!soundFile) return;
