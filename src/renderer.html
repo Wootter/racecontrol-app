@@ -1184,8 +1184,22 @@ try {
   mRes  = await fetch(`${apiUrl}/auth/session`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({userId: dData.userId, sessionToken: dData.sessionToken}) });
   mData = await mRes.json();
 } catch(fetchErr) { errEl.style.color="var(--red)"; errEl.textContent="❌ Can't reach API. Is the URL still valid?"; showChangeUrlPrompt(); return; }
-      if (mRes.ok) {
+if (mRes.ok) {
         user = mData.user; user.marshalToken = mData.user.token;
+        user.discordId = user.id;
+        const safeUser = {
+          id: user.id, discordId: user.id, username: user.username,
+          avatar: user.avatar, token: null, marshalToken: user.marshalToken,
+        };
+        sessionStorage.setItem("rc_user", JSON.stringify(safeUser));
+        localStorage.setItem("rc_user", JSON.stringify(safeUser));
+        user = { ...user, ...safeUser };
+        errEl.textContent = "";
+        hasDriver = false;
+        hasDev = user.id === DEV_USER_ID;
+        updateSwitcher();
+        showPasswordScreen();
+        return;
 } else {
   if (dData.denied || !mRes.ok) {
     errEl.style.color = "var(--red)";
