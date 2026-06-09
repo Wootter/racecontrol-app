@@ -1195,7 +1195,7 @@ if (mRes.ok) {
         localStorage.setItem("rc_user", JSON.stringify(safeUser));
         user = { ...user, ...safeUser };
         errEl.textContent = "";
-        hasDriver = false;
+        hasDriver = !!mData.hasDriverRole || user.id === DEV_USER_ID;
         hasDev = user.id === DEV_USER_ID;
         updateSwitcher();
         showPasswordScreen();
