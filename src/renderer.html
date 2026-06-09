@@ -1081,7 +1081,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   window.api.onCooldownStart(s      => startCooldown(s));
   window.api.onCooldownEnd(()       => stopCooldown());
   window.api.onPitStateChanged(v    => updatePitBtn(v));
-  window.api.onFlagEvent(d          => onFlagEvent(d.flag));
+  window.api.onFlagEvent(d          => onFlagEvent(d.flag, d));
   window.api.onKeybindFired(action  => playKeybindSound(action));
 
   window.api.onUpdateAvailable(v => {
