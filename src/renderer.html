@@ -1190,25 +1190,30 @@ async function loginWithDiscord() {
       } catch(fetchErr) { errEl.style.color="var(--red)"; errEl.textContent="❌ Can't reach API. Is the URL still valid?"; showChangeUrlPrompt(); return; }
       if (mRes.ok) {
         user = mData.user; user.marshalToken = mData.user.token;
-      } else {
-        user = {
-  id:           dData.userId       || mData?.user?.id       || "unknown",
-  username:     dData.username     || mData?.user?.username  || "Unknown",
-  avatar:       dData.avatar       || mData?.user?.avatar    || null,
-  token:        null,
-  marshalToken: null,
-};
-        user.discordId = user.id;
-        const safeUser = { id: user.id, discordId: user.id, username: user.username, avatar: user.avatar, token: null, marshalToken: null };
-        sessionStorage.setItem("rc_user", JSON.stringify(safeUser));
-        localStorage.setItem("rc_user", JSON.stringify(safeUser));
-        user = { ...user, ...safeUser };
-        errEl.textContent = "";
-        hasDriver = true;
-        hasDev = user.id === DEV_USER_ID;
-        showEngineerScreen();
-        return;
-      }
+} else {
+  if (dData.denied || mData?.denied) {
+    errEl.style.color = "var(--red)";
+    errEl.textContent = "❌ You don't have a valid role to access this app.";
+    return;
+  }
+  user = {
+    id:           dData.userId       || mData?.user?.id       || "unknown",
+    username:     dData.username     || mData?.user?.username  || "Unknown",
+    avatar:       dData.avatar       || mData?.user?.avatar    || null,
+    token:        null,
+    marshalToken: null,
+  };
+  user.discordId = user.id;
+  const safeUser = { id: user.id, discordId: user.id, username: user.username, avatar: user.avatar, token: null, marshalToken: null };
+  sessionStorage.setItem("rc_user", JSON.stringify(safeUser));
+  localStorage.setItem("rc_user", JSON.stringify(safeUser));
+  user = { ...user, ...safeUser };
+  errEl.textContent = "";
+  hasDriver = true;
+  hasDev = user.id === DEV_USER_ID;
+  showEngineerScreen();
+  return;
+}
     } else {
       errEl.style.color="var(--red)"; errEl.textContent="❌ "+(dData.error||"Access denied."); return;
     }
