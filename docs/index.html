@@ -479,78 +479,107 @@ function clearAll(){
 function triggerFlag(f){showFlag(f,null);}
 
 // ── SSE + POLLING ──
-let apiUrl='';
-let pollInterval=null;
-let lastFlagTs=null;
+let apiUrl = '';
+let pollInterval = null;
+let sseSource = null;
+let lastFlagTs = null;
+let retryCount = 0;
+const MAX_RETRIES = 999;
 
-async function fetchApiUrl(){
-  try{
-    const r=await fetch('https://api.github.com/gists/746339b1b2924446563e6349ef89ce8a');
-    const d=await r.json();
-    const f=d.files?.['racecontrol-api.json'];
-    if(f)return JSON.parse(f.content).url||null;
-  }catch(e){console.warn('[Overlay] Gist fetch failed',e);}
+async function fetchApiUrl() {
+  try {
+    const r = await fetch('https://api.github.com/gists/746339b1b2924446563e6349ef89ce8a');
+    const d = await r.json();
+    const f = d.files?.['racecontrol-api.json'];
+    if (f) return JSON.parse(f.content).url || null;
+  } catch (e) { console.warn('[Overlay] Gist fetch failed', e); }
   return null;
 }
 
-async function startPolling(url){
-  apiUrl=url;
-  console.log('[Overlay] Connecting to',url);
-  // SSE for real-time flags
-  const evt=new EventSource(url+'/events');
-  evt.addEventListener('flag',e=>{
-    try{const d=JSON.parse(e.data);showFlag(d.flag,d);}catch{}
-  });
-  evt.onerror=()=>console.warn('[Overlay] SSE reconnecting...');
-
-  async function poll(){
-    try{
-      const r=await fetch(url+'/driver/state');
-      if(!r.ok)return;
-      const d=await r.json();
-      renderLeaderboard(d);
-      if(d.currentFlag&&d.currentFlag.timestamp&&d.currentFlag.timestamp!==lastFlagTs){
-        lastFlagTs=d.currentFlag.timestamp;
-        showFlag(d.currentFlag.flag,d.currentFlag);
-      }
-    }catch{}
-  }
-  poll();
-  if(pollInterval)clearInterval(pollInterval);
-  pollInterval=setInterval(poll,3000);
+function connectSSE(url) {
+  if (sseSource) { sseSource.close(); sseSource = null; }
+  try {
+    sseSource = new EventSource(url + '/events');
+    sseSource.addEventListener('flag', e => {
+      try { const d = JSON.parse(e.data); showFlag(d.flag, d); } catch {}
+    });
+    sseSource.onopen = () => { retryCount = 0; console.log('[Overlay] SSE connected'); };
+    sseSource.onerror = () => {
+      console.warn('[Overlay] SSE error, will rely on polling');
+    };
+  } catch (e) { console.warn('[Overlay] SSE setup failed', e); }
 }
 
-(async()=>{
-  const params=new URLSearchParams(location.search);
-  if(params.get('controls')==='1')document.getElementById('controls').classList.add('visible');
-  const apiOverride=params.get('api');
-  if(apiOverride){
-    await startPolling(apiOverride);
-  } else {
-    let url=null;
-    for(let i=0;i<5;i++){
-      url=await fetchApiUrl();
-      if(url)break;
-      await new Promise(r=>setTimeout(r,3000));
+async function poll() {
+  if (!apiUrl) return;
+  try {
+    const r = await fetch(apiUrl + '/driver/state', { cache: 'no-store' });
+    if (!r.ok) return;
+    const d = await r.json();
+    renderLeaderboard(d);
+    if (d.currentFlag?.timestamp && d.currentFlag.timestamp !== lastFlagTs) {
+      lastFlagTs = d.currentFlag.timestamp;
+      showFlag(d.currentFlag.flag, d.currentFlag);
     }
-    if(url)await startPolling(url);
-    else console.warn('[Overlay] No API URL found after 5 attempts');
+    retryCount = 0; 
+  } catch (e) {
+    retryCount++;
+    console.warn('[Overlay] Poll failed attempt', retryCount);
+  }
+}
+
+async function startPolling(url) {
+  apiUrl = url;
+  console.log('[Overlay] Connecting to', url);
+  connectSSE(url);
+  poll(); 
+  if (pollInterval) clearInterval(pollInterval);
+  pollInterval = setInterval(poll, 2000); 
+}
+
+async function resolveApiUrl() {
+  const params = new URLSearchParams(location.search);
+  const apiOverride = params.get('api');
+  if (apiOverride) return apiOverride;
+  for (let i = 0; i < 10; i++) {
+    const url = await fetchApiUrl();
+    if (url) return url;
+    const wait = Math.min(3000 * (i + 1), 15000);
+    console.warn('[Overlay] Gist attempt', i + 1, 'failed, retrying in', wait / 1000, 's');
+    await new Promise(r => setTimeout(r, wait));
+  }
+  return null;
+}
+
+(async () => {
+  const params = new URLSearchParams(location.search);
+  if (params.get('controls') === '1') document.getElementById('controls').classList.add('visible');
+
+  const url = await resolveApiUrl();
+  if (url) {
+    await startPolling(url);
+  } else {
+    console.warn('[Overlay] No API URL found — retrying in background');
+    const bgRetry = setInterval(async () => {
+      const u = await fetchApiUrl();
+      if (u) { clearInterval(bgRetry); await startPolling(u); }
+    }, 30000);
   }
 
-  if(params.get('demo')==='1'){
+  if (params.get('demo') === '1') {
     renderLeaderboard({
-      totalLaps:58,
-      drivers:[
-        {name:'LAMAR',lap:7,number:'01',callsign:'MAR-01'},
-        {name:'CODA',lap:7,number:'56',callsign:'LND-56'},
-        {name:'SWEATER',lap:7,number:'31',callsign:'MIS-31'},
-        {name:'ACHILLES',lap:6,number:'09',callsign:'MAR-09'},
-        {name:'KEBAB',lap:6,number:'33',callsign:'TNT-33'},
-        {name:'SUPA',lap:6,number:'05',callsign:'ST-05'},
-        {name:'QUAH',lap:6,number:'28',callsign:'LOT-28'},
-        {name:'HIDDEN',lap:6,number:'22',callsign:'NCC-22'},
-        {name:'AUBRN',lap:5,number:'18',callsign:'CRG-18'},
-        {name:'UNLIMITED',lap:5,number:'12',callsign:'AWR-12'},
+      totalLaps: 58,
+      drivers: [
+        { name: 'LAMAR',    lap: 7 },
+        { name: 'CODA',     lap: 7 },
+        { name: 'SWEATER',  lap: 7 },
+        { name: 'ACHILLES', lap: 6 },
+        { name: 'KEBAB',    lap: 6 },
+        { name: 'SUPA',     lap: 6 },
+        { name: 'QUAH',     lap: 6 },
+        { name: 'HIDDEN',   lap: 6 },
+        { name: 'AUBRN',    lap: 5 },
+        { name: 'UNLIMITED',lap: 5 },
       ]
     });
   }
