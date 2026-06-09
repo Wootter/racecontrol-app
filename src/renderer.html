@@ -1181,15 +1181,28 @@ async function loginWithDiscord() {
 
     if (dRes.ok) {
       user = dData.user;
-    } else if (dRes.status === 403 && !dData.disabled) {
+} else if (dRes.status === 403 && !dData.disabled) {
       errEl.style.color = "var(--muted)"; errEl.textContent = "Trying marshal login...";
       let mRes, mData;
       try {
         mRes  = await fetch(`${apiUrl}/auth`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({code,redirectUri:"http://localhost:7823"}) });
         mData = await mRes.json();
       } catch(fetchErr) { errEl.style.color="var(--red)"; errEl.textContent="❌ Can't reach API. Is the URL still valid?"; showChangeUrlPrompt(); return; }
-      if (!mRes.ok) { errEl.style.color="var(--red)"; errEl.textContent="❌ "+(mData.error||"Access denied."); return; }
-      user = mData.user; user.marshalToken = mData.user.token;
+      if (mRes.ok) {
+        user = mData.user; user.marshalToken = mData.user.token;
+      } else {
+        user = { id: dData.userId || "unknown", username: dData.username || "Unknown", avatar: dData.avatar || null, token: null, marshalToken: null };
+        user.discordId = user.id;
+        const safeUser = { id: user.id, discordId: user.id, username: user.username, avatar: user.avatar, token: null, marshalToken: null };
+        sessionStorage.setItem("rc_user", JSON.stringify(safeUser));
+        localStorage.setItem("rc_user", JSON.stringify(safeUser));
+        user = { ...user, ...safeUser };
+        errEl.textContent = "";
+        hasDriver = true;
+        hasDev = user.id === DEV_USER_ID;
+        showEngineerScreen();
+        return;
+      }
     } else {
       errEl.style.color="var(--red)"; errEl.textContent="❌ "+(dData.error||"Access denied."); return;
     }
