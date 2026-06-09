@@ -814,22 +814,19 @@ function updateDevTabBtns() {
   });
 }
 
-let _attendance = {};
-
 function renderAttendance() {
   const el = document.getElementById("m-attendance");
   if (!el) return;
 
-  // Load saved attendance
   try {
     const saved = localStorage.getItem("rc_attendance");
     if (saved) _attendance = JSON.parse(saved);
-  } catch {}
+  } catch {}catch {}
 
   const drivers = Object.entries(DRIVER_INFO).sort((a, b) => parseInt(a[1].number) - parseInt(b[1].number));
 
   el.innerHTML = drivers.map(([name, info]) => {
-    const present = _attendance[name] !== false; // default = present
+    const present = _attendance[name] !== false; 
     return `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 9px;background:var(--surface);border:1px solid ${present ? "var(--border)" : "rgba(255,23,68,0.3)"};border-radius:5px;transition:border-color 0.15s;">
         <div style="display:flex;align-items:center;gap:8px;">
