@@ -333,10 +333,6 @@
       <div class="sec-label">Audio Check</div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:7px;">
         <div style="font-size:10px;color:var(--muted);">Sends a flag-style notification to all drivers with a Yes/No vote. Results appear here live.</div>
-        <div class="setup-row">
-          <span class="setup-label">Message</span>
-          <input type="text" id="ac-message" placeholder="Can you hear comms?" style="flex:1;font-size:11px;"/>
-        </div>
         <button class="race-btn start" style="width:100%;" onclick="sendAudioCheck()">🎙️ Send Audio Check</button>
         <div id="ac-results" style="display:none;flex-direction:column;gap:4px;margin-top:4px;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -1843,13 +1839,11 @@ function setDriverBtnsEnabled(on) {
   const notice=document.getElementById("d-action-notice");
   notice.style.display=on?"none":"block"; notice.textContent=on?"":"⏳ Waiting for race to start...";
 }
-
 function onFlagEvent(flag, customData) {
-  if (flag === "__custom__" && customData?.audioCheckId) {
-    showAudioCheckPrompt(customData.audioCheckId, customData.text || "Can you hear comms?");
-    playFlagAudio("AudioCheck.mp4");
-  }
-  if (flag==="__custom__" && customData) {
+  if (flag === "__custom__" && customData) {
+    if (customData.audioCheckId) {
+      showAudioCheckPrompt(customData.audioCheckId, customData.text || "Can you hear comms?");
+    }
     let html;
     const isHolo = customData.color==="holographic"||customData.color==="rainbow";
     if (customData.html) {
@@ -2459,6 +2453,7 @@ async function sendAudioCheck() {
     if (!res.ok) { const d=await res.json(); return showToast(`✗ ${d.error}`,"err"); }
 
     showToast("✓ Audio check sent", "ok");
+	playFlagAudio("AudioCheck.mp4");
     document.getElementById("ac-results").style.display = "flex";
     document.getElementById("ac-yes-list").innerHTML = "";
     document.getElementById("ac-no-list").innerHTML  = "";
