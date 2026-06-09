@@ -1859,9 +1859,10 @@ function setDriverBtnsEnabled(on) {
 }
 function onFlagEvent(flag, customData) {
   if (flag === "__custom__" && customData) {
-    if (customData.audioCheckId) {
-      showAudioCheckPrompt(customData.audioCheckId, customData.text || "Can you hear comms?");
-    }
+if (customData.audioCheckId) {
+  _acDriverVoted = false;
+  showAudioCheckPrompt(customData.audioCheckId, customData.text || "Can you hear comms?");
+}
     let html;
     const isHolo = customData.color==="holographic"||customData.color==="rainbow";
     if (customData.html) {
