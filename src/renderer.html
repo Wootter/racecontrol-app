@@ -1191,7 +1191,7 @@ async function loginWithDiscord() {
       if (mRes.ok) {
         user = mData.user; user.marshalToken = mData.user.token;
 } else {
-  if (dData.denied || mData?.denied) {
+  if (dData.denied || !mRes.ok) {
     errEl.style.color = "var(--red)";
     errEl.textContent = "❌ You don't have a valid role to access this app.";
     return;
