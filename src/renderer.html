@@ -232,6 +232,7 @@
 <!-- DRIVER PANEL -->
 <div class="screen" id="screen-driver">
   <div id="flag-notif-driver" style="padding:8px 12px 0;"></div>
+<div id="ac-driver-prompt" style="display:none;padding:0 12px 0;"></div>
   <div id="cooldown-bar"><div id="cooldown-fill"></div></div>
   <div class="scroll-body">
     <div class="status-row">
@@ -326,6 +327,29 @@
         <div id="m-race-status" style="font-size:10px;color:var(--muted);text-align:center;min-height:12px;"></div>
       </div>
     </div>
+
+    <div class="divider"></div>
+    <div>
+      <div class="sec-label">Audio Check</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:7px;">
+        <div style="font-size:10px;color:var(--muted);">Sends a flag-style notification to all drivers with a Yes/No vote. Results appear here live.</div>
+        <div class="setup-row">
+          <span class="setup-label">Message</span>
+          <input type="text" id="ac-message" placeholder="Can you hear comms?" style="flex:1;font-size:11px;"/>
+        </div>
+        <button class="race-btn start" style="width:100%;" onclick="sendAudioCheck()">🎙️ Send Audio Check</button>
+        <div id="ac-results" style="display:none;flex-direction:column;gap:4px;margin-top:4px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:10px;font-weight:700;color:var(--text);">Responses</span>
+            <button onclick="clearAudioCheck()" style="font-size:9px;padding:2px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;font-family:'Oxanium',sans-serif;">Clear</button>
+          </div>
+          <div id="ac-yes-list" style="display:flex;flex-direction:column;gap:3px;"></div>
+          <div id="ac-no-list"  style="display:flex;flex-direction:column;gap:3px;"></div>
+          <div id="ac-summary" style="font-size:10px;color:var(--muted);text-align:center;padding:4px 0;"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="divider"></div>
     <div>
       <div class="sec-label">Attendance</div>
@@ -1781,6 +1805,10 @@ function setDriverBtnsEnabled(on) {
 }
 
 function onFlagEvent(flag, customData) {
+  if (flag === "__custom__" && customData?.audioCheckId) {
+    showAudioCheckPrompt(customData.audioCheckId, customData.text || "Can you hear comms?");
+    playFlagAudio("AudioCheck.mp4");
+  }
   if (flag==="__custom__" && customData) {
     let html;
     const isHolo = customData.color==="holographic"||customData.color==="rainbow";
@@ -2364,6 +2392,158 @@ setTimeout(()=>{
   drop.addEventListener("dragleave",()=>{drop.style.borderColor="var(--border)";});
   drop.addEventListener("drop",e=>{e.preventDefault();drop.style.borderColor="var(--border)";const file=e.dataTransfer.files[0];if(file)devPlayAudio(file);});
 },500);
+
+let _acPollInterval  = null;
+let _acActiveId      = null;
+let _acDriverVoted   = false;
+
+async function sendAudioCheck() {
+  if (!user?.token) return showToast("✗ Not authenticated", "err");
+  const msg = document.getElementById("ac-message").value.trim() || "Can you hear comms?";
+  const id  = Date.now();
+  _acActiveId    = id;
+  _acDriverVoted = false;
+
+  try {
+    const res = await fetch(`${apiUrl}/flag`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+      body: JSON.stringify({
+        flag: "__custom__",
+        text: msg,
+        emoji: "🎙️",
+        color: "#2979ff",
+        audioCheckId: id,
+      }),
+    });
+    if (!res.ok) { const d=await res.json(); return showToast(`✗ ${d.error}`,"err"); }
+
+    showToast("✓ Audio check sent", "ok");
+    document.getElementById("ac-results").style.display = "flex";
+    document.getElementById("ac-yes-list").innerHTML = "";
+    document.getElementById("ac-no-list").innerHTML  = "";
+    document.getElementById("ac-summary").textContent = "Waiting for responses...";
+
+    if (_acPollInterval) clearInterval(_acPollInterval);
+    _acPollInterval = setInterval(() => pollAudioCheckResults(id), 2000);
+  } catch { showToast("✗ Bot unreachable", "err"); }
+}
+
+async function pollAudioCheckResults(id) {
+  if (!user?.token) return;
+  try {
+    const res  = await fetch(`${apiUrl}/audio-check/${id}`, {
+      headers: { "x-discord-id": user.id, "x-discord-token": user.token }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    renderAudioCheckResults(data);
+  } catch {}
+}
+
+function renderAudioCheckResults(data) {
+  const yes = data.yes || [];
+  const no  = data.no  || [];
+
+  const makeRow = (name, number, callsign, type) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--bg);
+      border:1px solid ${type==="yes"?"rgba(0,230,118,0.3)":"rgba(255,23,68,0.3)"};border-radius:4px;">
+      <div style="width:22px;height:22px;border-radius:3px;background:rgba(255,255,255,0.05);
+        border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+        font-size:8px;font-weight:800;flex-shrink:0;">#${number}</div>
+      <div style="flex:1;"><div style="font-size:10px;font-weight:700;">${name}</div>
+        <div style="font-size:8px;color:var(--muted);">${callsign}</div></div>
+      <span style="font-size:14px;">${type==="yes"?"✅":"❌"}</span>
+    </div>`;
+
+  document.getElementById("ac-yes-list").innerHTML =
+    yes.length ? yes.map(d => makeRow(d.name, d.number, d.callsign, "yes")).join("") : "";
+  document.getElementById("ac-no-list").innerHTML  =
+    no.length  ? no.map(d  => makeRow(d.name, d.number, d.callsign, "no")).join("") : "";
+
+  const total = yes.length + no.length;
+  document.getElementById("ac-summary").textContent =
+    total ? `${yes.length} ✅  ${no.length} ❌  (${total} responded)` : "Waiting for responses...";
+  document.getElementById("ac-summary").style.color =
+    no.length ? "var(--red)" : yes.length ? "var(--green)" : "var(--muted)";
+}
+
+async function clearAudioCheck() {
+  if (_acPollInterval) { clearInterval(_acPollInterval); _acPollInterval = null; }
+  _acActiveId = null;
+  document.getElementById("ac-results").style.display = "none";
+  document.getElementById("ac-yes-list").innerHTML = "";
+  document.getElementById("ac-no-list").innerHTML  = "";
+  const prompt = document.getElementById("ac-driver-prompt");
+  if (prompt) { prompt.style.display = "none"; prompt.innerHTML = ""; }
+}
+
+function showAudioCheckPrompt(audioCheckId, msg) {
+  if (_acDriverVoted) return;
+  const prompt = document.getElementById("ac-driver-prompt");
+  if (!prompt) return;
+  prompt.style.display = "block";
+  prompt.innerHTML = `
+    <div style="background:rgba(41,121,255,0.08);border:1.5px solid rgba(41,121,255,0.5);
+      border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;
+      animation:slideIn 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:20px;">🎙️</span>
+        <div>
+          <div style="font-size:12px;font-weight:800;color:var(--blue);">Audio Check</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.6);">${msg}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button onclick="submitAudioVote(${audioCheckId},'yes')"
+          style="flex:1;padding:9px;background:rgba(0,230,118,0.15);border:1px solid rgba(0,230,118,0.5);
+            color:var(--green);font-family:'Oxanium',sans-serif;font-size:12px;font-weight:800;
+            letter-spacing:1px;text-transform:uppercase;border-radius:5px;cursor:pointer;">
+          ✅ YES
+        </button>
+        <button onclick="submitAudioVote(${audioCheckId},'no')"
+          style="flex:1;padding:9px;background:rgba(255,23,68,0.15);border:1px solid rgba(255,23,68,0.5);
+            color:var(--red);font-family:'Oxanium',sans-serif;font-size:12px;font-weight:800;
+            letter-spacing:1px;text-transform:uppercase;border-radius:5px;cursor:pointer;">
+          ❌ NO
+        </button>
+      </div>
+    </div>`;
+}
+
+async function submitAudioVote(audioCheckId, vote) {
+  if (_acDriverVoted) return;
+  _acDriverVoted = true;
+  const prompt = document.getElementById("ac-driver-prompt");
+
+  const info = DRIVER_INFO[config.driver] || {};
+  try {
+    await fetch(`${apiUrl}/audio-check/${audioCheckId}/vote`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-discord-id": user?.id || "" },
+      body: JSON.stringify({
+        vote,
+        name:     config.driver,
+        number:   info.number   || "??",
+        callsign: info.callsign || "???",
+      }),
+    });
+  } catch {}
+
+  if (prompt) {
+    prompt.innerHTML = `
+      <div style="background:${vote==="yes"?"rgba(0,230,118,0.08)":"rgba(255,23,68,0.08)"};
+        border:1.5px solid ${vote==="yes"?"rgba(0,230,118,0.4)":"rgba(255,23,68,0.4)"};
+        border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:20px;">${vote==="yes"?"✅":"❌"}</span>
+        <div style="font-size:11px;font-weight:700;color:${vote==="yes"?"var(--green)":"var(--red)"};">
+          Response sent — ${vote==="yes"?"Audio OK":"Cannot hear"}
+        </div>
+      </div>`;
+    setTimeout(() => { prompt.style.display = "none"; prompt.innerHTML = ""; }, 4000);
+  }
+  showToast(vote==="yes" ? "✅ Voted Yes" : "❌ Voted No", vote==="yes"?"ok":"err");
+}
 </script>
 </body>
 </html>
