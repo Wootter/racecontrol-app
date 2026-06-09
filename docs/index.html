@@ -596,7 +596,7 @@ function dbg(msg){
   // Poll
   async function poll(){
     try{
-      const r = await fetch(url+'/driver/state', {cache:'no-store'});
+      const r = await fetch(url+'/driver/state?_=' + Date.now(), {cache:'no-store'});
       if(!r.ok){ dbg('⚠️ Poll HTTP '+r.status); return; }
       const d = await r.json();
       dbg('📊 Poll OK — '+( d.drivers?.length||0)+' drivers');
