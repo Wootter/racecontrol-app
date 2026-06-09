@@ -1491,7 +1491,7 @@ async function confirmEngineer() {
 function showPasswordScreen() {
   document.getElementById("pw-avatar").src = user.avatar
     ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`
-    : `https://cdn.discordapp.com/embed/avatars/${parseInt(user.id)%5}.png`;
+    : `https://cdn.discordapp.com/embed/avatars/${(parseInt(user.id)||0)%5}.png`;
   document.getElementById("pw-username").textContent = user.username;
   showScreen("screen-password");
 }
@@ -1508,8 +1508,12 @@ async function submitPassword() {
       const authRes  = await fetch(`${apiUrl}/auth`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({code,redirectUri:"http://localhost:7823"}) });
       const authData = await authRes.json();
       if (!authRes.ok) { document.getElementById("pw-error").textContent = "❌ "+(authData.error||"Auth failed"); return; }
-      user.marshalToken = authData.user?.token;
-      sessionStorage.setItem("rc_user", JSON.stringify(user));
+      const authToken = authData.user?.token || authData.token;
+if (!authToken) { document.getElementById("pw-error").textContent = "❌ Auth failed — no token returned"; return; }
+user.marshalToken = authToken;
+const saved = JSON.parse(sessionStorage.getItem("rc_user") || "{}");
+saved.marshalToken = authToken;
+sessionStorage.setItem("rc_user", JSON.stringify(saved));
     }
     const res  = await fetch(`${apiUrl}/verify-password`, {
       method:"POST", headers:{"Content-Type":"application/json","x-discord-id":user.id,"x-discord-token":user.marshalToken},
