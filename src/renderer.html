@@ -2284,28 +2284,6 @@ document.addEventListener("keydown",e=>{
   listeningKey=null;
 });
 
-async function playFlagAudio(soundFile) {
-  if (!soundFile) return;
-
-  const flagKey = Object.keys(FLAG_DEFS).find(k => FLAG_DEFS[k].sound === soundFile);
-  if (flagKey && _flagSounds[flagKey]) {
-    try {
-      const audio = new Audio(_flagSounds[flagKey]);
-      audio.volume = 1.0;
-      await audio.play();
-    } catch(e) { console.error("Local flag sound error:", e); }
-    return;
-  }
-
-  if (!apiUrl) return;
-  try {
-    const res = await fetch(`${apiUrl}/sounds/${soundFile}`);
-    if (!res.ok) {
-      if (soundFile.startsWith("BlueFlag_")) {
-        await playFlagAudio("LappedCars.mp4");
-      }
-      return;
-    }
     const blob = await res.blob();
     const url  = URL.createObjectURL(blob);
     const audio = new Audio(url);
