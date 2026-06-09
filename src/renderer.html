@@ -1178,12 +1178,12 @@ async function loginWithDiscord() {
     if (dRes.ok) {
       user = dData.user;
 } else if (dRes.status === 403 && !dData.disabled) {
-      errEl.style.color = "var(--muted)"; errEl.textContent = "Trying marshal login...";
-      let mRes, mData;
-      try {
-        mRes  = await fetch(`${apiUrl}/auth`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({code,redirectUri:"http://localhost:7823"}) });
-        mData = await mRes.json();
-      } catch(fetchErr) { errEl.style.color="var(--red)"; errEl.textContent="❌ Can't reach API. Is the URL still valid?"; showChangeUrlPrompt(); return; }
+errEl.style.color = "var(--muted)"; errEl.textContent = "Trying marshal login...";
+let mRes, mData;
+try {
+  mRes  = await fetch(`${apiUrl}/auth/session`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({userId: dData.userId, sessionToken: dData.sessionToken}) });
+  mData = await mRes.json();
+} catch(fetchErr) { errEl.style.color="var(--red)"; errEl.textContent="❌ Can't reach API. Is the URL still valid?"; showChangeUrlPrompt(); return; }
       if (mRes.ok) {
         user = mData.user; user.marshalToken = mData.user.token;
 } else {
