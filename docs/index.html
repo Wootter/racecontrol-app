@@ -243,6 +243,7 @@ html,body{
 <body>
 
 <!-- LEADERBOARD -->
+<div id="debug" style="position:fixed;top:10px;left:10px;background:rgba(0,0,0,0.85);color:#00ff88;font-family:monospace;font-size:11px;padding:10px 14px;z-index:99999;max-width:700px;word-break:break-all;border:1px solid #00ff8844;border-radius:4px;pointer-events:none;"></div>
 <div id="leaderboard">
   <div id="lb-header">
     <div style="display:flex;align-items:center;gap:8px;">
@@ -551,35 +552,75 @@ async function resolveApiUrl() {
   return null;
 }
 
-(async () => {
-  const params = new URLSearchParams(location.search);
-  if (params.get('controls') === '1') document.getElementById('controls').classList.add('visible');
+function dbg(msg){ 
+  const d = document.getElementById('debug');
+  if(d){ d.innerHTML += msg + '<br>'; console.log('[OBS]', msg); }
+}
 
-  const url = await resolveApiUrl();
-  if (url) {
-    await startPolling(url);
-  } else {
-    console.warn('[Overlay] No API URL found — retrying in background');
-    const bgRetry = setInterval(async () => {
-      const u = await fetchApiUrl();
-      if (u) { clearInterval(bgRetry); await startPolling(u); }
-    }, 30000);
+(async()=>{
+  const params = new URLSearchParams(location.search);
+  if(params.get('controls')==='1') document.getElementById('controls').classList.add('visible');
+
+  dbg('🚀 Overlay starting...');
+
+  const apiOverride = params.get('api');
+  let url = apiOverride || null;
+
+  if(!url){
+    dbg('📡 Fetching Gist...');
+    for(let i = 0; i < 10; i++){
+      try{
+        const r = await fetch('https://api.github.com/gists/746339b1b2924446563e6349ef89ce8a', {cache:'no-store'});
+        const d = await r.json();
+        const f = d.files?.['racecontrol-api.json'];
+        if(f){ url = JSON.parse(f.content).url; dbg('✅ Gist URL: ' + url); break; }
+        else dbg('⚠️ Gist file missing');
+      } catch(e){ dbg('❌ Gist attempt '+(i+1)+' failed: '+e.message); }
+      await new Promise(r=>setTimeout(r, 3000));
+    }
   }
 
-  if (params.get('demo') === '1') {
+  if(!url){ dbg('💀 No API URL found after all attempts'); return; }
+
+  dbg('🔌 Connecting to API...');
+  
+  // SSE
+  try{
+    const evt = new EventSource(url+'/events');
+    evt.onopen = ()=>dbg('✅ SSE connected');
+    evt.onerror = ()=>dbg('⚠️ SSE error (polling will cover)');
+    evt.addEventListener('flag', e=>{
+      try{ const d=JSON.parse(e.data); showFlag(d.flag,d); }catch{}
+    });
+  } catch(e){ dbg('❌ SSE failed: '+e.message); }
+
+  // Poll
+  async function poll(){
+    try{
+      const r = await fetch(url+'/driver/state', {cache:'no-store'});
+      if(!r.ok){ dbg('⚠️ Poll HTTP '+r.status); return; }
+      const d = await r.json();
+      dbg('📊 Poll OK — '+( d.drivers?.length||0)+' drivers');
+      renderLeaderboard(d);
+      if(d.currentFlag?.timestamp && d.currentFlag.timestamp !== lastFlagTs){
+        lastFlagTs = d.currentFlag.timestamp;
+        showFlag(d.currentFlag.flag, d.currentFlag);
+      }
+      // Hide debug after first successful poll
+      setTimeout(()=>{ const el=document.getElementById('debug'); if(el) el.style.display='none'; }, 5000);
+    } catch(e){ dbg('❌ Poll error: '+e.message); }
+  }
+
+  poll();
+  setInterval(poll, 2000);
+
+  if(params.get('demo')==='1'){
     renderLeaderboard({
-      totalLaps: 58,
-      drivers: [
-        { name: 'LAMAR',    lap: 7 },
-        { name: 'CODA',     lap: 7 },
-        { name: 'SWEATER',  lap: 7 },
-        { name: 'ACHILLES', lap: 6 },
-        { name: 'KEBAB',    lap: 6 },
-        { name: 'SUPA',     lap: 6 },
-        { name: 'QUAH',     lap: 6 },
-        { name: 'HIDDEN',   lap: 6 },
-        { name: 'AUBRN',    lap: 5 },
-        { name: 'UNLIMITED',lap: 5 },
+      totalLaps:58,
+      drivers:[
+        {name:'LAMAR',lap:7},{name:'CODA',lap:7},{name:'SWEATER',lap:7},
+        {name:'ACHILLES',lap:6},{name:'KEBAB',lap:6},{name:'SUPA',lap:6},
+        {name:'QUAH',lap:6},{name:'HIDDEN',lap:6},{name:'AUBRN',lap:5},{name:'UNLIMITED',lap:5},
       ]
     });
   }
