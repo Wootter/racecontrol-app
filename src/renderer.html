@@ -1272,7 +1272,7 @@ async function resetApiUrl() {
 
 async function afterLogin() {
   const driverName = DRIVER_IDS[user.id];
-  hasDriver = !!driverName;
+  hasDriver = true;
   hasDev = user.id === DEV_USER_ID;
   if (hasDev) {
     document.getElementById("api-url-display").style.display = "block";
