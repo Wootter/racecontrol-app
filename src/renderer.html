@@ -1205,7 +1205,7 @@ try {
   localStorage.setItem("rc_user", JSON.stringify(safeUser));
   user = { ...user, ...safeUser };
   errEl.textContent = "";
-  hasDriver = true;
+  hasDriver = false;
   hasDev = user.id === DEV_USER_ID;
   showEngineerScreen();
   return;
@@ -1258,7 +1258,7 @@ async function resetApiUrl() {
 
 async function afterLogin() {
   const driverName = DRIVER_IDS[user.id];
-  hasDriver = true;
+  hasDriver = !!driverName;
   hasDev = user.id === DEV_USER_ID;
   if (hasDev) {
     document.getElementById("api-url-display").style.display = "block";
