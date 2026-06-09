@@ -1503,7 +1503,19 @@ async function submitPassword() {
       body: JSON.stringify({password:pw}),
     });
     const data = await res.json();
-    if (!res.ok) { document.getElementById("pw-error").textContent = "❌ "+(data.error||"Wrong password"); return; }
+    if (!res.ok) {
+  const err = data.error || "Wrong password";
+  if (err.toLowerCase().includes("marshal")) {
+    document.getElementById("pw-error").textContent = "❌ You need the Marshal role to access this.";
+  } else if (err.toLowerCase().includes("director")) {
+    document.getElementById("pw-error").textContent = "❌ You need the Director role to access this.";
+  } else if (err.toLowerCase().includes("role") || err.toLowerCase().includes("permi")) {
+    document.getElementById("pw-error").textContent = `❌ Missing required role. ${err}`;
+  } else {
+    document.getElementById("pw-error").textContent = "❌ " + err;
+  }
+  return;
+}
 user.isAdmin=data.isAdmin; user.roles=data.roles||[]; user.token=user.marshalToken;
 hasMarshal=true;
 hasDev = user.id === DEV_USER_ID;
