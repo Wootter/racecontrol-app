@@ -523,12 +523,18 @@ async function startPolling(url){
 (async()=>{
   const params=new URLSearchParams(location.search);
   if(params.get('controls')==='1')document.getElementById('controls').classList.add('visible');
-  if(params.get('api')){
-    await startPolling(params.get('api'));
+  const apiOverride=params.get('api');
+  if(apiOverride){
+    await startPolling(apiOverride);
   } else {
-    const url=await fetchApiUrl();
+    let url=null;
+    for(let i=0;i<5;i++){
+      url=await fetchApiUrl();
+      if(url)break;
+      await new Promise(r=>setTimeout(r,3000));
+    }
     if(url)await startPolling(url);
-    else console.warn('[Overlay] No API URL found — leaderboard offline. Add ?api=https://your.url');
+    else console.warn('[Overlay] No API URL found after 5 attempts');
   }
 
   if(params.get('demo')==='1'){
