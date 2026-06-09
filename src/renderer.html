@@ -2451,7 +2451,7 @@ let _acDriverVoted   = false;
 
 async function sendAudioCheck() {
   if (!user?.token) return showToast("✗ Not authenticated", "err");
-  const msg = document.getElementById("ac-message").value.trim() || "Can you hear comms?";
+  const msg = "Can you hear comms?";
   const id  = Date.now();
   _acActiveId    = id;
   _acDriverVoted = false;
