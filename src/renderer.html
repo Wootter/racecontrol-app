@@ -1862,6 +1862,7 @@ function onFlagEvent(flag, customData) {
 if (customData.audioCheckId) {
   _acDriverVoted = false;
   showAudioCheckPrompt(customData.audioCheckId, customData.text || "Can you hear comms?");
+  return;
 }
     let html;
     const isHolo = customData.color==="holographic"||customData.color==="rainbow";
