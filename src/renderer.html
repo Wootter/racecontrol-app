@@ -2536,7 +2536,8 @@ function showAudioCheckPrompt(audioCheckId, msg) {
   if (_acDriverVoted) return;
   const prompt = document.getElementById("ac-driver-prompt");
   if (!prompt) return;
-  prompt.style.display = "block";
+  prompt.style.marginTop = "4px";
+  document.querySelector('.scroll-body')?.scrollTo(0, 0);
   prompt.innerHTML = `
     <div style="background:rgba(41,121,255,0.08);border:1.5px solid rgba(41,121,255,0.5);
       border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;
