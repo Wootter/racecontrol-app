@@ -1860,7 +1860,7 @@ function setDriverBtnsEnabled(on) {
 function onFlagEvent(flag, customData) {
   if (flag === "__custom__" && customData) {
 if (customData.audioCheckId) {
-  showAudioCheckPrompt(customData.audioCheckId, customData.text || "Can you hear comms?");
+  showAudioCheckPrompt(customData.audioCheckId, customData.text || "Radio Check, Radio Check");
   return;
 }
     let html;
@@ -2499,16 +2499,16 @@ function renderAudioCheckResults(data) {
   const yes = data.yes || [];
   const no  = data.no  || [];
 
-  const makeRow = (name, number, callsign, type) => `
-    <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--bg);
-      border:1px solid ${type==="yes"?"rgba(0,230,118,0.3)":"rgba(255,23,68,0.3)"};border-radius:4px;">
-      <div style="width:22px;height:22px;border-radius:3px;background:rgba(255,255,255,0.05);
-        border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
-        font-size:8px;font-weight:800;flex-shrink:0;">#${number}</div>
-      <div style="flex:1;"><div style="font-size:10px;font-weight:700;">${name}</div>
-        <div style="font-size:8px;color:var(--muted);">${callsign}</div></div>
-      <span style="font-size:14px;">${type==="yes"?"✅":"❌"}</span>
-    </div>`;
+const makeRow = (name, number, callsign, type) => `
+  <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--bg);
+    border:1px solid ${type==="yes"?"rgba(0,230,118,0.3)":"rgba(255,23,68,0.3)"};border-radius:4px;">
+    <div style="width:22px;height:22px;border-radius:3px;background:rgba(255,255,255,0.05);
+      border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+      font-size:8px;font-weight:800;flex-shrink:0;">${number === "–" ? "🏁" : "#" + number}</div>
+    <div style="flex:1;"><div style="font-size:10px;font-weight:700;">${name}</div>
+      <div style="font-size:8px;color:var(--muted);">${callsign}</div></div>
+    <span style="font-size:14px;">${type==="yes"?"✅":"❌"}</span>
+  </div>`;
 
   document.getElementById("ac-yes-list").innerHTML =
     yes.length ? yes.map(d => makeRow(d.name, d.number, d.callsign, "yes")).join("") : "";
@@ -2551,13 +2551,13 @@ function showAudioCheckPrompt(audioCheckId, msg) {
           style="flex:1;padding:9px;background:rgba(0,230,118,0.15);border:1px solid rgba(0,230,118,0.5);
             color:var(--green);font-family:'Oxanium',sans-serif;font-size:12px;font-weight:800;
             letter-spacing:1px;text-transform:uppercase;border-radius:5px;cursor:pointer;">
-          ✅ YES
+          ✅ Loud and Clear
         </button>
         <button onclick="submitAudioVote(${audioCheckId},'no')"
           style="flex:1;padding:9px;background:rgba(255,23,68,0.15);border:1px solid rgba(255,23,68,0.5);
             color:var(--red);font-family:'Oxanium',sans-serif;font-size:12px;font-weight:800;
             letter-spacing:1px;text-transform:uppercase;border-radius:5px;cursor:pointer;">
-          ❌ NO
+          ❌ Can't hear ya mate
         </button>
       </div>
     </div>`;
@@ -2569,14 +2569,18 @@ function showAudioCheckPrompt(audioCheckId, msg) {
 async function submitAudioVote(audioCheckId, vote) {
   if (_acDriverVoted) return;
   _acDriverVoted = true;
-  const info = DRIVER_INFO[config.driver] || {};
+
+  const isMarshal = !config.driver || currentPanel === "marshal";
+  const name     = isMarshal ? (user?.username || "Marshal") : config.driver;
+  const info     = isMarshal ? { number: "–", callsign: "Marshal" } : (DRIVER_INFO[config.driver] || {});
+
   try {
     await fetch(`${apiUrl}/audio-check/${audioCheckId}/vote`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-discord-id": user?.id || "" },
       body: JSON.stringify({
         vote,
-        name:     config.driver,
+        name:     name,
         number:   info.number   || "??",
         callsign: info.callsign || "???",
       }),
