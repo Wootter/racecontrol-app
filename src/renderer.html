@@ -2525,16 +2525,20 @@ const makeRow = (name, number, callsign, type) => `
 async function clearAudioCheck() {
   if (_acPollInterval) { clearInterval(_acPollInterval); _acPollInterval = null; }
   _acActiveId = null;
+  _acDriverVoted = false; 
   document.getElementById("ac-results").style.display = "none";
   document.getElementById("ac-yes-list").innerHTML = "";
   document.getElementById("ac-no-list").innerHTML  = "";
-  const prompt = document.getElementById("ac-driver-prompt");
-  if (prompt) { prompt.style.display = "none"; prompt.innerHTML = ""; }
+  ["flag-notif-driver", "flag-notif-marshal"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = "";
+  });
 }
 
 function showAudioCheckPrompt(audioCheckId, msg) {
   if (_acDriverVoted && _acActiveId === audioCheckId) return;
-  _acDriverVoted = false; 
+  _acDriverVoted = false;
+  _acActiveId = audioCheckId;
 
   const html = `
     <div style="background:rgba(41,121,255,0.08);border:1.5px solid rgba(41,121,255,0.5);
@@ -2563,8 +2567,15 @@ function showAudioCheckPrompt(audioCheckId, msg) {
       </div>
     </div>`;
 
-  document.getElementById("flag-notif-driver").innerHTML  = html;
-  document.getElementById("flag-notif-marshal").innerHTML = html;
+  ["flag-notif-driver", "flag-notif-marshal"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  });
+
+  if (currentPanel === "dev" || currentPanel === "settings") {
+    if (hasDriver) switchPanel("driver");
+    else if (hasMarshal) switchPanel("marshal");
+  }
 }
 
 async function submitAudioVote(audioCheckId, vote) {
