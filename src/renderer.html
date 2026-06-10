@@ -66,38 +66,37 @@
     .fc-title{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;}
     .fc-sub{font-size:9px;opacity:0.7;margin-top:2px;}
 
-    /* Holographic flag animation — defined globally so it works everywhere */
-@keyframes holo-border {
-  0%   { border-color:#ff0080; box-shadow:0 0 10px #ff008066, 0 0 22px #ff008033; }
-  16%  { border-color:#ff8800; box-shadow:0 0 10px #ff880066, 0 0 22px #ff880033; }
-  33%  { border-color:#ffff00; box-shadow:0 0 10px #ffff0066, 0 0 22px #ffff0033; }
-  50%  { border-color:#00ff80; box-shadow:0 0 10px #00ff8066, 0 0 22px #00ff8033; }
-  66%  { border-color:#00ffff; box-shadow:0 0 10px #00ffff66, 0 0 22px #00ffff33; }
-  83%  { border-color:#8800ff; box-shadow:0 0 10px #8800ff66, 0 0 22px #8800ff33; }
-  100% { border-color:#ff0080; box-shadow:0 0 10px #ff008066, 0 0 22px #ff008033; }
-}
-@keyframes holo-text {
-  0%   { color:#ff0080; } 16%  { color:#ff8800; } 33%  { color:#ffff00; }
-  50%  { color:#00ff80; } 66%  { color:#00ffff; } 83%  { color:#8800ff; } 100% { color:#ff0080; }
-}
-.flag-card-holo {
-  animation: holo-border 4s linear infinite;
-  border: 2px solid #ff0080;
-  border-radius: 10px;
-  padding: 12px 18px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(255,0,128,0.05);
-  will-change: border-color, box-shadow;
-}
-.flag-card-holo .fc-emoji { font-size: 2em; }
-.flag-card-holo .fc-title {
-  animation: holo-text 4s linear infinite;
-  font-weight: bold;
-  font-size: 1.1em;
-  will-change: color;
-}
+    @keyframes holo-border {
+      0%   { border-color:#ff0080; box-shadow:0 0 10px #ff008066, 0 0 22px #ff008033; }
+      16%  { border-color:#ff8800; box-shadow:0 0 10px #ff880066, 0 0 22px #ff880033; }
+      33%  { border-color:#ffff00; box-shadow:0 0 10px #ffff0066, 0 0 22px #ffff0033; }
+      50%  { border-color:#00ff80; box-shadow:0 0 10px #00ff8066, 0 0 22px #00ff8033; }
+      66%  { border-color:#00ffff; box-shadow:0 0 10px #00ffff66, 0 0 22px #00ffff33; }
+      83%  { border-color:#8800ff; box-shadow:0 0 10px #8800ff66, 0 0 22px #8800ff33; }
+      100% { border-color:#ff0080; box-shadow:0 0 10px #ff008066, 0 0 22px #ff008033; }
+    }
+    @keyframes holo-text {
+      0%   { color:#ff0080; } 16%  { color:#ff8800; } 33%  { color:#ffff00; }
+      50%  { color:#00ff80; } 66%  { color:#00ffff; } 83%  { color:#8800ff; } 100% { color:#ff0080; }
+    }
+    .flag-card-holo {
+      animation: holo-border 4s linear infinite;
+      border: 2px solid #ff0080;
+      border-radius: 10px;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,0,128,0.05);
+      will-change: border-color, box-shadow;
+    }
+    .flag-card-holo .fc-emoji { font-size: 2em; }
+    .flag-card-holo .fc-title {
+      animation: holo-text 4s linear infinite;
+      font-weight: bold;
+      font-size: 1.1em;
+      will-change: color;
+    }
 
     .lb-row{display:flex;align-items:center;gap:7px;padding:7px 9px;background:var(--surface);border:1px solid var(--border);border-radius:5px;}
     .lb-row.is-me{border-color:rgba(41,121,255,0.4);background:rgba(41,121,255,0.06);}
@@ -169,11 +168,13 @@
     .divider{height:1px;background:var(--border);}
     .action-notice{font-size:10px;color:var(--muted);text-align:center;padding:8px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:5px;}
 
+    /* FIX: volume slider styling */
+    .vol-slider{width:100%;accent-color:var(--blue);cursor:pointer;height:4px;}
+
     #toast{position:fixed;bottom:10px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:11px;font-weight:700;padding:7px 16px;border-radius:20px;opacity:0;transition:transform 0.2s,opacity 0.2s;white-space:nowrap;pointer-events:none;z-index:999;}
     #toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
     #toast.ok{border-color:var(--green);color:var(--green);}
     #toast.err{border-color:var(--red);color:var(--red);}
-
   </style>
 </head>
 <body>
@@ -232,7 +233,7 @@
 <!-- DRIVER PANEL -->
 <div class="screen" id="screen-driver">
   <div id="flag-notif-driver" style="padding:8px 12px 0;"></div>
-<div id="ac-driver-prompt" style="display:none;padding:0 12px 0;"></div>
+  <div id="ac-driver-prompt" style="display:none;padding:0 12px 0;"></div>
   <div id="cooldown-bar"><div id="cooldown-fill"></div></div>
   <div class="scroll-body">
     <div class="status-row">
@@ -295,13 +296,13 @@
     <div id="m-bf-container" style="display:flex;flex-direction:column;gap:4px;"></div>
     <div>
       <div class="sec-label">Global Flags</div>
-<div class="flag-grid">
-  <button class="flag-btn green"  onclick="triggerFlag('green')"><span class="fi">🟢</span><span class="fn">Green</span></button>
-  <button class="flag-btn red"    onclick="triggerFlag('red')"><span class="fi">🔴</span><span class="fn">Red</span></button>
-  <button class="flag-btn yellow" onclick="openSectorModal()"><span class="fi">🟡</span><span class="fn">Yellow</span></button>
-  <button class="flag-btn yellow" onclick="triggerFlag('fcy')"><span class="fi">🟡</span><span class="fn">FCY</span></button>
-  <button class="flag-btn blue" onclick="openBlueFlagModal()" style="grid-column:span 2;"><span class="fi">🔵</span><span class="fn">Blue Flag</span></button>
-</div>
+      <div class="flag-grid">
+        <button class="flag-btn green"  onclick="triggerFlag('green')"><span class="fi">🟢</span><span class="fn">Green</span></button>
+        <button class="flag-btn red"    onclick="triggerFlag('red')"><span class="fi">🔴</span><span class="fn">Red</span></button>
+        <button class="flag-btn yellow" onclick="openSectorModal()"><span class="fi">🟡</span><span class="fn">Yellow</span></button>
+        <button class="flag-btn yellow" onclick="triggerFlag('fcy')"><span class="fi">🟡</span><span class="fn">FCY</span></button>
+        <button class="flag-btn blue" onclick="openBlueFlagModal()" style="grid-column:span 2;"><span class="fi">🔵</span><span class="fn">Blue Flag</span></button>
+      </div>
     </div>
     <div class="divider"></div>
     <div>
@@ -313,7 +314,7 @@
         <button class="flag-btn orange" onclick="triggerFlag('sfl')"><span class="fi">🟠</span><span class="fn">SFL</span></button>
       </div>
     </div>
-<div class="divider"></div>
+    <div class="divider"></div>
     <div id="m-race-setup" style="display:none;">
       <div class="sec-label">🏁 Race Setup</div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:7px;">
@@ -376,30 +377,29 @@
       <div id="dev-panel-status" style="font-size:9px;color:var(--muted);margin-top:4px;"></div>
     </div>
 
-<div class="dev-card">
-  <div class="dev-title">Engineering Assignments</div>
-  <div id="dev-engineers" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;font-size:10px;color:var(--muted);">Loading...</div>
-  <button class="dev-btn" onclick="clearLocalEngineers()" style="margin-top:4px;font-size:9px;">🗑️ Clear Local Engineers</button>
-</div>
-
-
-<div class="dev-card">
-  <div class="dev-title">Tab Visibility</div>
-  <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;">
-      <span style="font-size:11px;">🏎️ Driver Tab</span>
-      <button id="dev-toggle-driver-tab" onclick="devToggleTab('driver')"
-        style="font-size:9px;font-weight:800;padding:3px 10px;border-radius:4px;border:1px solid;cursor:pointer;font-family:'Oxanium',sans-serif;">
-      </button>
+    <div class="dev-card">
+      <div class="dev-title">Engineering Assignments</div>
+      <div id="dev-engineers" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;font-size:10px;color:var(--muted);">Loading...</div>
+      <button class="dev-btn" onclick="clearLocalEngineers()" style="margin-top:4px;font-size:9px;">🗑️ Clear Local Engineers</button>
     </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;">
-      <span style="font-size:11px;">🏁 Marshal Tab</span>
-      <button id="dev-toggle-marshal-tab" onclick="devToggleTab('marshal')"
-        style="font-size:9px;font-weight:800;padding:3px 10px;border-radius:4px;border:1px solid;cursor:pointer;font-family:'Oxanium',sans-serif;">
-      </button>
+
+    <div class="dev-card">
+      <div class="dev-title">Tab Visibility</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;">
+          <span style="font-size:11px;">🏎️ Driver Tab</span>
+          <button id="dev-toggle-driver-tab" onclick="devToggleTab('driver')"
+            style="font-size:9px;font-weight:800;padding:3px 10px;border-radius:4px;border:1px solid;cursor:pointer;font-family:'Oxanium',sans-serif;">
+          </button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;">
+          <span style="font-size:11px;">🏁 Marshal Tab</span>
+          <button id="dev-toggle-marshal-tab" onclick="devToggleTab('marshal')"
+            style="font-size:9px;font-weight:800;padding:3px 10px;border-radius:4px;border:1px solid;cursor:pointer;font-family:'Oxanium',sans-serif;">
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
     
     <div class="dev-card">
       <div class="dev-title">API Stats</div>
@@ -420,12 +420,10 @@
       </div>
     </div>
 
-
     <div class="dev-card">
       <div class="dev-title">Driver Panel Logins</div>
       <div id="dev-driver-logins" style="max-height:120px;overflow-y:auto;font-size:10px;color:var(--muted);">Loading...</div>
     </div>
-
 
     <div class="dev-card">
       <div class="dev-title">Play Custom Audio</div>
@@ -437,42 +435,39 @@
       <button class="dev-btn" onclick="devStopAudio()" style="margin-top:4px;">⏹ Stop Audio</button>
     </div>
 
+    <div class="dev-card">
+      <div class="dev-title">Mock Leaderboard</div>
+      <div id="dev-mock-lb" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;max-height:200px;overflow-y:auto;"></div>
+      <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;">
+        <button class="dev-btn" onclick="devAddMockDriver()" style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;flex:1;">+ Add Driver</button>
+        <button class="dev-btn" onclick="devPushMockLb()" style="background:rgba(41,121,255,0.1);border-color:rgba(41,121,255,0.3);color:var(--blue);font-size:9px;flex:1;">⬆ Push to Race</button>
+        <button class="dev-btn" onclick="devClearMockLb()" style="font-size:9px;flex:0 0 auto;padding:7px 10px;">✕ Clear</button>
+      </div>
+      <div id="dev-mock-status" style="font-size:9px;color:var(--muted);margin-top:2px;"></div>
+    </div>
 
-<div class="dev-card">
-  <div class="dev-title">Mock Leaderboard</div>
-  <div id="dev-mock-lb" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;max-height:200px;overflow-y:auto;"></div>
-  <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;">
-    <button class="dev-btn" onclick="devAddMockDriver()" style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;flex:1;">+ Add Driver</button>
-    <button class="dev-btn" onclick="devPushMockLb()" style="background:rgba(41,121,255,0.1);border-color:rgba(41,121,255,0.3);color:var(--blue);font-size:9px;flex:1;">⬆ Push to Race</button>
-    <button class="dev-btn" onclick="devClearMockLb()" style="font-size:9px;flex:0 0 auto;padding:7px 10px;">✕ Clear</button>
-  </div>
-  <div id="dev-mock-status" style="font-size:9px;color:var(--muted);margin-top:2px;"></div>
-</div>
-
-
-<div class="dev-card">
-  <div class="dev-title">Custom Flag Notification</div>
-  <input type="text" id="dev-flag-text" placeholder="Flag name e.g. Purple Flag" style="margin-top:4px;font-size:11px;"/>
-  <div style="display:flex;gap:6px;margin-top:6px;">
-    <input type="text" id="dev-flag-emoji" placeholder="🏴" maxlength="2" style="width:50px;text-align:center;font-size:18px;padding:4px;flex:0 0 auto;"/>
-    <input type="color" id="dev-flag-hex" value="#ff00ff" style="width:50px;height:36px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);cursor:pointer;padding:2px;flex:0 0 auto;"/>
-    <button id="dev-holo-btn" onclick="toggleHoloMode()" style="flex:0 0 auto;height:36px;padding:0 8px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);color:var(--muted);font-family:'Oxanium',sans-serif;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:0.5px;">🌈 HOLO</button>
-    <div id="dev-flag-preview" style="flex:1;border-radius:var(--radius);border:1px solid var(--border);padding:6px 10px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:6px;">Preview</div>
-  </div>
-
-  <div id="dev-flag-bg-drop" style="margin-top:6px;border:1px dashed var(--border);border-radius:var(--radius);padding:10px;text-align:center;font-size:9px;color:var(--muted);cursor:pointer;transition:border-color 0.2s;" onclick="document.getElementById('dev-flag-bg-input').click()">
-    🖼️ Drop or click to set background image
-  </div>
-  <input type="file" id="dev-flag-bg-input" accept="image/*" style="display:none;" onchange="loadFlagBgImage(this.files[0])"/>
-  <div id="dev-flag-bg-preview" style="display:none;margin-top:4px;position:relative;">
-    <img id="dev-flag-bg-img" style="width:100%;height:48px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);"/>
-    <button onclick="clearFlagBgImage()" style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.7);border:none;color:#fff;font-size:9px;border-radius:3px;padding:2px 5px;cursor:pointer;">✕ Remove</button>
-  </div>
-  <div style="display:flex;gap:6px;margin-top:6px;">
-    <button class="dev-btn" onclick="devSendCustomFlag()" style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Send to Drivers</button>
-  </div>
-  <div id="dev-flag-status" style="font-size:9px;color:var(--muted);margin-top:4px;"></div>
-</div>
+    <div class="dev-card">
+      <div class="dev-title">Custom Flag Notification</div>
+      <input type="text" id="dev-flag-text" placeholder="Flag name e.g. Purple Flag" style="margin-top:4px;font-size:11px;"/>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <input type="text" id="dev-flag-emoji" placeholder="🏴" maxlength="2" style="width:50px;text-align:center;font-size:18px;padding:4px;flex:0 0 auto;"/>
+        <input type="color" id="dev-flag-hex" value="#ff00ff" style="width:50px;height:36px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);cursor:pointer;padding:2px;flex:0 0 auto;"/>
+        <button id="dev-holo-btn" onclick="toggleHoloMode()" style="flex:0 0 auto;height:36px;padding:0 8px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);color:var(--muted);font-family:'Oxanium',sans-serif;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:0.5px;">🌈 HOLO</button>
+        <div id="dev-flag-preview" style="flex:1;border-radius:var(--radius);border:1px solid var(--border);padding:6px 10px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:6px;">Preview</div>
+      </div>
+      <div id="dev-flag-bg-drop" style="margin-top:6px;border:1px dashed var(--border);border-radius:var(--radius);padding:10px;text-align:center;font-size:9px;color:var(--muted);cursor:pointer;transition:border-color 0.2s;" onclick="document.getElementById('dev-flag-bg-input').click()">
+        🖼️ Drop or click to set background image
+      </div>
+      <input type="file" id="dev-flag-bg-input" accept="image/*" style="display:none;" onchange="loadFlagBgImage(this.files[0])"/>
+      <div id="dev-flag-bg-preview" style="display:none;margin-top:4px;position:relative;">
+        <img id="dev-flag-bg-img" style="width:100%;height:48px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);"/>
+        <button onclick="clearFlagBgImage()" style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.7);border:none;color:#fff;font-size:9px;border-radius:3px;padding:2px 5px;cursor:pointer;">✕ Remove</button>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button class="dev-btn" onclick="devSendCustomFlag()" style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Send to Drivers</button>
+      </div>
+      <div id="dev-flag-status" style="font-size:9px;color:var(--muted);margin-top:4px;"></div>
+    </div>
 
     <div class="dev-card">
       <div class="dev-title">Audit Log</div>
@@ -509,13 +504,27 @@
       <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">API Connection</div>
       <input type="url" id="s-api" placeholder="https://xxx.trycloudflare.com"/>
     </div>
+
+    <!-- FIX: Volume control card -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Flag Audio Volume</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:14px;">🔈</span>
+        <input type="range" id="vol-slider" class="vol-slider" min="0" max="100" value="100" oninput="onVolumeSlider(this.value)"/>
+        <span style="font-size:14px;">🔊</span>
+        <span id="vol-label" style="font-size:11px;font-weight:700;color:var(--blue);width:34px;text-align:right;">100%</span>
+      </div>
+      <div style="font-size:9px;color:var(--muted);">Controls the volume of all flag audio alerts.</div>
+    </div>
+
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;">
       <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Global Keybinds</div>
+      <div style="font-size:9px;color:var(--muted);padding:4px 0;">Click a field then press any key to rebind. Keybinds are suspended while you type in other fields.</div>
       <div class="settings-row"><span class="settings-label">🔵 Blue Flag</span><input type="text" class="kb-input" id="kb-blue_flag" readonly onclick="listenKey('blue_flag')"/></div>
       <div class="settings-row"><span class="settings-label">🏁 Next Lap</span><input type="text" class="kb-input" id="kb-next_lap" readonly onclick="listenKey('next_lap')"/></div>
       <div class="settings-row" style="border:none;"><span class="settings-label">🔧 Pitting</span><input type="text" class="kb-input" id="kb-pitting" readonly onclick="listenKey('pitting')"/></div>
     </div>
-<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;">
       <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Keybind Sounds</div>
       <div class="settings-row"><span class="settings-label">🔵 Blue Flag sound</span><div style="display:flex;gap:4px;"><button onclick="pickKeybindSound('blue_flag')" id="snd-blue_flag-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetKeybindSound('blue_flag')" style="font-size:9px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;font-family:'Oxanium',sans-serif;">✕</button></div></div>
       <div class="settings-row"><span class="settings-label">🏁 Next Lap sound</span><div style="display:flex;gap:4px;"><button onclick="pickKeybindSound('next_lap')" id="snd-next_lap-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetKeybindSound('next_lap')" style="font-size:9px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;font-family:'Oxanium',sans-serif;">✕</button></div></div>
@@ -539,7 +548,6 @@
     <button class="save-btn" onclick="goBack()" style="background:rgba(255,255,255,0.03);border-color:var(--border);color:var(--muted);">← Back</button>
     <button class="save-btn" onclick="reLogin()" style="background:rgba(255,23,68,0.08);border-color:rgba(255,23,68,0.3);color:var(--red);">↩ Re-Login</button>
     <button class="save-btn" onclick="uninstallApp()" style="background:rgba(255,23,68,0.08);border-color:rgba(255,23,68,0.3);color:var(--red);">🗑️ Uninstall App</button>
-    
   </div>
 </div>
 
@@ -557,19 +565,15 @@
       <div style="font-size:13px;font-weight:800;color:var(--red);">🐛 Report a Bug</div>
       <button onclick="closeBugReport()" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;">✕</button>
     </div>
-
     <div style="font-size:9px;color:var(--muted);">All reports are sent directly to the developer.</div>
-
     <div style="display:flex;flex-direction:column;gap:4px;">
       <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">What happened?</label>
       <textarea id="bug-what" placeholder="Describe the bug..." style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Oxanium',sans-serif;font-size:11px;padding:8px;border-radius:var(--radius);outline:none;resize:none;height:70px;"></textarea>
     </div>
-
     <div style="display:flex;flex-direction:column;gap:4px;">
       <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">Steps to reproduce</label>
-      <textarea id="bug-steps" placeholder="1. I clicked...\n2. Then..." style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Oxanium',sans-serif;font-size:11px;padding:8px;border-radius:var(--radius);outline:none;resize:none;height:60px;"></textarea>
+      <textarea id="bug-steps" placeholder="1. I clicked...&#10;2. Then..." style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Oxanium',sans-serif;font-size:11px;padding:8px;border-radius:var(--radius);outline:none;resize:none;height:60px;"></textarea>
     </div>
-
     <div style="display:flex;gap:8px;">
       <div style="display:flex;flex-direction:column;gap:4px;flex:1;">
         <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">Expected</label>
@@ -580,7 +584,6 @@
         <textarea id="bug-actual" placeholder="What actually happened..." style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Oxanium',sans-serif;font-size:11px;padding:8px;border-radius:var(--radius);outline:none;resize:none;height:50px;"></textarea>
       </div>
     </div>
-
     <div style="display:flex;flex-direction:column;gap:4px;">
       <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">How often does this happen?</label>
       <select id="bug-frequency" style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Oxanium',sans-serif;font-size:11px;padding:8px;border-radius:var(--radius);outline:none;">
@@ -590,7 +593,6 @@
         <option value="once">Only happened once</option>
       </select>
     </div>
-
     <div style="display:flex;flex-direction:column;gap:4px;">
       <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">Which panel were you on?</label>
       <select id="bug-panel" style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Oxanium',sans-serif;font-size:11px;padding:8px;border-radius:var(--radius);outline:none;">
@@ -602,7 +604,6 @@
         <option value="other">Other</option>
       </select>
     </div>
-
     <div style="display:flex;flex-direction:column;gap:4px;">
       <label style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">Screenshot (optional)</label>
       <div id="bug-img-drop" onclick="document.getElementById('bug-img-input').click()" style="border:1px dashed var(--border);border-radius:var(--radius);padding:12px;text-align:center;font-size:10px;color:var(--muted);cursor:pointer;">
@@ -614,7 +615,6 @@
         <button onclick="clearBugImage()" style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.7);border:none;color:#fff;font-size:9px;border-radius:3px;padding:2px 5px;cursor:pointer;">✕</button>
       </div>
     </div>
-
     <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);">
       <div>
         <div style="font-size:10px;font-weight:700;">Include dev logs</div>
@@ -622,12 +622,10 @@
       </div>
       <input type="checkbox" id="bug-include-logs" checked style="width:16px;height:16px;cursor:pointer;accent-color:var(--blue);"/>
     </div>
-
     <div id="bug-status" style="font-size:9px;text-align:center;min-height:12px;color:var(--muted);"></div>
-
     <button onclick="submitBugReport()" id="bug-submit-btn" style="width:100%;padding:10px;background:rgba(255,23,68,0.15);border:1px solid rgba(255,23,68,0.4);color:var(--red);font-family:'Oxanium',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--radius);cursor:pointer;">
       🐛 Submit Report
-</button>
+    </button>
   </div>
 </div>
 
@@ -646,7 +644,7 @@
     <div id="blueflag-driver-list" style="display:flex;flex-direction:column;gap:6px;margin-top:4px;"></div>
   </div>
 </div>
-	
+
 <div id="sector-modal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;width:100%;max-width:320px;display:flex;flex-direction:column;gap:10px;">
     <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -694,37 +692,37 @@ const FLAG_DEFS = {
   sc_speedup: {emoji:"🟠",title:"Speed Up",           sub:"Safety car speeding up — get ready.",         color:"orange", sound:"SCSpeedup.mp4"},
   sfl:        {emoji:"🟠",title:"Single File",        sub:"Form single file behind the safety car.",     color:"orange", sound:"SFL.mp4"},
   checkered:  {emoji:"🏁",title:"Checkered Flag",     sub:"Race over — cool down lap.",                  color:"white",  sound:null},
-  yellow_s1:  {emoji:"🟡",title:"Yellow Flag",        sub:"🟡 Yellow flag — Sector 1",                       color:"yellow", sound:"YellowFlagSector1.mp4"},
-  yellow_s2:  {emoji:"🟡",title:"Yellow Flag",        sub:"🟡 Yellow flag — Sector 2",                       color:"yellow", sound:"YellowFlagSector2.mp4"},
-  yellow_s3:  {emoji:"🟡",title:"Yellow Flag",        sub:"🟡 Yellow flag — Sector 3",                       color:"yellow", sound:"YellowFlagSector3.mp4"},
+  yellow_s1:  {emoji:"🟡",title:"Yellow Flag",        sub:"🟡 Yellow flag — Sector 1",                   color:"yellow", sound:"YellowFlagSector1.mp4"},
+  yellow_s2:  {emoji:"🟡",title:"Yellow Flag",        sub:"🟡 Yellow flag — Sector 2",                   color:"yellow", sound:"YellowFlagSector2.mp4"},
+  yellow_s3:  {emoji:"🟡",title:"Yellow Flag",        sub:"🟡 Yellow flag — Sector 3",                   color:"yellow", sound:"YellowFlagSector3.mp4"},
 };
 
 const DRIVER_IDS = {
   "884223249939050507":"ACHILLES","799844642984034314":"AUBRN","1487269583898284183":"BRYAN",
   "749509586800869418":"CHASE","660419748894343169":"CODA","1228434328653140162":"LAMAR","852652597315240028":"QUAH","763093725903585291":"SETH",
-  "1112809205771010150":"SHADOW","1127975831197724813":"SUPA","1036614995737321552":"SWEATER", "756781169550295061":"VSCO", "1122883570021695548":"KEBAB", "776108630415376385":"TON", 
+  "1112809205771010150":"SHADOW","1127975831197724813":"SUPA","1036614995737321552":"SWEATER","756781169550295061":"VSCO","1122883570021695548":"KEBAB","776108630415376385":"TON",
   "1081740933021835354":"UNLIMITED","1211381460406116375":"COOLCAT","529122061411549185":"HIDDEN",
 };
 
-    const DRIVER_INFO = {
-      "ACHILLES":    { number: "09",  callsign: "MAR-09"   },
-      "VSCO":        { number: "??",  callsign: "ST-??"   },
-      "AUBRN":       { number: "18",  callsign: "CRG-18"  },
-      "KEBAB":       { number: "33",  callsign: "TNT-33"  },
-      "TON":         { number: "50",  callsign: "TNT-50"  },
-      "BRYAN":       { number: "06",  callsign: "LND-06"  },
-      "CHASE":       { number: "02",  callsign: "MIS-27"   },
-      "SWEATER":     { number: "31",  callsign: "MIS-31"  },
-      "CODA":        { number: "56",  callsign: "LND-56"  },
-      "LAMAR":       { number: "01",  callsign: "MAR-01"  }, 
-	  "COOLCAT":     { number: "27",  callsign: "MIS-27"  },
-      "QUAH":        { number: "28",  callsign: "LOT-28"  },
-      "SETH":        { number: "03",  callsign: "LOT-33"  },
-      "SHADOW":      { number: "18",  callsign: "ST-18"   },
-      "SUPA":        { number: "05",  callsign: "ST-05"  },
-      "UNLIMITED":   { number: "12",  callsign: "AWR-12"  },
-	  "HIDDEN":      { number: "22",  callsign: "NCC-22"  }, 
-    };
+const DRIVER_INFO = {
+  "ACHILLES":  { number:"09", callsign:"MAR-09"  },
+  "VSCO":      { number:"??", callsign:"ST-??"   },
+  "AUBRN":     { number:"18", callsign:"CRG-18"  },
+  "KEBAB":     { number:"33", callsign:"TNT-33"  },
+  "TON":       { number:"50", callsign:"TNT-50"  },
+  "BRYAN":     { number:"06", callsign:"LND-06"  },
+  "CHASE":     { number:"02", callsign:"MIS-27"  },
+  "SWEATER":   { number:"31", callsign:"MIS-31"  },
+  "CODA":      { number:"56", callsign:"LND-56"  },
+  "LAMAR":     { number:"01", callsign:"MAR-01"  },
+  "COOLCAT":   { number:"27", callsign:"MIS-27"  },
+  "QUAH":      { number:"28", callsign:"LOT-28"  },
+  "SETH":      { number:"03", callsign:"LOT-33"  },
+  "SHADOW":    { number:"18", callsign:"ST-18"   },
+  "SUPA":      { number:"05", callsign:"ST-05"   },
+  "UNLIMITED": { number:"12", callsign:"AWR-12"  },
+  "HIDDEN":    { number:"22", callsign:"NCC-22"  },
+};
 
 let config        = {};
 let user          = null;
@@ -749,8 +747,58 @@ let _lastBlueFlagDriver = null;
 let isEngineer         = false;
 let _driverPollInterval  = null;
 let _marshalPollInterval = null;
-
 let _holoMode = false;
+
+let _flagVolume = 1.0;
+
+function onVolumeSlider(val) {
+  _flagVolume = parseInt(val, 10) / 100;
+  document.getElementById("vol-label").textContent = val + "%";
+  localStorage.setItem("rc_flag_volume", val);
+}
+
+function loadVolumePrefs() {
+  const saved = localStorage.getItem("rc_flag_volume");
+  if (saved !== null) {
+    const pct = parseInt(saved, 10);
+    _flagVolume = pct / 100;
+    const slider = document.getElementById("vol-slider");
+    const label  = document.getElementById("vol-label");
+    if (slider) slider.value = pct;
+    if (label)  label.textContent = pct + "%";
+  }
+}
+
+
+
+function _suspendHotkeys() {
+  if (config.keybinds) window.api.registerHotkeys({});
+}
+function _resumeHotkeys() {
+  if (config.keybinds) window.api.registerHotkeys(config.keybinds);
+}
+
+function _bindHotkeyPauseListeners(root) {
+  const sel = 'input:not([readonly]):not([type="range"]):not([type="checkbox"]):not([type="file"]):not([type="color"]), textarea, select';
+  root.querySelectorAll(sel).forEach(el => {
+    if (el._hkPauseAttached) return;
+    el._hkPauseAttached = true;
+    el.addEventListener("focus", _suspendHotkeys);
+    el.addEventListener("blur",  _resumeHotkeys);
+  });
+}
+
+function _initHotkeyPauseObserver() {
+
+  _bindHotkeyPauseListeners(document.body);
+  const obs = new MutationObserver(mutations => {
+    mutations.forEach(m => m.addedNodes.forEach(n => {
+      if (n.nodeType === 1) _bindHotkeyPauseListeners(n);
+    }));
+  });
+  obs.observe(document.body, { childList: true, subtree: true });
+}
+
 
 function updatePreview() {
   const hexInput   = document.getElementById("dev-flag-hex");
@@ -773,7 +821,7 @@ function updatePreview() {
     preview.style.fontSize     = "11px";
     preview.style.fontWeight   = "700";
     preview.innerHTML = `<span style="font-size:16px;">${emoji}</span><span style="animation:holo-text 4s linear infinite;">${text}</span>`;
-} else {
+  } else {
     preview.style.cssText     = "";
     preview.style.border      = "1px solid " + hex;
     preview.style.color       = hex;
@@ -796,22 +844,17 @@ function devToggleTab(tab) {
   _devTabVisible[tab] = !_devTabVisible[tab];
   const visible = _devTabVisible[tab];
   localStorage.setItem("rc_dev_tabs", JSON.stringify(_devTabVisible));
-
   const swBtn = document.getElementById(`sw-${tab}`);
   if (swBtn) swBtn.style.display = visible ? "" : "none";
-
   updateDevTabBtns();
-
   if (!visible && currentPanel === tab) {
     if (tab === "driver" && hasMarshal) launchMarshalPanel(false);
     else if (tab === "marshal" && hasDriver) launchDriverPanel(false);
   }
-	
   if (visible && tab === "driver" && !config.driver) {
     hasDriver = true;
     showEngineerScreen();
   }
-
   showToast(`✓ ${tab} tab ${visible ? "shown" : "hidden"}`, "ok");
 }
 
@@ -821,7 +864,7 @@ function clearLocalEngineers() {
   if (engEl) engEl.innerHTML = '<div style="color:var(--muted);">No engineers active.</div>';
   showToast("✓ Local engineers cleared", "ok");
 }
-	
+
 function updateDevTabBtns() {
   ["driver", "marshal"].forEach(tab => {
     const btn = document.getElementById(`dev-toggle-${tab}-tab`);
@@ -837,16 +880,13 @@ function updateDevTabBtns() {
 function renderAttendance() {
   const el = document.getElementById("m-attendance");
   if (!el) return;
-
   try {
     const saved = localStorage.getItem("rc_attendance");
     if (saved) _attendance = JSON.parse(saved);
   } catch {}
-
   const drivers = Object.entries(DRIVER_INFO).sort((a, b) => parseInt(a[1].number) - parseInt(b[1].number));
-
   el.innerHTML = drivers.map(([name, info]) => {
-    const present = _attendance[name] !== false; 
+    const present = _attendance[name] !== false;
     return `
       <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 9px;background:var(--surface);border:1px solid ${present ? "var(--border)" : "rgba(255,23,68,0.3)"};border-radius:5px;transition:border-color 0.15s;">
         <div style="display:flex;align-items:center;gap:8px;">
@@ -880,7 +920,7 @@ function syncAttendanceToLeaderboard() {
   const filtered = _lastRaceState.drivers.filter(d => _attendance[d.name] !== false);
   renderLeaderboard({ ..._lastRaceState, drivers: filtered });
 }
-	
+
 function loadDevTabPrefs() {
   try {
     const saved = localStorage.getItem("rc_dev_tabs");
@@ -895,7 +935,7 @@ function loadDevTabPrefs() {
     }
   } catch {}
 }
-	
+
 function resetKeybindSound(action) {
   delete _keybindSounds[action];
   localStorage.setItem("rc_keybind_sounds", JSON.stringify(_keybindSounds));
@@ -905,13 +945,10 @@ function resetKeybindSound(action) {
 
 function openBlueFlagModal() {
   const list = document.getElementById("blueflag-driver-list");
-  
-  // Get current drivers from last race state if available, else use DRIVER_INFO
   const activePlayers = _lastRaceState?.drivers?.length
     ? _lastRaceState.drivers
     : Object.entries(DRIVER_INFO).sort((a,b) => parseInt(a[1].number) - parseInt(b[1].number))
         .map(([name, info]) => ({ name, number: info.number, callsign: info.callsign }));
-
   list.innerHTML = activePlayers.map(d => `
     <button onclick="triggerBlueFlagForDriver('${d.name}', '${d.number}', '${d.callsign}')"
       style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:7px;cursor:pointer;color:var(--text);font-family:'Oxanium',sans-serif;transition:border-color 0.15s,background 0.15s;width:100%;"
@@ -924,7 +961,6 @@ function openBlueFlagModal() {
       </div>
       <div style="margin-left:auto;font-size:16px;">🔵</div>
     </button>`).join("");
-
   document.getElementById("blueflag-modal").style.display = "flex";
 }
 
@@ -943,9 +979,9 @@ async function triggerBlueFlagForDriver(name, number, callsign) {
     });
     const data = await res.json();
     if (res.ok) {
-showToast(`✓ Blue Flag — ${name}`, "ok");
-_lastBlueFlagDriver = { name, number, callsign };
-const html = `<div class="flag-card blue">
+      showToast(`✓ Blue Flag — ${name}`, "ok");
+      _lastBlueFlagDriver = { name, number, callsign };
+      const html = `<div class="flag-card blue">
         <span class="fc-emoji">🔵</span>
         <div>
           <div class="fc-title">Blue Flag — ${name}</div>
@@ -968,10 +1004,9 @@ function resetFlagSound(flag) {
   showToast(`✓ Sound reset for ${flag}`, "ok");
 }
 
-  function openSectorModal() {
+function openSectorModal() {
   document.getElementById("sector-modal").style.display = "flex";
 }
-
 function closeSectorModal() {
   document.getElementById("sector-modal").style.display = "none";
 }
@@ -993,7 +1028,7 @@ async function playFlagAudio(soundFile) {
   if (flagKey && _flagSounds[flagKey]) {
     try {
       const audio = new Audio(_flagSounds[flagKey]);
-      audio.volume = 1.0;
+      audio.volume = _flagVolume;
       _currentFlagAudio = audio;
       await audio.play();
       audio.onended = () => { if (_currentFlagAudio === audio) _currentFlagAudio = null; };
@@ -1011,7 +1046,7 @@ async function playFlagAudio(soundFile) {
     const blob  = await res.blob();
     const url   = URL.createObjectURL(blob);
     const audio = new Audio(url);
-    audio.volume = 1.0;
+    audio.volume = _flagVolume;
     _currentFlagAudio = audio;
     await audio.play();
     audio.onended = () => {
@@ -1020,7 +1055,7 @@ async function playFlagAudio(soundFile) {
     };
   } catch(e) { console.error("Audio error:", e); }
 }
-	
+
 async function triggerSectorFlag(flag) {
   closeSectorModal();
   if (!user?.token) return showToast("✗ Not authenticated as marshal", "err");
@@ -1040,13 +1075,13 @@ async function triggerSectorFlag(flag) {
     }
   } catch { showToast("✗ Bot unreachable", "err"); }
 }
-  
+
 function uninstallApp() {
   const confirmed = confirm("Are you sure you want to uninstall RaceLeague Control?\n\nThis will remove the app and all its data.");
   if (!confirmed) return;
   window.api.uninstall();
 }
-  
+
 function toggleHoloMode() {
   _holoMode = !_holoMode;
   const btn = document.getElementById("dev-holo-btn");
@@ -1076,7 +1111,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("kb-next_lap").value  = config.keybinds?.next_lap  || "F2";
   document.getElementById("kb-pitting").value   = config.keybinds?.pitting   || "F3";
   document.getElementById("btn-discord-login")?.addEventListener("click", loginWithDiscord);
-  
+
   window.api.onToast(({msg,type})   => showToast(msg, type));
   window.api.onCooldownStart(s      => startCooldown(s));
   window.api.onCooldownEnd(()       => stopCooldown());
@@ -1119,13 +1154,14 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (apiDisplay) apiDisplay.textContent = apiUrl;
   }
 
-const saved = sessionStorage.getItem("rc_user") || localStorage.getItem("rc_user");
-if (saved && apiUrl) { 
-  user = JSON.parse(saved);
-  delete user.isAdmin;
-  delete user.roles;
-  await afterLogin(); 
-}
+  const saved = sessionStorage.getItem("rc_user") || localStorage.getItem("rc_user");
+  if (saved && apiUrl) {
+    user = JSON.parse(saved);
+    delete user.isAdmin;
+    delete user.roles;
+    await afterLogin();
+  }
+
   if (apiUrl) {
     const evtSource = new EventSource(`${apiUrl}/events`);
     evtSource.addEventListener("flag", e => {
@@ -1145,11 +1181,15 @@ if (saved && apiUrl) {
     document.getElementById("dev-flag-text")?.addEventListener("input",  updatePreview);
     updatePreview();
   }, 600);
-	
+
   loadDevTabPrefs();
-  loadFlagSounds()
+  loadFlagSounds();
   loadToolboxPrefs();
   loadKeybindSounds();
+  loadVolumePrefs();
+
+
+  _initHotkeyPauseObserver();
 });
 
 async function loginWithDiscord() {
@@ -1177,14 +1217,14 @@ async function loginWithDiscord() {
 
     if (dRes.ok) {
       user = dData.user;
-} else if (dRes.status === 403 && !dData.disabled) {
-errEl.style.color = "var(--muted)"; errEl.textContent = "Trying marshal login...";
-let mRes, mData;
-try {
-  mRes  = await fetch(`${apiUrl}/auth/session`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({userId: dData.userId, sessionToken: dData.sessionToken}) });
-  mData = await mRes.json();
-} catch(fetchErr) { errEl.style.color="var(--red)"; errEl.textContent="❌ Can't reach API. Is the URL still valid?"; showChangeUrlPrompt(); return; }
-if (mRes.ok) {
+    } else if (dRes.status === 403 && !dData.disabled) {
+      errEl.style.color = "var(--muted)"; errEl.textContent = "Trying marshal login...";
+      let mRes, mData;
+      try {
+        mRes  = await fetch(`${apiUrl}/auth/session`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({userId: dData.userId, sessionToken: dData.sessionToken}) });
+        mData = await mRes.json();
+      } catch(fetchErr) { errEl.style.color="var(--red)"; errEl.textContent="❌ Can't reach API. Is the URL still valid?"; showChangeUrlPrompt(); return; }
+      if (mRes.ok) {
         user = mData.user; user.marshalToken = mData.user.token;
         user.discordId = user.id;
         const safeUser = {
@@ -1200,45 +1240,45 @@ if (mRes.ok) {
         updateSwitcher();
         showPasswordScreen();
         return;
-} else {
-  if (dData.denied || !mRes.ok) {
-    errEl.style.color = "var(--red)";
-    errEl.textContent = "❌ You don't have a valid role to access this app.";
-    return;
-  }
-  user = {
-    id:           dData.userId       || mData?.user?.id       || "unknown",
-    username:     dData.username     || mData?.user?.username  || "Unknown",
-    avatar:       dData.avatar       || mData?.user?.avatar    || null,
-    token:        null,
-    marshalToken: null,
-  };
-  user.discordId = user.id;
-  const safeUser = { id: user.id, discordId: user.id, username: user.username, avatar: user.avatar, token: null, marshalToken: null };
-  sessionStorage.setItem("rc_user", JSON.stringify(safeUser));
-  localStorage.setItem("rc_user", JSON.stringify(safeUser));
-  user = { ...user, ...safeUser };
-  errEl.textContent = "";
-  hasDriver = false;
-  hasDev = user.id === DEV_USER_ID;
-  showEngineerScreen();
-  return;
-}
+      } else {
+        if (dData.denied || !mRes.ok) {
+          errEl.style.color = "var(--red)";
+          errEl.textContent = "❌ You don't have a valid role to access this app.";
+          return;
+        }
+        user = {
+          id:           dData.userId       || mData?.user?.id       || "unknown",
+          username:     dData.username     || mData?.user?.username  || "Unknown",
+          avatar:       dData.avatar       || mData?.user?.avatar    || null,
+          token:        null,
+          marshalToken: null,
+        };
+        user.discordId = user.id;
+        const safeUser = { id: user.id, discordId: user.id, username: user.username, avatar: user.avatar, token: null, marshalToken: null };
+        sessionStorage.setItem("rc_user", JSON.stringify(safeUser));
+        localStorage.setItem("rc_user", JSON.stringify(safeUser));
+        user = { ...user, ...safeUser };
+        errEl.textContent = "";
+        hasDriver = false;
+        hasDev = user.id === DEV_USER_ID;
+        showEngineerScreen();
+        return;
+      }
     } else {
       errEl.style.color="var(--red)"; errEl.textContent="❌ "+(dData.error||"Access denied."); return;
     }
-user.discordId = user.id;
-const safeUser = {
-  id:           user.id,
-  discordId:    user.id,
-  username:     user.username,
-  avatar:       user.avatar,
-  token:        user.token        || null,
-  marshalToken: user.marshalToken || user.token || null,
-};
-sessionStorage.setItem("rc_user", JSON.stringify(safeUser));
-localStorage.setItem("rc_user", JSON.stringify(safeUser));
-user = { ...user, ...safeUser };
+    user.discordId = user.id;
+    const safeUser = {
+      id:           user.id,
+      discordId:    user.id,
+      username:     user.username,
+      avatar:       user.avatar,
+      token:        user.token        || null,
+      marshalToken: user.marshalToken || user.token || null,
+    };
+    sessionStorage.setItem("rc_user", JSON.stringify(safeUser));
+    localStorage.setItem("rc_user", JSON.stringify(safeUser));
+    user = { ...user, ...safeUser };
     errEl.textContent = "";
     await afterLogin();
   } catch(err) { errEl.style.color="var(--red)"; errEl.textContent="❌ Unexpected error: "+err.message; }
@@ -1289,8 +1329,8 @@ async function afterLogin() {
 
 function showEngineerScreen() {
   config.driver = "";
-  engineerPending = true; 
-  isEngineer = false; 
+  engineerPending = true;
+  isEngineer = false;
   const screen = document.getElementById("screen-login");
   screen.innerHTML = `
     <div class="login-logo">Race<span>Control</span></div>
@@ -1307,16 +1347,16 @@ function showEngineerScreen() {
           `<option value="${name}">${name} #${info.number} (${info.callsign})</option>`
         ).join("")}
       </select>
-<button class="pw-btn" onclick="confirmEngineer()">Continue →</button>
+      <button class="pw-btn" onclick="confirmEngineer()">Continue →</button>
       ${hasDev ? `<button onclick="skipEngineerScreen()" style="background:none;border:none;color:var(--muted);font-family:'Oxanium',sans-serif;font-size:9px;cursor:pointer;text-decoration:underline;margin-top:4px;">⚙️ Skip (dev only)</button>` : ""}
       <div class="login-error" id="eng-error"></div>
     </div>`;
   showScreen("screen-login");
   updateSwitcher();
 }
-  
-let _flagSounds        = {};
-let _currentFlagPick   = null;
+
+let _flagSounds      = {};
+let _currentFlagPick = null;
 
 function loadFlagSounds() {
   try {
@@ -1355,7 +1395,7 @@ function skipEngineerScreen() {
   updateSwitcher();
   launchDriverPanel();
 }
-	
+
 function openBugReport() {
   document.getElementById("bug-modal").style.display = "flex";
   const panelSelect = document.getElementById("bug-panel");
@@ -1402,49 +1442,32 @@ async function submitBugReport() {
   const submitBtn = document.getElementById("bug-submit-btn");
 
   if (!what) { statusEl.style.color="var(--red)"; statusEl.textContent="❌ Please describe what happened."; return; }
-
-  statusEl.style.color = "var(--muted)";
-  statusEl.textContent = "Sending report...";
-  submitBtn.disabled   = true;
+  statusEl.style.color = "var(--muted)"; statusEl.textContent = "Sending report...";
+  submitBtn.disabled = true;
 
   const version = document.getElementById("app-version")?.textContent || "unknown";
   const logs    = inclLogs ? _devLogs.slice(0, 30) : [];
-
-  const report = {
-    what, steps, expected, actual, frequency, panel,
-    reporter:  user?.username || "Unknown",
-    discordId: user?.id || "unknown",
-    version,
-    apiUrl,
-    timestamp: new Date().toISOString(),
-    logs,
-    hasImage: !!_bugImageData,
-  };
+  const report  = { what, steps, expected, actual, frequency, panel, reporter: user?.username || "Unknown", discordId: user?.id || "unknown", version, apiUrl, timestamp: new Date().toISOString(), logs, hasImage: !!_bugImageData };
 
   try {
     const res = await fetch(`${apiUrl}/bug-report`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ report, image: _bugImageData || null }),
     });
     const data = await res.json();
     if (res.ok) {
-      statusEl.style.color = "var(--green)";
-      statusEl.textContent = "✅ Report sent! Thank you.";
+      statusEl.style.color = "var(--green)"; statusEl.textContent = "✅ Report sent! Thank you.";
       setTimeout(() => {
         closeBugReport();
         ["bug-what","bug-steps","bug-expected","bug-actual"].forEach(id => { const el=document.getElementById(id); if(el) el.value=""; });
-        clearBugImage();
-        submitBtn.disabled = false;
+        clearBugImage(); submitBtn.disabled = false;
       }, 2000);
     } else {
-      statusEl.style.color = "var(--red)";
-      statusEl.textContent = "❌ " + (data.error || "Failed to send.");
+      statusEl.style.color = "var(--red)"; statusEl.textContent = "❌ " + (data.error || "Failed to send.");
       submitBtn.disabled = false;
     }
   } catch {
-    statusEl.style.color = "var(--red)";
-    statusEl.textContent = "❌ Can't reach API.";
+    statusEl.style.color = "var(--red)"; statusEl.textContent = "❌ Can't reach API.";
     submitBtn.disabled = false;
   }
 }
@@ -1460,7 +1483,7 @@ setTimeout(() => {
     if (file && file.type.startsWith("image/")) loadBugImage(file);
   });
 }, 500);
-  
+
 function pickFlagSound(flag) {
   _currentFlagPick = flag;
   document.getElementById("flag-sound-picker").click();
@@ -1479,7 +1502,7 @@ document.getElementById("flag-sound-picker")?.addEventListener("change", functio
   reader.readAsDataURL(file);
   this.value = "";
 });
-  
+
 function reLogin() {
   sessionStorage.removeItem("rc_user"); localStorage.removeItem("rc_user");
   user=null; hasDriver=false; hasMarshal=false; hasDev=false; isEngineer=false; engineerPending=false;
@@ -1529,11 +1552,11 @@ async function submitPassword() {
       const authData = await authRes.json();
       if (!authRes.ok) { document.getElementById("pw-error").textContent = "❌ "+(authData.error||"Auth failed"); return; }
       const authToken = authData.user?.token || authData.token;
-if (!authToken) { document.getElementById("pw-error").textContent = "❌ Auth failed — no token returned"; return; }
-user.marshalToken = authToken;
-const saved = JSON.parse(sessionStorage.getItem("rc_user") || "{}");
-saved.marshalToken = authToken;
-sessionStorage.setItem("rc_user", JSON.stringify(saved));
+      if (!authToken) { document.getElementById("pw-error").textContent = "❌ Auth failed — no token returned"; return; }
+      user.marshalToken = authToken;
+      const saved = JSON.parse(sessionStorage.getItem("rc_user") || "{}");
+      saved.marshalToken = authToken;
+      sessionStorage.setItem("rc_user", JSON.stringify(saved));
     }
     const res  = await fetch(`${apiUrl}/verify-password`, {
       method:"POST", headers:{"Content-Type":"application/json","x-discord-id":user.id,"x-discord-token":user.marshalToken},
@@ -1541,66 +1564,51 @@ sessionStorage.setItem("rc_user", JSON.stringify(saved));
     });
     const data = await res.json();
     if (!res.ok) {
-  const err = data.error || "Wrong password";
-  if (err.toLowerCase().includes("marshal")) {
-    document.getElementById("pw-error").textContent = "❌ You need the Marshal role to access this.";
-  } else if (err.toLowerCase().includes("director")) {
-    document.getElementById("pw-error").textContent = "❌ You need the Director role to access this.";
-  } else if (err.toLowerCase().includes("role") || err.toLowerCase().includes("permi")) {
-    document.getElementById("pw-error").textContent = `❌ Missing required role. ${err}`;
-  } else {
-    document.getElementById("pw-error").textContent = "❌ " + err;
-  }
-  return;
-}
-user.isAdmin=data.isAdmin; user.roles=data.roles||[]; user.token=user.marshalToken;
-hasMarshal=true;
-hasDev = user.id === DEV_USER_ID;
+      const err = data.error || "Wrong password";
+      if (err.toLowerCase().includes("marshal"))    document.getElementById("pw-error").textContent = "❌ You need the Marshal role to access this.";
+      else if (err.toLowerCase().includes("director")) document.getElementById("pw-error").textContent = "❌ You need the Director role to access this.";
+      else if (err.toLowerCase().includes("role")||err.toLowerCase().includes("permi")) document.getElementById("pw-error").textContent = `❌ Missing required role. ${err}`;
+      else document.getElementById("pw-error").textContent = "❌ " + err;
+      return;
+    }
+    user.isAdmin=data.isAdmin; user.roles=data.roles||[]; user.token=user.marshalToken;
+    hasMarshal=true;
+    hasDev = user.id === DEV_USER_ID;
     engineerPending=false;
-const safeUser = {
-  id:           user.id,
-  discordId:    user.id,
-  username:     user.username,
-  avatar:       user.avatar,
-  token:        user.token,
-  marshalToken: user.marshalToken,
-  isAdmin:      user.isAdmin,
-  roles:        user.roles,
-};
-sessionStorage.setItem("rc_user", JSON.stringify(safeUser));
-localStorage.setItem("rc_user", JSON.stringify(safeUser));
-updateSwitcher();
-if (hasDriver && !config.driver) {
-  engineerPending = true;
-  updateSwitcher();
-}
-launchMarshalPanel();
+    const safeUser = { id:user.id, discordId:user.id, username:user.username, avatar:user.avatar, token:user.token, marshalToken:user.marshalToken, isAdmin:user.isAdmin, roles:user.roles };
+    sessionStorage.setItem("rc_user", JSON.stringify(safeUser));
+    localStorage.setItem("rc_user", JSON.stringify(safeUser));
+    updateSwitcher();
+    if (hasDriver && !config.driver) { engineerPending = true; updateSwitcher(); }
+    launchMarshalPanel();
   } catch(err) { document.getElementById("pw-error").textContent = "❌ "+err.message; }
 }
 
 function switchPanel(panel) {
   if (panel === "driver" && engineerPending && !config.driver) {
-    showScreen("screen-login");
-    currentPanel = "login";
-    updateSwitcher();
-    return;
+    showScreen("screen-login"); currentPanel = "login"; updateSwitcher(); return;
   }
   if      (panel==="driver")   launchDriverPanel(false);
   else if (panel==="marshal")  hasMarshal ? launchMarshalPanel(false) : showPasswordScreen();
-  else if (panel==="dev")      {
-  document.getElementById("shutdown-banner-driver")  && (document.getElementById("shutdown-banner-driver").style.display  = "none");
-  document.getElementById("shutdown-banner-marshal") && (document.getElementById("shutdown-banner-marshal").style.display = "none");
-  showScreen("screen-dev"); currentPanel="dev"; updateSwitcher(); loadDevInfo(); updateDevTabBtns();
-}
-else if (panel==="settings") {
-  document.getElementById("shutdown-banner-driver")  && (document.getElementById("shutdown-banner-driver").style.display  = "none");
-  document.getElementById("shutdown-banner-marshal") && (document.getElementById("shutdown-banner-marshal").style.display = "none");
-  prevPanel = (currentPanel && currentPanel!=="settings") ? currentPanel : (hasDriver?"driver":hasMarshal?"marshal":"login");
+  else if (panel==="dev") {
+    document.getElementById("shutdown-banner-driver")  && (document.getElementById("shutdown-banner-driver").style.display  = "none");
+    document.getElementById("shutdown-banner-marshal") && (document.getElementById("shutdown-banner-marshal").style.display = "none");
+    showScreen("screen-dev"); currentPanel="dev"; updateSwitcher(); loadDevInfo(); updateDevTabBtns();
+  }
+  else if (panel==="settings") {
+    document.getElementById("shutdown-banner-driver")  && (document.getElementById("shutdown-banner-driver").style.display  = "none");
+    document.getElementById("shutdown-banner-marshal") && (document.getElementById("shutdown-banner-marshal").style.display = "none");
+    prevPanel = (currentPanel && currentPanel!=="settings") ? currentPanel : (hasDriver?"driver":hasMarshal?"marshal":"login");
     document.getElementById("s-api").value        = config.apiUrl || "";
     document.getElementById("kb-blue_flag").value = config.keybinds?.blue_flag || "F1";
     document.getElementById("kb-next_lap").value  = config.keybinds?.next_lap  || "F2";
     document.getElementById("kb-pitting").value   = config.keybinds?.pitting   || "F3";
     document.getElementById("s-api-card").style.display = hasDev ? "flex" : "none";
+    const volPct = Math.round(_flagVolume * 100);
+    const slider = document.getElementById("vol-slider");
+    const label  = document.getElementById("vol-label");
+    if (slider) slider.value = volPct;
+    if (label)  label.textContent = volPct + "%";
     showScreen("screen-settings");
   }
 }
@@ -1616,8 +1624,10 @@ function goBack() {
 function updateSwitcher() {
   const show = hasDriver||hasMarshal||hasDev;
   document.getElementById("panel-switcher").style.display = show ? "flex" : "none";
-const driverTabAllowed = hasDriver && (config.driver || engineerPending || hasMarshal); document.getElementById("sw-driver").style.display  = (driverTabAllowed && _devTabVisible.driver !== false) ? "" : "none"; document.getElementById("sw-marshal").style.display = _devTabVisible.marshal !== false ? "" : "none";
-  document.getElementById("sw-dev").style.display     = hasDev    ? "" : "none";
+  const driverTabAllowed = hasDriver && (config.driver || engineerPending || hasMarshal);
+  document.getElementById("sw-driver").style.display  = (driverTabAllowed && _devTabVisible.driver !== false) ? "" : "none";
+  document.getElementById("sw-marshal").style.display = _devTabVisible.marshal !== false ? "" : "none";
+  document.getElementById("sw-dev").style.display     = hasDev ? "" : "none";
   document.querySelectorAll(".switch-btn").forEach(b => b.classList.remove("active"));
   const aId = currentPanel==="driver"?"sw-driver":currentPanel==="marshal"?"sw-marshal":"sw-dev";
   document.getElementById(aId)?.classList.add("active");
@@ -1651,7 +1661,7 @@ function launchMarshalPanel(startPoll=true) {
   updateSwitcher();
   if (user?.roles?.includes(DIRECTOR_ROLE)||user?.isAdmin)
     document.getElementById("m-race-setup").style.display = "block";
-	renderAttendance(); 
+  renderAttendance();
   if (startPoll) {
     if (_marshalPollInterval) clearInterval(_marshalPollInterval);
     pollBlueFlagRequests();
@@ -1665,37 +1675,32 @@ async function pollDriverState() {
     const res  = await fetch(`${apiUrl}/driver/state`, { headers:{"x-discord-id":user?.id||""} });
     if (res.status===403) return;
     const data = await res.json();
-_lastRaceState = data;
+    _lastRaceState = data;
     const filteredDrivers = data.drivers?.filter(d => _attendance[d.name] !== false) || [];
-renderLeaderboard({ ...data, drivers: filteredDrivers });
-const panelOn = data.webPanelEnabled!==false, raceOn = data.raceStarted;
-if (!panelOn) {
-  if (hasDev) {
-    showShutdownBanner("driver");
-    if (_devBypassShutdown.driver) showDisabledScreen();
-    else hideDisabledScreen();
-  } else {
-    hideShutdownBanner("driver");
-    showDisabledScreen();
-  }
-} else {
-  hideShutdownBanner("driver");
-  hideDisabledScreen();
-  if (isEngineer) {
-    setDriverBtnsEnabled(raceOn);
-  } else {
-    const notice = document.getElementById("d-action-notice");
-    if (notice) {
-      if (!raceOn) {
-        notice.style.display = "block";
-        notice.textContent   = "⏳ Waiting for race to start...";
+    renderLeaderboard({ ...data, drivers: filteredDrivers });
+    const panelOn = data.webPanelEnabled!==false, raceOn = data.raceStarted;
+    if (!panelOn) {
+      if (hasDev) {
+        showShutdownBanner("driver");
+        if (_devBypassShutdown.driver) showDisabledScreen();
+        else hideDisabledScreen();
       } else {
-        notice.style.display = "none";
-        notice.textContent   = "";
+        hideShutdownBanner("driver");
+        showDisabledScreen();
+      }
+    } else {
+      hideShutdownBanner("driver");
+      hideDisabledScreen();
+      if (isEngineer) {
+        setDriverBtnsEnabled(raceOn);
+      } else {
+        const notice = document.getElementById("d-action-notice");
+        if (notice) {
+          if (!raceOn) { notice.style.display = "block"; notice.textContent = "⏳ Waiting for race to start..."; }
+          else         { notice.style.display = "none";  notice.textContent = ""; }
+        }
       }
     }
-  }
-}
     if (data.currentFlag) {
       if (_lastFlagTimestamp===null) { _lastFlagTimestamp=data.currentFlag.timestamp; }
       else if (data.currentFlag.timestamp!==_lastFlagTimestamp) {
@@ -1740,11 +1745,8 @@ function showDisabledScreen() {
         <div style="font-size:13px;font-weight:800;color:var(--yellow);text-transform:uppercase;letter-spacing:1.5px;">Temporarily Shut Down</div>
         <div style="width:32px;height:2px;background:rgba(255,214,0,0.4);margin:0 auto;border-radius:2px;"></div>
       </div>
-      <div style="font-size:11px;color:var(--muted);line-height:1.7;">
-        This panel is currently offline for<br/>bug fixes or modifications.
-      </div>
-      <a href="https://discord.gg/w6AHaqUJeq" target="_blank"
-        style="display:flex;align-items:center;gap:6px;background:rgba(88,101,242,0.15);border:1px solid rgba(88,101,242,0.35);color:#5865F2;font-family:'Oxanium',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 14px;border-radius:6px;text-decoration:none;">
+      <div style="font-size:11px;color:var(--muted);line-height:1.7;">This panel is currently offline for<br/>bug fixes or modifications.</div>
+      <a href="https://discord.gg/w6AHaqUJeq" target="_blank" style="display:flex;align-items:center;gap:6px;background:rgba(88,101,242,0.15);border:1px solid rgba(88,101,242,0.35);color:#5865F2;font-family:'Oxanium',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 14px;border-radius:6px;text-decoration:none;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
         Join our Discord
       </a>
@@ -1757,7 +1759,7 @@ function hideDisabledScreen() {
   const overlay = document.getElementById("panel-disabled-overlay");
   if (overlay) overlay.remove();
 }
-  
+
 function openToolbox() {
   const items = document.getElementById("toolbox-items");
   items.innerHTML = TOOLBOX_SECTIONS.map(s => {
@@ -1857,12 +1859,13 @@ function setDriverBtnsEnabled(on) {
   const notice=document.getElementById("d-action-notice");
   notice.style.display=on?"none":"block"; notice.textContent=on?"":"⏳ Waiting for race to start...";
 }
+
 function onFlagEvent(flag, customData) {
   if (flag === "__custom__" && customData) {
-if (customData.audioCheckId) {
-  showAudioCheckPrompt(customData.audioCheckId, customData.text || "Radio Check, Radio Check");
-  return;
-}
+    if (customData.audioCheckId) {
+      showAudioCheckPrompt(customData.audioCheckId, customData.text || "Radio Check, Radio Check");
+      return;
+    }
     let html;
     const isHolo = customData.color==="holographic"||customData.color==="rainbow";
     if (customData.html) {
@@ -1876,43 +1879,44 @@ if (customData.audioCheckId) {
       const isHex    = customData.color?.startsWith("#");
       const colorMap = {green:"green",yellow:"yellow",red:"red",blue:"blue",orange:"orange",white:"white"};
       const color    = colorMap[customData.color]||"white";
-const bgStyle = customData.bgImage
-  ? `background:url(${customData.bgImage}) center/cover;border-color:${isHex?customData.color:"rgba(255,255,255,0.3)"};color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.9);`
-  : isHex
-    ? `background:${customData.color}22;border-color:${customData.color};color:${customData.color};`
-    : "";
-const bgClass = (!customData.bgImage && !isHex) ? color : "";
-html = `<div class="flag-card ${bgClass}" style="${bgStyle}"><span class="fc-emoji">${customData.emoji||"🏴"}</span><div><div class="fc-title">${customData.text||customData.label||"Custom Flag"}</div></div></div>`;
+      const bgStyle  = customData.bgImage
+        ? `background:url(${customData.bgImage}) center/cover;border-color:${isHex?customData.color:"rgba(255,255,255,0.3)"};color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.9);`
+        : isHex
+          ? `background:${customData.color}22;border-color:${customData.color};color:${customData.color};`
+          : "";
+      const bgClass = (!customData.bgImage && !isHex) ? color : "";
+      html = `<div class="flag-card ${bgClass}" style="${bgStyle}"><span class="fc-emoji">${customData.emoji||"🏴"}</span><div><div class="fc-title">${customData.text||customData.label||"Custom Flag"}</div></div></div>`;
     }
     document.getElementById("flag-notif-driver").innerHTML  = html;
     document.getElementById("flag-notif-marshal").innerHTML = html;
     document.getElementById("flag-notif-marshal").style.display = "block";
     return;
   }
-const def = FLAG_DEFS[flag]; if (!def) return;
 
-if (flag === "blue" && _lastBlueFlagDriver) {
-  const d = _lastBlueFlagDriver;
-  const html = `<div class="flag-card blue">
-    <span class="fc-emoji">🔵</span>
-    <div>
-      <div class="fc-title">Blue Flag — ${d.name}</div>
-      <div class="fc-sub">#${d.number} · ${d.callsign} — let the leaders past.</div>
-    </div>
-  </div>`;
+  const def = FLAG_DEFS[flag]; if (!def) return;
+
+  if (flag === "blue" && _lastBlueFlagDriver) {
+    const d = _lastBlueFlagDriver;
+    const html = `<div class="flag-card blue">
+      <span class="fc-emoji">🔵</span>
+      <div>
+        <div class="fc-title">Blue Flag — ${d.name}</div>
+        <div class="fc-sub">#${d.number} · ${d.callsign} — let the leaders past.</div>
+      </div>
+    </div>`;
+    document.getElementById("flag-notif-driver").innerHTML  = html;
+    document.getElementById("flag-notif-marshal").innerHTML = html;
+    document.getElementById("flag-notif-marshal").style.display = "block";
+    return;
+  }
+
+  if (flag !== "blue") _lastBlueFlagDriver = null;
+
+  const html = `<div class="flag-card ${def.color}"><span class="fc-emoji">${def.emoji}</span><div><div class="fc-title">${def.title}</div><div class="fc-sub">${def.sub}</div></div></div>`;
   document.getElementById("flag-notif-driver").innerHTML  = html;
   document.getElementById("flag-notif-marshal").innerHTML = html;
   document.getElementById("flag-notif-marshal").style.display = "block";
-  return;
-}
-
-if (flag !== "blue") _lastBlueFlagDriver = null;
-
-const html = `<div class="flag-card ${def.color}"><span class="fc-emoji">${def.emoji}</span><div><div class="fc-title">${def.title}</div><div class="fc-sub">${def.sub}</div></div></div>`;
-document.getElementById("flag-notif-driver").innerHTML  = html;
-document.getElementById("flag-notif-marshal").innerHTML = html;
-document.getElementById("flag-notif-marshal").style.display = "block";
-if (def.sound) playFlagAudio(def.sound);
+  if (def.sound) playFlagAudio(def.sound);
   const colors={green:"var(--green)",yellow:"var(--yellow)",red:"var(--red)",orange:"var(--orange)",blue:"var(--blue)",white:"#fff"};
   ["d-race-pill","m-race-pill"].forEach(id=>{
     const el=document.getElementById(id);
@@ -1932,11 +1936,8 @@ function showMarshalDisabledScreen() {
         <div style="font-size:13px;font-weight:800;color:var(--yellow);text-transform:uppercase;letter-spacing:1.5px;">Temporarily Shut Down</div>
         <div style="width:32px;height:2px;background:rgba(255,214,0,0.4);margin:0 auto;border-radius:2px;"></div>
       </div>
-      <div style="font-size:11px;color:var(--muted);line-height:1.7;">
-        This panel is currently offline for<br/>bug fixes or modifications.
-      </div>
-      <a href="https://discord.gg/w6AHaqUJeq" target="_blank"
-        style="display:flex;align-items:center;gap:6px;background:rgba(88,101,242,0.15);border:1px solid rgba(88,101,242,0.35);color:#5865F2;font-family:'Oxanium',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 14px;border-radius:6px;text-decoration:none;">
+      <div style="font-size:11px;color:var(--muted);line-height:1.7;">This panel is currently offline for<br/>bug fixes or modifications.</div>
+      <a href="https://discord.gg/w6AHaqUJeq" target="_blank" style="display:flex;align-items:center;gap:6px;background:rgba(88,101,242,0.15);border:1px solid rgba(88,101,242,0.35);color:#5865F2;font-family:'Oxanium',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 14px;border-radius:6px;text-decoration:none;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
         Join our Discord
       </a>
@@ -1994,7 +1995,7 @@ function toggleDevBypass(panel) {
     document.querySelector(".titlebar").style.zIndex = "";
   }
 }
-	
+
 function doAction(action) {
   playKeybindSound(action);
   const btn = document.getElementById(`btn-${action}`);
@@ -2017,12 +2018,8 @@ async function triggerFlag(flag) {
       body: JSON.stringify({flag, username:user.username}),
     });
     const data = await res.json();
-    if (res.ok) {
-      showToast(`✓ ${FLAG_DEFS[flag]?.title||flag}`, "ok");
-      onFlagEvent(flag, null);
-    } else {
-      showToast(`✗ ${data.error}`, "err");
-    }
+    if (res.ok) { showToast(`✓ ${FLAG_DEFS[flag]?.title||flag}`, "ok"); onFlagEvent(flag, null); }
+    else         { showToast(`✗ ${data.error}`, "err"); }
   } catch { showToast("✗ Bot unreachable","err"); }
 }
 
@@ -2050,23 +2047,20 @@ async function pollBlueFlagRequests() {
   try {
     const statusRes = await fetch(`${apiUrl}/panel-status`);
     const statusData = await statusRes.json();
-if (!statusData.marshal) {
-  if (hasDev) {
-    showShutdownBanner("marshal");
-    if (_devBypassShutdown.marshal) {
-      showMarshalDisabledScreen();
-      return;
+    if (!statusData.marshal) {
+      if (hasDev) {
+        showShutdownBanner("marshal");
+        if (_devBypassShutdown.marshal) { showMarshalDisabledScreen(); return; }
+        hideMarshalDisabledScreen();
+      } else {
+        hideShutdownBanner("marshal");
+        showMarshalDisabledScreen();
+        return;
+      }
+    } else {
+      hideShutdownBanner("marshal");
+      hideMarshalDisabledScreen();
     }
-    hideMarshalDisabledScreen();
-  } else {
-    hideShutdownBanner("marshal");
-    showMarshalDisabledScreen();
-    return;
-  }
-} else {
-  hideShutdownBanner("marshal");
-  hideMarshalDisabledScreen();
-}
 
     const res=await fetch(`${apiUrl}/driver/blue-flags`,{headers:{"x-discord-id":user.id,"x-discord-token":user.token}});
     const data=await res.json();
@@ -2096,12 +2090,7 @@ async function dismissBf(id){
 
 async function devAutoAuth() {
   if (user?.token) return true;
-  if (user?.marshalToken) {
-    user.token = user.marshalToken;
-    sessionStorage.setItem("rc_user", JSON.stringify(user));
-    localStorage.setItem("rc_user", JSON.stringify(user));
-    return true;
-  }
+  if (user?.marshalToken) { user.token = user.marshalToken; sessionStorage.setItem("rc_user", JSON.stringify(user)); localStorage.setItem("rc_user", JSON.stringify(user)); return true; }
   try {
     const code=await window.api.openOAuth(); if(!code) return false;
     const authRes=await fetch(`${apiUrl}/auth`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code,redirectUri:"http://localhost:7823"})});
@@ -2118,10 +2107,7 @@ async function devAutoAuth() {
 
 async function loadDevInfo() {
   if (!apiUrl) return;
-  if (!user?.token && !user?.marshalToken) {
-    showToast("❌ Marshal login required for Dev panel", "err");
-    return;
-  }
+  if (!user?.token && !user?.marshalToken) { showToast("❌ Marshal login required for Dev panel", "err"); return; }
   if (!user?.token) { const ok=await devAutoAuth(); if(!ok){showToast("❌ Dev auth failed","err");return;} }
   try {
     const headers={"x-discord-id":user.id,"x-discord-token":user.token};
@@ -2131,21 +2117,21 @@ async function loadDevInfo() {
       fetch(`${apiUrl}/admin/audit`,{headers}).then(r=>r.json()),
       fetch(`${apiUrl}/admin/driver-logins`,{headers}).then(r=>r.json()),
     ]);
-const u=Math.floor(ai.uptime||0);
-const driverState = await fetch(`${apiUrl}/driver/state`).then(r=>r.json()).catch(()=>({drivers:[]}));
-const driversOnline = (driverState.drivers||[]).length;
+    const u=Math.floor(ai.uptime||0);
+    const driverState = await fetch(`${apiUrl}/driver/state`).then(r=>r.json()).catch(()=>({drivers:[]}));
+    const driversOnline = (driverState.drivers||[]).length;
 
-document.getElementById("dev-stats").innerHTML=`
-  <div class="dev-stat">Uptime <span>${Math.floor(u/3600)}h ${Math.floor((u%3600)/60)}m</span></div>
-  <div class="dev-stat">Connected VCs <span>${(ai.connectedVCs||[]).length}</span></div>
-  <div class="dev-stat">SSE — App <span>${ai.sseAppClients||0}</span></div>
-  <div class="dev-stat">SSE — Web <span>${ai.sseWebClients||0}</span></div>
-  <div class="dev-stat">Driver Panel <span style="color:${ai.driverEnabled?"var(--green)":"var(--red)"}">${ai.driverEnabled?"On":"Off"}</span></div>
-  <div class="dev-stat">Marshal Panel <span style="color:${ai.marshalEnabled?"var(--green)":"var(--red)"}">${ai.marshalEnabled?"On":"Off"}</span></div>
-  <div class="dev-stat">Drivers in Race <span>${driversOnline}</span></div>
-  <div class="dev-stat">SSE Clients (app+web) <span>${ai.sseClients||0}</span></div>
-  <div class="dev-stat">Active Sessions <span>${(ai.sessions||si.sessions||[]).filter(s=>s.verified).length}</span></div>
-  <div class="dev-stat">Blacklisted <span>${(ai.blacklist||[]).length}</span></div>`;
+    document.getElementById("dev-stats").innerHTML=`
+      <div class="dev-stat">Uptime <span>${Math.floor(u/3600)}h ${Math.floor((u%3600)/60)}m</span></div>
+      <div class="dev-stat">Connected VCs <span>${(ai.connectedVCs||[]).length}</span></div>
+      <div class="dev-stat">SSE — App <span>${ai.sseAppClients||0}</span></div>
+      <div class="dev-stat">SSE — Web <span>${ai.sseWebClients||0}</span></div>
+      <div class="dev-stat">Driver Panel <span style="color:${ai.driverEnabled?"var(--green)":"var(--red)"}">${ai.driverEnabled?"On":"Off"}</span></div>
+      <div class="dev-stat">Marshal Panel <span style="color:${ai.marshalEnabled?"var(--green)":"var(--red)"}">${ai.marshalEnabled?"On":"Off"}</span></div>
+      <div class="dev-stat">Drivers in Race <span>${driversOnline}</span></div>
+      <div class="dev-stat">SSE Clients (app+web) <span>${ai.sseClients||0}</span></div>
+      <div class="dev-stat">Active Sessions <span>${(ai.sessions||si.sessions||[]).filter(s=>s.verified).length}</span></div>
+      <div class="dev-stat">Blacklisted <span>${(ai.blacklist||[]).length}</span></div>`;
     const vcsEl=document.getElementById("dev-vcs"), vcs=ai.voiceChannels||[];
     vcsEl.innerHTML=!vcs.length?'<div style="font-size:10px;color:var(--muted);">No voice channels found.</div>':vcs.map(vc=>`
       <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;">
@@ -2174,22 +2160,22 @@ document.getElementById("dev-stats").innerHTML=`
     document.getElementById("dev-audit").innerHTML=(li.audit||[]).slice(0,20).map(a=>{
       const ago=Math.floor((Date.now()-a.timestamp)/1000);
       return `<div style="padding:3px 0;border-bottom:1px solid var(--border);">${a.action} — <span style="color:var(--muted);">${a.username} · ${ago<60?ago+"s":Math.floor(ago/60)+"m"} ago</span></div>`;
-}).join("")||'<div style="color:var(--muted);">No actions yet.</div>';
+    }).join("")||'<div style="color:var(--muted);">No actions yet.</div>';
 
     renderMockLb();
-    
-const engEl = document.getElementById("dev-engineers");
-const serverEngineers = (dl.logins || []).filter(l => l.engineer);
-const localEngineers  = JSON.parse(localStorage.getItem("rc_engineers") || "[]");
-const allEngineers = [...serverEngineers];
-localEngineers.forEach(le => {
-  if (!allEngineers.find(e => e.discordId === le.discordId)) allEngineers.push(le);
-});
-engEl.innerHTML = allEngineers.length ? allEngineers.map(l => `
-  <div style="padding:3px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;">
-    <span style="font-weight:700;">${l.username}</span>
-    <span style="color:var(--muted);">→ engineering for <span style="color:var(--text);font-weight:700;">${l.engineerFor||"?"}</span></span>
-  </div>`).join("") : '<div style="color:var(--muted);">No engineers active.</div>';
+
+    const engEl = document.getElementById("dev-engineers");
+    const serverEngineers = (dl.logins || []).filter(l => l.engineer);
+    const localEngineers  = JSON.parse(localStorage.getItem("rc_engineers") || "[]");
+    const allEngineers = [...serverEngineers];
+    localEngineers.forEach(le => {
+      if (!allEngineers.find(e => e.discordId === le.discordId)) allEngineers.push(le);
+    });
+    engEl.innerHTML = allEngineers.length ? allEngineers.map(l => `
+      <div style="padding:3px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;">
+        <span style="font-weight:700;">${l.username}</span>
+        <span style="color:var(--muted);">→ engineering for <span style="color:var(--text);font-weight:700;">${l.engineerFor||"?"}</span></span>
+      </div>`).join("") : '<div style="color:var(--muted);">No engineers active.</div>';
   } catch(e){console.error("[Dev]",e);showToast("❌ Failed to load dev info","err");}
 }
 
@@ -2231,6 +2217,7 @@ async function devSendCustomFlag() {
     else { statusEl.style.color="var(--red)"; statusEl.textContent=`✗ ${data.error}`; }
   } catch { statusEl.style.color="var(--red)"; statusEl.textContent="✗ Bot unreachable"; }
 }
+
 let _flagBgDataUrl = null;
 
 function loadFlagBgImage(file) {
@@ -2257,6 +2244,7 @@ function clearFlagBgImage() {
   document.getElementById("dev-flag-bg-input").value = "";
   updatePreview();
 }
+
 let _mockDrivers = [];
 
 function renderMockLb() {
@@ -2311,27 +2299,18 @@ function mockDriverField(i, field, value) {
   renderMockLb();
 }
 
-function mockTogglePit(i) {
-  _mockDrivers[i].inPits = !_mockDrivers[i].inPits;
-  renderMockLb();
-}
-
+function mockTogglePit(i) { _mockDrivers[i].inPits = !_mockDrivers[i].inPits; renderMockLb(); }
 function mockMoveUp(i) {
   if (i === 0) return;
   [_mockDrivers[i-1], _mockDrivers[i]] = [_mockDrivers[i], _mockDrivers[i-1]];
   mockDriverField(0, "_reorder", null);
 }
-
 function mockMoveDown(i) {
   if (i >= _mockDrivers.length-1) return;
   [_mockDrivers[i], _mockDrivers[i+1]] = [_mockDrivers[i+1], _mockDrivers[i]];
   mockDriverField(0, "_reorder", null);
 }
-
-function mockRemoveDriver(i) {
-  _mockDrivers.splice(i, 1);
-  renderMockLb();
-}
+function mockRemoveDriver(i) { _mockDrivers.splice(i, 1); renderMockLb(); }
 
 async function devPushMockLb() {
   if (!_mockDrivers.length) { showToast("❌ No drivers to push","err"); return; }
@@ -2396,6 +2375,7 @@ async function saveSettings(){
   const keybinds={blue_flag:document.getElementById("kb-blue_flag").value||"F1",next_lap:document.getElementById("kb-next_lap").value||"F2",pitting:document.getElementById("kb-pitting").value||"F3"};
   const newConfig={...config,apiUrl:newApi,keybinds};
   await window.api.saveConfig(newConfig); await window.api.registerHotkeys(keybinds);
+  localStorage.setItem("rc_flag_volume", Math.round(_flagVolume * 100));
   config=newConfig; updateKeybindLabels(); showToast("✓ Settings saved","ok"); goBack();
 }
 
@@ -2428,7 +2408,6 @@ function showToast(msg,type=""){
   clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.className="";},2500);
 }
 
-
 setTimeout(()=>{
   const flagBgDrop = document.getElementById("dev-flag-bg-drop");
   if (flagBgDrop) {
@@ -2446,9 +2425,9 @@ setTimeout(()=>{
   drop.addEventListener("drop",e=>{e.preventDefault();drop.style.borderColor="var(--border)";const file=e.dataTransfer.files[0];if(file)devPlayAudio(file);});
 },500);
 
-let _acPollInterval  = null;
-let _acActiveId      = null;
-let _acDriverVoted   = false;
+let _acPollInterval = null;
+let _acActiveId     = null;
+let _acDriverVoted  = false;
 
 async function sendAudioCheck() {
   if (!user?.token) return showToast("✗ Not authenticated", "err");
@@ -2461,18 +2440,12 @@ async function sendAudioCheck() {
     const res = await fetch(`${apiUrl}/flag`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
-      body: JSON.stringify({
-        flag: "__custom__",
-        text: msg,
-        emoji: "🎙️",
-        color: "#2979ff",
-        audioCheckId: id,
-      }),
+      body: JSON.stringify({ flag: "__custom__", text: msg, emoji: "🎙️", color: "#2979ff", audioCheckId: id }),
     });
     if (!res.ok) { const d=await res.json(); return showToast(`✗ ${d.error}`,"err"); }
 
     showToast("✓ Audio check sent", "ok");
-	playFlagAudio("AudioCheck.mp4");
+    playFlagAudio("AudioCheck.mp4");
     document.getElementById("ac-results").style.display = "flex";
     document.getElementById("ac-yes-list").innerHTML = "";
     document.getElementById("ac-no-list").innerHTML  = "";
@@ -2486,9 +2459,7 @@ async function sendAudioCheck() {
 async function pollAudioCheckResults(id) {
   if (!user?.token) return;
   try {
-    const res  = await fetch(`${apiUrl}/audio-check/${id}`, {
-      headers: { "x-discord-id": user.id, "x-discord-token": user.token }
-    });
+    const res  = await fetch(`${apiUrl}/audio-check/${id}`, { headers: { "x-discord-id": user.id, "x-discord-token": user.token } });
     if (!res.ok) return;
     const data = await res.json();
     renderAudioCheckResults(data);
@@ -2498,34 +2469,27 @@ async function pollAudioCheckResults(id) {
 function renderAudioCheckResults(data) {
   const yes = data.yes || [];
   const no  = data.no  || [];
-
-const makeRow = (name, number, callsign, type) => `
-  <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--bg);
-    border:1px solid ${type==="yes"?"rgba(0,230,118,0.3)":"rgba(255,23,68,0.3)"};border-radius:4px;">
-    <div style="width:22px;height:22px;border-radius:3px;background:rgba(255,255,255,0.05);
-      border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
-      font-size:8px;font-weight:800;flex-shrink:0;">${number === "–" ? "🏁" : "#" + number}</div>
-    <div style="flex:1;"><div style="font-size:10px;font-weight:700;">${name}</div>
-      <div style="font-size:8px;color:var(--muted);">${callsign}</div></div>
-    <span style="font-size:14px;">${type==="yes"?"✅":"❌"}</span>
-  </div>`;
-
-  document.getElementById("ac-yes-list").innerHTML =
-    yes.length ? yes.map(d => makeRow(d.name, d.number, d.callsign, "yes")).join("") : "";
-  document.getElementById("ac-no-list").innerHTML  =
-    no.length  ? no.map(d  => makeRow(d.name, d.number, d.callsign, "no")).join("") : "";
-
+  const makeRow = (name, number, callsign, type) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--bg);
+      border:1px solid ${type==="yes"?"rgba(0,230,118,0.3)":"rgba(255,23,68,0.3)"};border-radius:4px;">
+      <div style="width:22px;height:22px;border-radius:3px;background:rgba(255,255,255,0.05);
+        border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+        font-size:8px;font-weight:800;flex-shrink:0;">${number === "–" ? "🏁" : "#" + number}</div>
+      <div style="flex:1;"><div style="font-size:10px;font-weight:700;">${name}</div>
+        <div style="font-size:8px;color:var(--muted);">${callsign}</div></div>
+      <span style="font-size:14px;">${type==="yes"?"✅":"❌"}</span>
+    </div>`;
+  document.getElementById("ac-yes-list").innerHTML = yes.length ? yes.map(d => makeRow(d.name, d.number, d.callsign, "yes")).join("") : "";
+  document.getElementById("ac-no-list").innerHTML  = no.length  ? no.map(d  => makeRow(d.name, d.number, d.callsign, "no")).join("")  : "";
   const total = yes.length + no.length;
-  document.getElementById("ac-summary").textContent =
-    total ? `${yes.length} ✅  ${no.length} ❌  (${total} responded)` : "Waiting for responses...";
-  document.getElementById("ac-summary").style.color =
-    no.length ? "var(--red)" : yes.length ? "var(--green)" : "var(--muted)";
+  document.getElementById("ac-summary").textContent = total ? `${yes.length} ✅  ${no.length} ❌  (${total} responded)` : "Waiting for responses...";
+  document.getElementById("ac-summary").style.color = no.length ? "var(--red)" : yes.length ? "var(--green)" : "var(--muted)";
 }
 
 async function clearAudioCheck() {
   if (_acPollInterval) { clearInterval(_acPollInterval); _acPollInterval = null; }
   _acActiveId = null;
-  _acDriverVoted = false; 
+  _acDriverVoted = false;
   document.getElementById("ac-results").style.display = "none";
   document.getElementById("ac-yes-list").innerHTML = "";
   document.getElementById("ac-no-list").innerHTML  = "";
@@ -2534,6 +2498,7 @@ async function clearAudioCheck() {
     if (el) el.innerHTML = "";
   });
 }
+
 
 function showAudioCheckPrompt(audioCheckId, msg) {
   if (_acDriverVoted && _acActiveId === audioCheckId) return;
@@ -2567,16 +2532,17 @@ function showAudioCheckPrompt(audioCheckId, msg) {
       </div>
     </div>`;
 
-  ["flag-notif-driver", "flag-notif-marshal"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = html;
-  });
+  const driverNotif  = document.getElementById("flag-notif-driver");
+  const marshalNotif = document.getElementById("flag-notif-marshal");
+  if (driverNotif)  driverNotif.innerHTML  = html;
+  if (marshalNotif) marshalNotif.innerHTML = html;
 
   if (currentPanel === "dev" || currentPanel === "settings") {
-    if (hasDriver) switchPanel("driver");
-    else if (hasMarshal) switchPanel("marshal");
+    if (hasMarshal) switchPanel("marshal");
+    else if (hasDriver) switchPanel("driver");
   }
 }
+
 
 async function submitAudioVote(audioCheckId, vote) {
   if (_acDriverVoted) return;
@@ -2590,41 +2556,28 @@ async function submitAudioVote(audioCheckId, vote) {
     await fetch(`${apiUrl}/audio-check/${audioCheckId}/vote`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-discord-id": user?.id || "" },
-      body: JSON.stringify({
-        vote,
-        name:     name,
-        number:   info.number   || "??",
-        callsign: info.callsign || "???",
-      }),
+      body: JSON.stringify({ vote, name, number: info.number || "??", callsign: info.callsign || "???" }),
     });
   } catch {}
 
-const prompt = document.getElementById("flag-notif-driver");
-  if (prompt) {
-    prompt.innerHTML = `
-      <div style="background:${vote==="yes"?"rgba(0,230,118,0.08)":"rgba(255,23,68,0.08)"};
-        border:1.5px solid ${vote==="yes"?"rgba(0,230,118,0.4)":"rgba(255,23,68,0.4)"};
-        border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin:8px 0 0 0;">
-        <span style="font-size:20px;">${vote==="yes"?"✅":"❌"}</span>
-        <div style="font-size:11px;font-weight:700;color:${vote==="yes"?"var(--green)":"var(--red)"};">
-          Response sent — ${vote==="yes"?"Audio OK":"Cannot hear"}
-        </div>
-      </div>`;
-    setTimeout(() => { prompt.innerHTML = ""; }, 4000);
-  }
-  const marshalPrompt = document.getElementById("flag-notif-marshal");
-  if (marshalPrompt) {
-    marshalPrompt.innerHTML = `
-      <div style="background:${vote==="yes"?"rgba(0,230,118,0.08)":"rgba(255,23,68,0.08)"};
-        border:1.5px solid ${vote==="yes"?"rgba(0,230,118,0.4)":"rgba(255,23,68,0.4)"};
-        border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin:8px 0 0 0;">
-        <span style="font-size:20px;">${vote==="yes"?"✅":"❌"}</span>
-        <div style="font-size:11px;font-weight:700;color:${vote==="yes"?"var(--green)":"var(--red)"};">
-          Response sent — ${vote==="yes"?"Audio OK":"Cannot hear"}
-        </div>
-      </div>`;
-    setTimeout(() => { marshalPrompt.innerHTML = ""; }, 4000);
-  }
+  const confirmHtml = (v) => `
+    <div style="background:${v==="yes"?"rgba(0,230,118,0.08)":"rgba(255,23,68,0.08)"};
+      border:1.5px solid ${v==="yes"?"rgba(0,230,118,0.4)":"rgba(255,23,68,0.4)"};
+      border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin:8px 0 0 0;">
+      <span style="font-size:20px;">${v==="yes"?"✅":"❌"}</span>
+      <div style="font-size:11px;font-weight:700;color:${v==="yes"?"var(--green)":"var(--red)"};">
+        Response sent — ${v==="yes"?"Audio OK":"Cannot hear"}
+      </div>
+    </div>`;
+
+  ["flag-notif-driver", "flag-notif-marshal"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.innerHTML = confirmHtml(vote);
+      setTimeout(() => { el.innerHTML = ""; }, 4000);
+    }
+  });
+
   showToast(vote==="yes" ? "✅ Voted Yes" : "❌ Voted No", vote==="yes"?"ok":"err");
 }
 </script>
