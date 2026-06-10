@@ -2452,7 +2452,7 @@ let _acDriverVoted   = false;
 
 async function sendAudioCheck() {
   if (!user?.token) return showToast("✗ Not authenticated", "err");
-  const msg = "Can you hear comms?";
+  const msg = "Radio Check, Radio Check";
   const id  = Date.now();
   _acActiveId    = id;
   _acDriverVoted = false;
@@ -2533,7 +2533,8 @@ async function clearAudioCheck() {
 }
 
 function showAudioCheckPrompt(audioCheckId, msg) {
-  if (_acDriverVoted) return;
+  if (_acDriverVoted && _acActiveId === audioCheckId) return;
+  _acDriverVoted = false; 
 
   const html = `
     <div style="background:rgba(41,121,255,0.08);border:1.5px solid rgba(41,121,255,0.5);
@@ -2587,7 +2588,7 @@ async function submitAudioVote(audioCheckId, vote) {
     });
   } catch {}
 
-  const prompt = document.getElementById("flag-notif-driver");
+const prompt = document.getElementById("flag-notif-driver");
   if (prompt) {
     prompt.innerHTML = `
       <div style="background:${vote==="yes"?"rgba(0,230,118,0.08)":"rgba(255,23,68,0.08)"};
@@ -2599,6 +2600,19 @@ async function submitAudioVote(audioCheckId, vote) {
         </div>
       </div>`;
     setTimeout(() => { prompt.innerHTML = ""; }, 4000);
+  }
+  const marshalPrompt = document.getElementById("flag-notif-marshal");
+  if (marshalPrompt) {
+    marshalPrompt.innerHTML = `
+      <div style="background:${vote==="yes"?"rgba(0,230,118,0.08)":"rgba(255,23,68,0.08)"};
+        border:1.5px solid ${vote==="yes"?"rgba(0,230,118,0.4)":"rgba(255,23,68,0.4)"};
+        border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin:8px 0 0 0;">
+        <span style="font-size:20px;">${vote==="yes"?"✅":"❌"}</span>
+        <div style="font-size:11px;font-weight:700;color:${vote==="yes"?"var(--green)":"var(--red)"};">
+          Response sent — ${vote==="yes"?"Audio OK":"Cannot hear"}
+        </div>
+      </div>`;
+    setTimeout(() => { marshalPrompt.innerHTML = ""; }, 4000);
   }
   showToast(vote==="yes" ? "✅ Voted Yes" : "❌ Voted No", vote==="yes"?"ok":"err");
 }
