@@ -2534,14 +2534,10 @@ async function clearAudioCheck() {
 
 function showAudioCheckPrompt(audioCheckId, msg) {
   if (_acDriverVoted) return;
-  const prompt = document.getElementById("ac-driver-prompt");
-  if (!prompt) return;
-  prompt.style.marginTop = "4px";
-  document.querySelector('.scroll-body')?.scrollTo(0, 0);
-  prompt.innerHTML = `
+  document.getElementById("flag-notif-driver").innerHTML = `
     <div style="background:rgba(41,121,255,0.08);border:1.5px solid rgba(41,121,255,0.5);
       border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;
-      animation:slideIn 0.3s cubic-bezier(0.34,1.56,0.64,1);">
+      animation:slideIn 0.3s cubic-bezier(0.34,1.56,0.64,1);margin:8px 0 0 0;">
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="font-size:20px;">🎙️</span>
         <div>
@@ -2569,8 +2565,6 @@ function showAudioCheckPrompt(audioCheckId, msg) {
 async function submitAudioVote(audioCheckId, vote) {
   if (_acDriverVoted) return;
   _acDriverVoted = true;
-  const prompt = document.getElementById("ac-driver-prompt");
-
   const info = DRIVER_INFO[config.driver] || {};
   try {
     await fetch(`${apiUrl}/audio-check/${audioCheckId}/vote`, {
@@ -2585,17 +2579,18 @@ async function submitAudioVote(audioCheckId, vote) {
     });
   } catch {}
 
+  const prompt = document.getElementById("flag-notif-driver");
   if (prompt) {
     prompt.innerHTML = `
       <div style="background:${vote==="yes"?"rgba(0,230,118,0.08)":"rgba(255,23,68,0.08)"};
         border:1.5px solid ${vote==="yes"?"rgba(0,230,118,0.4)":"rgba(255,23,68,0.4)"};
-        border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
+        border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin:8px 0 0 0;">
         <span style="font-size:20px;">${vote==="yes"?"✅":"❌"}</span>
         <div style="font-size:11px;font-weight:700;color:${vote==="yes"?"var(--green)":"var(--red)"};">
           Response sent — ${vote==="yes"?"Audio OK":"Cannot hear"}
         </div>
       </div>`;
-    setTimeout(() => { prompt.style.display = "none"; prompt.innerHTML = ""; }, 4000);
+    setTimeout(() => { prompt.innerHTML = ""; }, 4000);
   }
   showToast(vote==="yes" ? "✅ Voted Yes" : "❌ Voted No", vote==="yes"?"ok":"err");
 }
