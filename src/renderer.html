@@ -1860,7 +1860,6 @@ function setDriverBtnsEnabled(on) {
 function onFlagEvent(flag, customData) {
   if (flag === "__custom__" && customData) {
 if (customData.audioCheckId) {
-  _acDriverVoted = false;
   showAudioCheckPrompt(customData.audioCheckId, customData.text || "Can you hear comms?");
   return;
 }
@@ -2535,7 +2534,8 @@ async function clearAudioCheck() {
 
 function showAudioCheckPrompt(audioCheckId, msg) {
   if (_acDriverVoted) return;
-  document.getElementById("flag-notif-driver").innerHTML = `
+
+  const html = `
     <div style="background:rgba(41,121,255,0.08);border:1.5px solid rgba(41,121,255,0.5);
       border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;
       animation:slideIn 0.3s cubic-bezier(0.34,1.56,0.64,1);margin:8px 0 0 0;">
@@ -2561,6 +2561,9 @@ function showAudioCheckPrompt(audioCheckId, msg) {
         </button>
       </div>
     </div>`;
+
+  document.getElementById("flag-notif-driver").innerHTML  = html;
+  document.getElementById("flag-notif-marshal").innerHTML = html;
 }
 
 async function submitAudioVote(audioCheckId, vote) {
