@@ -553,7 +553,10 @@
 
 <div id="update-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(0,230,118,0.12);border-top:1px solid rgba(0,230,118,0.4);padding:8px 14px;align-items:center;justify-content:space-between;gap:10px;z-index:1000;">
   <div style="font-size:11px;color:var(--green);font-weight:700;" id="update-text">🔄 Downloading update...</div>
-  <button id="update-install-btn" onclick="installUpdate()" disabled style="background:var(--muted);border:none;color:#000;font-family:'Oxanium',sans-serif;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:4px;cursor:not-allowed;opacity:0.5;transition:all 0.2s;">Install & Restart</button>
+  <div style="display:flex;align-items:center;gap:6px;">
+    <button id="update-install-btn" onclick="installUpdate()" disabled style="background:var(--muted);border:none;color:#000;font-family:'Oxanium',sans-serif;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:4px;cursor:not-allowed;opacity:0.5;transition:all 0.2s;">Install & Restart</button>
+    <button onclick="document.getElementById('update-banner').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:0 2px;">✕</button>
+  </div>
 </div>
 <input type="file" id="sound-picker" accept="audio/*" style="display:none;"/>
 <input type="file" id="flag-sound-picker" accept="audio/*" style="display:none;"/>
