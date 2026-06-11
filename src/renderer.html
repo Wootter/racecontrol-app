@@ -2517,6 +2517,7 @@ function showAudioCheckPrompt(audioCheckId, msg) {
   if (_acDriverVoted && _acActiveId === audioCheckId) return;
   _acDriverVoted = false;
   _acActiveId = audioCheckId;
+  playFlagAudio("AudioCheck.mp4");
 
   const html = `
     <div style="background:rgba(41,121,255,0.08);border:1.5px solid rgba(41,121,255,0.5);
