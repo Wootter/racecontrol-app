@@ -780,7 +780,8 @@ function _suspendHotkeys() {
 
 let _sseStarted = false;
 function startSSE() {
-  if (_sseStarted || !apiUrl) return;
+  if (_sseStarted) return;
+  if (!apiUrl) return; 
   _sseStarted = true;
   const evtSource = new EventSource(`${apiUrl}/events`);
   evtSource.addEventListener("flag", e => {
