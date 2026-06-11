@@ -1034,8 +1034,10 @@ async function playFlagAudio(soundFile) {
     _currentFlagAudio = null;
   }
 
-  const flagKey = Object.keys(FLAG_DEFS).find(k => FLAG_DEFS[k].sound === soundFile);
-  if (flagKey && _flagSounds[flagKey]) {
+  const flagKey = Object.keys(FLAG_DEFS).find(k => FLAG_DEFS[k].sound === soundFile)
+  ?? (soundFile.startsWith("BlueFlag_") ? "blue" : null);
+if (flagKey && _flagSounds[flagKey]) {
+  
     try {
       const audio = new Audio(_flagSounds[flagKey]);
       audio.volume = _flagVolume;
