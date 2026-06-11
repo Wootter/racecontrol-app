@@ -1920,15 +1920,12 @@ async function pollDriverState() {
   if (!apiUrl) return;
   try {
     const res  = await fetch(`${apiUrl}/driver/state`, { headers:{"x-discord-id":user?.id||""} });
-    if (res.status === 403) {
-  const data = await res.json().catch(() => ({}));
-  if (data.blacklisted) showBlacklistedScreen();
-  else showDisabledScreen();
-  return;
-}
-  showDisabledScreen();
-  return;
-}
+if (res.status === 403) {
+      const data = await res.json().catch(() => ({}));
+      if (data.blacklisted) showBlacklistedScreen();
+      else showDisabledScreen();
+      return;
+    }
     const data = await res.json();
     _lastRaceState = data;
     const filteredDrivers = data.drivers?.filter(d => _attendance[d.name] !== false) || [];
