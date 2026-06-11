@@ -474,6 +474,23 @@
       <div id="dev-audit" style="max-height:150px;overflow-y:auto;font-size:10px;color:var(--muted);">Loading...</div>
     </div>
 
+    <div class="dev-card" id="dev-drivers-card">
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <div class="dev-title">Driver Database</div>
+    <span id="dev-drivers-badge" style="font-size:8px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:10px;background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.3);color:var(--green);">0 drivers</span>
+  </div>
+  <div style="display:flex;gap:4px;margin-top:2px;">
+    <input type="text" id="dev-drivers-search" placeholder="Search..." style="flex:1;font-size:10px;padding:5px 8px;" oninput="renderDriverDB()"/>
+    <button class="dev-btn" onclick="openDriverModal()" style="width:auto;padding:5px 12px;font-size:9px;background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);">+ Add</button>
+  </div>
+  <div id="dev-driver-list" style="display:flex;flex-direction:column;gap:3px;max-height:220px;overflow-y:auto;margin-top:2px;"></div>
+  <div style="display:flex;gap:4px;margin-top:2px;">
+    <button class="dev-btn" onclick="devExportDriverCode()" style="flex:1;font-size:9px;background:rgba(41,121,255,0.1);border-color:rgba(41,121,255,0.3);color:var(--blue);">⬆ Export Code</button>
+    <button class="dev-btn" onclick="devResetDriverDB()" style="flex:0 0 auto;padding:5px 10px;font-size:9px;">↺ Reset</button>
+  </div>
+  <div id="dev-drivers-status" style="font-size:9px;color:var(--muted);min-height:12px;margin-top:2px;"></div>
+</div>
+
     <div class="dev-card">
       <div class="dev-title">Active Sessions</div>
       <div id="dev-sessions" style="font-size:10px;color:var(--muted);">Loading...</div>
@@ -677,6 +694,51 @@
   </div>
 </div>
 
+<div id="driver-modal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;width:100%;max-width:320px;display:flex;flex-direction:column;gap:10px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:13px;font-weight:800;color:var(--text);" id="driver-modal-title">Add Driver</div>
+      <button onclick="closeDriverModal()" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;">✕</button>
+    </div>
+    <input type="hidden" id="dm-edit-id"/>
+    <div>
+      <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Driver Name (callname)</div>
+      <input type="text" id="dm-name" placeholder="ACHILLES" oninput="this.value=this.value.toUpperCase()"/>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <div style="flex:1;">
+        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Car #</div>
+        <input type="text" id="dm-number" placeholder="09"/>
+      </div>
+      <div style="flex:2;">
+        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Callsign</div>
+        <input type="text" id="dm-callsign" placeholder="MAR-09"/>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;">Discord ID</div>
+      <input type="text" id="dm-discord" placeholder="884223249939050507"/>
+    </div>
+    <div style="font-size:10px;color:var(--red);min-height:14px;" id="dm-error"></div>
+    <div style="display:flex;gap:6px;">
+      <button onclick="closeDriverModal()" style="flex:1;padding:8px;background:var(--bg);border:1px solid var(--border);color:var(--muted);font-family:'Oxanium',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--radius);cursor:pointer;">Cancel</button>
+      <button onclick="saveDriverEntry()" class="save-btn" style="flex:1;">Save Driver</button>
+    </div>
+  </div>
+</div>
+
+<div id="driver-export-modal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:12px;font-weight:800;color:var(--text);">Export — paste into renderer.html</div>
+      <button onclick="document.getElementById('driver-export-modal').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;">✕</button>
+    </div>
+    <div style="font-size:9px;color:var(--muted);">Replace your DRIVER_IDS and DRIVER_INFO constants with this:</div>
+    <pre id="driver-export-code" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;font-family:monospace;font-size:9px;color:var(--text);white-space:pre-wrap;word-break:break-all;max-height:180px;overflow-y:auto;"></pre>
+    <button class="save-btn" onclick="devCopyDriverExport()">📋 Copy to Clipboard</button>
+  </div>
+</div>
+
 <script>
 const DRIVER_ROLE   = "1464790972679454903";
 const MARSHAL_ROLE  = "1464788931823538430";
@@ -700,14 +762,14 @@ const FLAG_DEFS = {
   yellow_s3:  {emoji:"🟡",title:"Yellow Flag",        sub:"🟡 Yellow flag — Sector 3",                   color:"yellow", sound:"YellowFlagSector3.mp4"},
 };
 
-const DRIVER_IDS = {
+let DRIVER_IDS = {
   "884223249939050507":"ACHILLES","799844642984034314":"AUBRN","1487269583898284183":"BRYAN",
   "749509586800869418":"CHASE","660419748894343169":"CODA","1228434328653140162":"LAMAR","852652597315240028":"QUAH","763093725903585291":"SETH",
   "1112809205771010150":"SHADOW","1127975831197724813":"SUPA","1036614995737321552":"SWEATER","756781169550295061":"VSCO","1122883570021695548":"KEBAB","776108630415376385":"TON",
   "1081740933021835354":"UNLIMITED","1211381460406116375":"COOLCAT","529122061411549185":"HIDDEN",
 };
 
-const DRIVER_INFO = {
+let DRIVER_INFO = {
   "ACHILLES":  { number:"09", callsign:"MAR-09"  },
   "VSCO":      { number:"??", callsign:"ST-??"   },
   "AUBRN":     { number:"18", callsign:"CRG-18"  },
@@ -946,6 +1008,171 @@ function loadDevTabPrefs() {
   } catch {}
 }
 
+// DD
+const DRIVER_DB_KEY = "rc_driver_db";
+
+function loadDriverDB() {
+  try {
+    const saved = localStorage.getItem(DRIVER_DB_KEY);
+    if (saved) {
+      const drivers = JSON.parse(saved);
+      DRIVER_IDS  = {};
+      DRIVER_INFO = {};
+      drivers.forEach(d => {
+        DRIVER_IDS[d.discordId]  = d.name;
+        DRIVER_INFO[d.name]      = { number: d.number, callsign: d.callsign };
+      });
+      return drivers;
+    }
+  } catch(e) { console.warn("[DriverDB] Load failed:", e); }
+  return Object.entries(DRIVER_IDS).map(([discordId, name]) => ({
+    name, discordId,
+    number:   DRIVER_INFO[name]?.number   || "??",
+    callsign: DRIVER_INFO[name]?.callsign || name,
+  }));
+}
+
+function saveDriverDB(drivers) {
+  localStorage.setItem(DRIVER_DB_KEY, JSON.stringify(drivers));
+  DRIVER_IDS  = {};
+  DRIVER_INFO = {};
+  drivers.forEach(d => {
+    DRIVER_IDS[d.discordId]  = d.name;
+    DRIVER_INFO[d.name]      = { number: d.number, callsign: d.callsign };
+  });
+}
+
+function getDriverDB() {
+  try {
+    const saved = localStorage.getItem(DRIVER_DB_KEY);
+    return saved ? JSON.parse(saved) : loadDriverDB();
+  } catch { return loadDriverDB(); }
+}
+
+function renderDriverDB() {
+  const q       = (document.getElementById("dev-drivers-search")?.value || "").toLowerCase();
+  const drivers = getDriverDB();
+  const sorted  = [...drivers].sort((a, b) => (parseInt(a.number)||999) - (parseInt(b.number)||999));
+  const filtered = sorted.filter(d =>
+    d.name.toLowerCase().includes(q) ||
+    d.number.toLowerCase().includes(q) ||
+    d.callsign.toLowerCase().includes(q) ||
+    d.discordId.includes(q)
+  );
+
+  const el = document.getElementById("dev-driver-list");
+  if (!el) return;
+
+  el.innerHTML = filtered.length ? filtered.map(d => `
+    <div style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;">
+      <div style="width:26px;height:26px;border-radius:3px;background:rgba(255,255,255,0.05);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;flex-shrink:0;">#${d.number}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:10px;font-weight:700;">${d.name}</div>
+        <div style="font-size:8px;color:var(--muted);">${d.callsign} · <span style="font-family:monospace;">${d.discordId}</span></div>
+      </div>
+      <button onclick="openDriverEdit('${d.name}')" style="font-size:9px;padding:2px 7px;border-radius:3px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;font-family:'Oxanium',sans-serif;">✏️</button>
+      <button onclick="deleteDriverEntry('${d.name}')" style="font-size:9px;padding:2px 7px;border-radius:3px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;font-family:'Oxanium',sans-serif;">✕</button>
+    </div>`).join("")
+  : `<div style="font-size:10px;color:var(--muted);text-align:center;padding:10px;">No drivers found.</div>`;
+
+  const badge = document.getElementById("dev-drivers-badge");
+  if (badge) badge.textContent = `${drivers.length} driver${drivers.length !== 1 ? "s" : ""}`;
+}
+
+function openDriverModal() {
+  document.getElementById("dm-edit-id").value    = "";
+  document.getElementById("dm-name").value       = "";
+  document.getElementById("dm-number").value     = "";
+  document.getElementById("dm-callsign").value   = "";
+  document.getElementById("dm-discord").value    = "";
+  document.getElementById("dm-error").textContent = "";
+  document.getElementById("driver-modal-title").textContent = "Add Driver";
+  document.getElementById("driver-modal").style.display = "flex";
+  setTimeout(() => document.getElementById("dm-name").focus(), 50);
+}
+
+function openDriverEdit(name) {
+  const drivers = getDriverDB();
+  const d = drivers.find(x => x.name === name);
+  if (!d) return;
+  document.getElementById("dm-edit-id").value    = name;
+  document.getElementById("dm-name").value       = d.name;
+  document.getElementById("dm-number").value     = d.number;
+  document.getElementById("dm-callsign").value   = d.callsign;
+  document.getElementById("dm-discord").value    = d.discordId;
+  document.getElementById("dm-error").textContent = "";
+  document.getElementById("driver-modal-title").textContent = "Edit Driver";
+  document.getElementById("driver-modal").style.display = "flex";
+}
+
+function closeDriverModal() {
+  document.getElementById("driver-modal").style.display = "none";
+}
+
+function saveDriverEntry() {
+  const editId   = document.getElementById("dm-edit-id").value;
+  const name     = document.getElementById("dm-name").value.trim().toUpperCase();
+  const number   = document.getElementById("dm-number").value.trim();
+  const callsign = document.getElementById("dm-callsign").value.trim().toUpperCase();
+  const discord  = document.getElementById("dm-discord").value.trim();
+  const errEl    = document.getElementById("dm-error");
+
+  if (!name)     { errEl.textContent = "Name is required."; return; }
+  if (!number)   { errEl.textContent = "Car number is required."; return; }
+  if (!callsign) { errEl.textContent = "Callsign is required."; return; }
+  if (!discord)  { errEl.textContent = "Discord ID is required."; return; }
+  if (!/^\d{17,19}$/.test(discord)) { errEl.textContent = "Discord ID should be 17–19 digits."; return; }
+
+  const drivers = getDriverDB();
+  const dupName = drivers.find(d => d.name === name && d.name !== editId);
+  if (dupName) { errEl.textContent = "A driver with that name already exists."; return; }
+  const dupId = drivers.find(d => d.discordId === discord && d.name !== editId);
+  if (dupId) { errEl.textContent = `Discord ID already used by ${dupId.name}.`; return; }
+
+  if (editId) {
+    const idx = drivers.findIndex(d => d.name === editId);
+    if (idx >= 0) drivers[idx] = { name, number, callsign, discordId: discord };
+  } else {
+    drivers.push({ name, number, callsign, discordId: discord });
+  }
+
+  saveDriverDB(drivers);
+  closeDriverModal();
+  renderDriverDB();
+  showToast(`✓ Driver ${editId ? "updated" : "added"}: ${name}`, "ok");
+}
+
+function deleteDriverEntry(name) {
+  if (!confirm(`Remove ${name} from the driver database?`)) return;
+  const drivers = getDriverDB().filter(d => d.name !== name);
+  saveDriverDB(drivers);
+  renderDriverDB();
+  showToast(`✓ Removed ${name}`, "ok");
+}
+
+function devExportDriverCode() {
+  const drivers = getDriverDB();
+  const ids  = drivers.map(d => `  "${d.discordId}":"${d.name}"`).join(",\n");
+  const info = drivers.map(d => `  "${d.name}":{ number:"${d.number}", callsign:"${d.callsign}" }`).join(",\n");
+  document.getElementById("driver-export-code").textContent =
+    `const DRIVER_IDS = {\n${ids},\n};\n\nconst DRIVER_INFO = {\n${info},\n};`;
+  document.getElementById("driver-export-modal").style.display = "flex";
+}
+
+function devCopyDriverExport() {
+  navigator.clipboard.writeText(document.getElementById("driver-export-code").textContent)
+    .then(() => showToast("✓ Copied to clipboard", "ok"));
+}
+
+function devResetDriverDB() {
+  if (!confirm("Reset driver database to the hardcoded defaults? This cannot be undone.")) return;
+  localStorage.removeItem(DRIVER_DB_KEY);
+  loadDriverDB();
+  renderDriverDB();
+  showToast("✓ Driver DB reset to defaults", "ok");
+}
+
+
 function resetKeybindSound(action) {
   delete _keybindSounds[action];
   localStorage.setItem("rc_keybind_sounds", JSON.stringify(_keybindSounds));
@@ -1115,6 +1342,7 @@ function toggleHoloMode() {
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
+  loadDriverDB();
   config = await window.api.getConfig();
   apiUrl = config.apiUrl || "";
 
@@ -2176,6 +2404,7 @@ async function loadDevInfo() {
     }).join("")||'<div style="color:var(--muted);">No actions yet.</div>';
 
     renderMockLb();
+    renderDriverDB();
 
     const engEl = document.getElementById("dev-engineers");
     const serverEngineers = (dl.logins || []).filter(l => l.engineer);
