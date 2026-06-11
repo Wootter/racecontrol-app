@@ -772,11 +772,8 @@ function loadVolumePrefs() {
   }
 }
 
-
-
-function _suspendHotkeys() {
-  if (config.keybinds) window.api.registerHotkeys({});
-}
+function _suspendHotkeys() { window.api.suspendHotkeys(); }
+function _resumeHotkeys()  { window.api.resumeHotkeys();  }
 
 let _sseStarted = false;
 function startSSE() {
