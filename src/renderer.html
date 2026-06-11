@@ -1032,7 +1032,7 @@ function loadDriverDB() {
   }));
 }
 
-function saveDriverDB(drivers) {
+async function saveDriverDB(drivers) {
   localStorage.setItem(DRIVER_DB_KEY, JSON.stringify(drivers));
   DRIVER_IDS  = {};
   DRIVER_INFO = {};
@@ -1040,6 +1040,17 @@ function saveDriverDB(drivers) {
     DRIVER_IDS[d.discordId]  = d.name;
     DRIVER_INFO[d.name]      = { number: d.number, callsign: d.callsign };
   });
+  if (apiUrl && user?.token) {
+    try {
+      const res = await fetch(`${apiUrl}/admin/driver-db`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+        body: JSON.stringify({ drivers }),
+      });
+      if (res.ok) console.log("[DriverDB] Synced to server");
+      else console.warn("[DriverDB] Server sync failed:", await res.text());
+    } catch(e) { console.warn("[DriverDB] Server sync error:", e.message); }
+  }
 }
 
 function getDriverDB() {
