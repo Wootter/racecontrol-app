@@ -2539,12 +2539,10 @@ function showAudioCheckPrompt(audioCheckId, msg) {
       </div>
     </div>`;
 
-  const driverNotif  = document.getElementById("flag-notif-driver");
-  const marshalNotif = document.getElementById("flag-notif-marshal");
-  if (driverNotif)  driverNotif.innerHTML  = html;
-  if (marshalNotif) marshalNotif.innerHTML = html;
+  document.getElementById("flag-notif-driver").innerHTML  = html;
+  document.getElementById("flag-notif-marshal").innerHTML = html;
 
-  if (currentPanel === "dev" || currentPanel === "settings") {
+  if (currentPanel !== "driver" && currentPanel !== "marshal") {
     if (hasMarshal) switchPanel("marshal");
     else if (hasDriver) switchPanel("driver");
   }
@@ -2555,9 +2553,9 @@ async function submitAudioVote(audioCheckId, vote) {
   if (_acDriverVoted) return;
   _acDriverVoted = true;
 
-  const isMarshal = !config.driver || currentPanel === "marshal";
-  const name     = isMarshal ? (user?.username || "Marshal") : config.driver;
-  const info     = isMarshal ? { number: "–", callsign: "Marshal" } : (DRIVER_INFO[config.driver] || {});
+  const isMarshal = !config.driver || config.driver === "__dev__";
+  const name = isMarshal ? (user?.username || "Marshal") : config.driver;
+  const info = isMarshal ? { number: "–", callsign: "Marshal" } : (DRIVER_INFO[config.driver] || {});
 
   try {
     await fetch(`${apiUrl}/audio-check/${audioCheckId}/vote`, {
