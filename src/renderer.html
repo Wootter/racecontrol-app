@@ -1900,19 +1900,25 @@ function onFlagEvent(flag, customData) {
 
   const def = FLAG_DEFS[flag]; if (!def) return;
 
-  if (flag === "blue" && _lastBlueFlagDriver) {
+if (flag === "blue") {
+    if (customData?.driver) {
+      _lastBlueFlagDriver = { name: customData.driver, number: customData.number, callsign: customData.callsign };
+    }
     const d = _lastBlueFlagDriver;
-    const html = `<div class="flag-card blue">
-      <span class="fc-emoji">🔵</span>
-      <div>
-        <div class="fc-title">Blue Flag — ${d.name}</div>
-        <div class="fc-sub">#${d.number} · ${d.callsign} — let the leaders past.</div>
-      </div>
-    </div>`;
-    document.getElementById("flag-notif-driver").innerHTML  = html;
-    document.getElementById("flag-notif-marshal").innerHTML = html;
-    document.getElementById("flag-notif-marshal").style.display = "block";
-    return;
+    if (d) {
+      const html = `<div class="flag-card blue">
+        <span class="fc-emoji">🔵</span>
+        <div>
+          <div class="fc-title">Blue Flag — ${d.name}</div>
+          <div class="fc-sub">#${d.number} · ${d.callsign} — let the leaders past.</div>
+        </div>
+      </div>`;
+      document.getElementById("flag-notif-driver").innerHTML  = html;
+      document.getElementById("flag-notif-marshal").innerHTML = html;
+      document.getElementById("flag-notif-marshal").style.display = "block";
+      playFlagAudio(`BlueFlag_${d.name}.mp4`);
+      return;
+    }
   }
 
   if (flag !== "blue") _lastBlueFlagDriver = null;
