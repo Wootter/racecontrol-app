@@ -774,29 +774,38 @@ function loadVolumePrefs() {
 function _suspendHotkeys() {
   if (config.keybinds) window.api.registerHotkeys({});
 }
+
+let _sseStarted = false;
+function startSSE() {
+  if (_sseStarted || !apiUrl) return;
+  _sseStarted = true;
+  const evtSource = new EventSource(`${apiUrl}/events`);
+  evtSource.addEventListener("flag", e => {
+    try { const d = JSON.parse(e.data); onFlagEvent(d.flag, d); } catch {}
+  });
+  evtSource.onerror = () =>
+    console.warn("[SSE] Connection lost — will retry automatically");
+}
+  
 function _resumeHotkeys() {
   if (config.keybinds) window.api.registerHotkeys(config.keybinds);
 }
 
-function _bindHotkeyPauseListeners(root) {
-  const sel = 'input:not([readonly]):not([type="range"]):not([type="checkbox"]):not([type="file"]):not([type="color"]), textarea, select';
-  root.querySelectorAll(sel).forEach(el => {
-    if (el._hkPauseAttached) return;
-    el._hkPauseAttached = true;
-    el.addEventListener("focus", _suspendHotkeys);
-    el.addEventListener("blur",  _resumeHotkeys);
-  });
-}
-
 function _initHotkeyPauseObserver() {
+  const TYPING_SELECTOR =
+    'input, textarea, select, [contenteditable="true"]';
 
-  _bindHotkeyPauseListeners(document.body);
-  const obs = new MutationObserver(mutations => {
-    mutations.forEach(m => m.addedNodes.forEach(n => {
-      if (n.nodeType === 1) _bindHotkeyPauseListeners(n);
-    }));
+  document.addEventListener('focusin', e => {
+    if (e.target.matches(TYPING_SELECTOR)) {
+      _suspendHotkeys();
+    }
   });
-  obs.observe(document.body, { childList: true, subtree: true });
+
+  document.addEventListener('focusout', e => {
+    if (e.target.matches(TYPING_SELECTOR)) {
+      _resumeHotkeys();
+    }
+  });
 }
 
 
@@ -1162,13 +1171,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     await afterLogin();
   }
 
-  if (apiUrl) {
-    const evtSource = new EventSource(`${apiUrl}/events`);
-    evtSource.addEventListener("flag", e => {
-      try { const d = JSON.parse(e.data); onFlagEvent(d.flag, d); } catch {}
-    });
-    evtSource.onerror = () => console.warn("[SSE] Connection lost — will retry automatically");
-  }
+ startSSE();
 
   window.api.checkVersion().then(v => {
     const el = document.getElementById("app-version");
@@ -1580,6 +1583,7 @@ async function submitPassword() {
     localStorage.setItem("rc_user", JSON.stringify(safeUser));
     updateSwitcher();
     if (hasDriver && !config.driver) { engineerPending = true; updateSwitcher(); }
+    startSSE(); 
     launchMarshalPanel();
   } catch(err) { document.getElementById("pw-error").textContent = "❌ "+err.message; }
 }
