@@ -818,6 +818,7 @@ let isEngineer         = false;
 let _driverPollInterval  = null;
 let _marshalPollInterval = null;
 let _holoMode = false;
+let _cooldownActive = false;
 
 let _flagVolume = 1.0;
 
@@ -2312,13 +2313,18 @@ function toggleDevBypass(panel) {
 }
 
 function doAction(action) {
+  if(_cooldownActive) return;
   playKeybindSound(action);
   const btn = document.getElementById(`btn-${action}`);
   if (!btn || btn.disabled) return;
   btn.classList.add("fired"); setTimeout(()=>btn.classList.remove("fired"),300);
   window.api.sendAction(action);
 }
-function doTogglePitting() { playKeybindSound("pitting"); window.api.togglePitting().then(v=>updatePitBtn(v)); }
+function doTogglePitting() {
+  if(_cooldownActive) return;
+  playKeybindSound("pitting");
+  window.api.togglePitting().then(v=>updatePitBtn(v));
+}
 function updatePitBtn(v) {
   document.getElementById("pit-icon").textContent  = "🔧";
   document.getElementById("pit-label").textContent = v?"In Pits":"Pitting";
@@ -2682,7 +2688,7 @@ function startCooldown(secs){
   const bar=document.getElementById("cooldown-bar"),fill=document.getElementById("cooldown-fill");
   bar.style.display="block";fill.style.transition="none";fill.style.width="100%";
   void fill.offsetWidth;fill.style.transition=`width ${secs}s linear`;fill.style.width="0%";
-
+  _cooldownActive = true;
   ["blue_flag","next_lap","pitting"].forEach(a=>{
     const b=document.getElementById(`btn-${a}`);
     if(b){ b.disabled=true; b.style.opacity="0.35"; }
@@ -2691,7 +2697,7 @@ function startCooldown(secs){
 }
 function stopCooldown(){
   document.getElementById("cooldown-bar").style.display="none";
-
+  _cooldownActive = false;
   if(_lastRaceState?.raceStarted !== false){
     ["blue_flag","next_lap","pitting"].forEach(a=>{
       const b=document.getElementById(`btn-${a}`);
