@@ -294,6 +294,13 @@
       <div id="m-race-pill" style="font-size:10px;color:var(--muted);">● Waiting</div>
     </div>
     <div id="m-bf-container" style="display:flex;flex-direction:column;gap:4px;"></div>
+    <div id="m-leaderboard-section">
+  <div class="sec-label" style="display:flex;align-items:center;justify-content:space-between;">
+    <span>Leaderboard</span>
+    <span id="m-lap-counter" style="font-size:9px;color:var(--muted);font-weight:700;"></span>
+  </div>
+  <div id="m-leaderboard"><div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">Waiting for race...</div></div>
+</div>
     <div>
       <div class="sec-label">Global Flags</div>
       <div class="flag-grid">
@@ -1946,11 +1953,15 @@ function launchMarshalPanel(startPoll=true) {
 if (DIRECTOR_ROLES.some(r => user?.roles?.includes(r)) || user?.isAdmin)
   document.getElementById("m-race-setup").style.display = "block";
   renderAttendance();
-  if (startPoll) {
-    if (_marshalPollInterval) clearInterval(_marshalPollInterval);
+if (startPoll) {
+  if (_marshalPollInterval) clearInterval(_marshalPollInterval);
+  pollBlueFlagRequests();
+  pollMarshalState();
+  _marshalPollInterval = setInterval(() => {
     pollBlueFlagRequests();
-    _marshalPollInterval = setInterval(pollBlueFlagRequests, 3000);
-  }
+    pollMarshalState();
+  }, 3000);
+}
 }
 
 async function pollDriverState() {
@@ -2364,6 +2375,46 @@ async function marshalResetRace() {
   } catch{showToast("✗ Bot unreachable","err");}
 }
 
+async function pollMarshalState() {
+  if (!apiUrl) return;
+  try {
+    const res = await fetch(`${apiUrl}/driver/state`, { headers: { "x-discord-id": user?.id || "" } });
+    if (!res.ok) return;
+    const data = await res.json();
+    _lastRaceState = data;
+    const lb    = document.getElementById("m-leaderboard");
+    const lapEl = document.getElementById("m-lap-counter");
+    if (!lb) return;
+    if (!data.drivers?.length) {
+      lb.innerHTML = '<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">Waiting for race...</div>';
+      if (lapEl) lapEl.textContent = "";
+      return;
+    }
+    if (lapEl && data.totalLaps) {
+      const maxLap = Math.max(...data.drivers.map(d => d.lap || 1));
+      lapEl.textContent = `Lap ${maxLap} / ${data.totalLaps}`;
+    } else if (lapEl) { lapEl.textContent = ""; }
+    const filtered = data.drivers.filter(d => _attendance[d.name] !== false);
+    lb.innerHTML = filtered.map((d, i) => {
+      const pos = i + 1, pc = pos===1?"p1":pos===2?"p2":pos===3?"p3":"";
+      const team = getTeamFromCallsign(d.callsign);
+      const tc   = (team && TEAM_COLORS[team]) ? TEAM_COLORS[team] : null;
+      return `<div class="lb-row ${d.inPits?"in-pits":""}" style="border-left:3px solid ${tc||"var(--border)"};padding-left:8px;">
+        <div class="lb-pos ${pc}">${pos}</div>
+        <div class="lb-num" style="${tc?`background:${tc}22;border-color:${tc}66;color:${tc};`:""}">#${d.number}</div>
+        <div class="lb-info">
+          <div class="lb-name">${d.name}</div>
+          <div class="lb-call">${d.callsign}</div>
+        </div>
+        <div class="lb-lap" style="text-align:right;">
+          <div>Lap ${d.lap||1}${data.totalLaps?`<span style="color:var(--muted);">/${data.totalLaps}</span>`:""}</div>
+          ${d.inPits?'<div style="font-size:8px;color:var(--yellow);">🔧 IN PITS</div>':(d.gap&&d.gap!=="Leader"?`<div style="font-size:8px;color:var(--muted);">${d.gap}</div>`:"")}
+        </div>
+      </div>`;
+    }).join("");
+  } catch(e) { console.warn("[Marshal LB]", e.message); }
+}
+  
 async function pollBlueFlagRequests() {
   if (!user?.token||currentPanel!=="marshal") return;
   try {
