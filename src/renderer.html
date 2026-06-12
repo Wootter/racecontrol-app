@@ -1285,6 +1285,22 @@ function closeBlueFlagModal() {
   document.getElementById("blueflag-modal").style.display = "none";
 }
 
+async function syncDriverDBFromServer() {
+  if (!apiUrl || !user?.token) return;
+  try {
+    const res = await fetch(`${apiUrl}/admin/driver-db`, {
+      headers: { "x-discord-id": user.id, "x-discord-token": user.token }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.drivers?.length) {
+      localStorage.setItem(DRIVER_DB_KEY, JSON.stringify(data.drivers));
+      loadDriverDB();
+      console.log(`[DriverDB] Synced ${data.drivers.length} drivers from server`);
+    }
+  } catch(e) { console.warn("[DriverDB] Sync failed:", e.message); }
+}
+  
 async function triggerBlueFlagForDriver(name, number, callsign) {
   closeBlueFlagModal();
   if (!user?.token) return showToast("✗ Not authenticated as marshal", "err");
@@ -1626,6 +1642,7 @@ async function resetApiUrl() {
 
 async function afterLogin() {
   loadDriverDB();
+  await syncDriverDBFromServer();
 const driverName = DRIVER_IDS[user.id];
   hasDriver = true;
   hasDev = user.id === DEV_USER_ID;
