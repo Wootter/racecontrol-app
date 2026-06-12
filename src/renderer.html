@@ -1727,7 +1727,7 @@ async function submitBugReport() {
   submitBtn.disabled = true;
 
   const version = document.getElementById("app-version")?.textContent || "unknown";
-  const logs    = inclLogs ? _devLogs.slice(0, 30) : [];
+  const logs = inclLogs ? _devLogs.slice(0, 30).map(e => `[${e.level.toUpperCase()}] ${e.t} — ${e.msg}`) : [];
   const report  = { what, steps, expected, actual, frequency, panel, reporter: user?.username || "Unknown", discordId: user?.id || "unknown", version, apiUrl, timestamp: new Date().toISOString(), logs, hasImage: !!_bugImageData };
 
   try {
@@ -2682,8 +2682,24 @@ function startCooldown(secs){
   const bar=document.getElementById("cooldown-bar"),fill=document.getElementById("cooldown-fill");
   bar.style.display="block";fill.style.transition="none";fill.style.width="100%";
   void fill.offsetWidth;fill.style.transition=`width ${secs}s linear`;fill.style.width="0%";
+
+  ["blue_flag","next_lap","pitting"].forEach(a=>{
+    const b=document.getElementById(`btn-${a}`);
+    if(b){ b.disabled=true; b.style.opacity="0.35"; }
+  });
+  _suspendHotkeys();
 }
-function stopCooldown(){document.getElementById("cooldown-bar").style.display="none";}
+function stopCooldown(){
+  document.getElementById("cooldown-bar").style.display="none";
+
+  if(_lastRaceState?.raceStarted !== false){
+    ["blue_flag","next_lap","pitting"].forEach(a=>{
+      const b=document.getElementById(`btn-${a}`);
+      if(b){ b.disabled=false; b.style.opacity=""; }
+    });
+  }
+  _resumeHotkeys();
+}
 
 async function saveSettings(){
   const newApi=hasDev?document.getElementById("s-api").value.trim():(config.apiUrl||apiUrl);
