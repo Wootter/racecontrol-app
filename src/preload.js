@@ -18,7 +18,6 @@ contextBridge.exposeInMainWorld("api", {
   installUpdate:   ()    => ipcRenderer.invoke("install-update"),
   checkVersion:    ()    => ipcRenderer.invoke("check-version"),
   registerHotkeys: (kb)  => ipcRenderer.invoke("register-hotkeys", kb),
-  registerHotkeys:  (keybinds) => ipcRenderer.invoke("register-hotkeys", keybinds),
   suspendHotkeys:   ()         => ipcRenderer.invoke("suspend-hotkeys"),
   resumeHotkeys:    ()         => ipcRenderer.invoke("resume-hotkeys"),
   uninstall:       ()    => ipcRenderer.invoke("uninstall"),
@@ -34,5 +33,4 @@ contextBridge.exposeInMainWorld("api", {
   onPitStateChanged:  (cb) => safeOn("pit-state-changed", cb),
   onFlagEvent:        (cb) => safeOn("flag-event",        cb),
   onKeybindFired:     (cb) => safeOn("keybind-fired",     cb),
-  devAuthPassword:    ()   => ipcRenderer.invoke("dev-auth-password"),
 });
