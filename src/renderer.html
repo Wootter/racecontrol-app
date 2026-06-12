@@ -1196,24 +1196,54 @@ function resetKeybindSound(action) {
   showToast(`✓ Sound reset for ${action}`, "ok");
 }
 
+const TEAM_COLORS = {
+  MAR: "#640000", LOT: "#b8a956", NCC: "#f00000", LND: "#d4843d",
+  ST:  "#505050", AWR: "#2352fd", XYZ: "#c26a37", MIS: "#262e82",
+  SC:  "#2a2a2a", TNT: "#c765ff",
+};
+
+function getTeamFromCallsign(callsign) {
+  if (!callsign) return null;
+  const match = callsign.match(/^([A-Z]+)-/);
+  return match ? match[1] : null;
+}
+
 function openBlueFlagModal() {
   const list = document.getElementById("blueflag-driver-list");
   const activePlayers = _lastRaceState?.drivers?.length
     ? _lastRaceState.drivers
     : Object.entries(DRIVER_INFO).sort((a,b) => parseInt(a[1].number) - parseInt(b[1].number))
         .map(([name, info]) => ({ name, number: info.number, callsign: info.callsign }));
-  list.innerHTML = activePlayers.map(d => `
-    <button onclick="triggerBlueFlagForDriver('${d.name}', '${d.number}', '${d.callsign}')"
-      style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:7px;cursor:pointer;color:var(--text);font-family:'Oxanium',sans-serif;transition:border-color 0.15s,background 0.15s;width:100%;"
-      onmouseover="this.style.borderColor='var(--blue)';this.style.background='rgba(41,121,255,0.07)'"
-      onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg)'">
-      <div style="width:28px;height:28px;border-radius:4px;background:rgba(41,121,255,0.1);border:1px solid rgba(41,121,255,0.3);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:var(--blue);flex-shrink:0;">#${d.number}</div>
-      <div style="text-align:left;">
-        <div style="font-size:12px;font-weight:700;">${d.name}</div>
-        <div style="font-size:9px;color:var(--muted);">${d.callsign}</div>
-      </div>
-      <div style="margin-left:auto;font-size:16px;">🔵</div>
-    </button>`).join("");
+
+  // Group by team
+  const groups = {};
+  activePlayers.forEach(d => {
+    const team = getTeamFromCallsign(d.callsign) || "OTHER";
+    if (!groups[team]) groups[team] = [];
+    groups[team].push(d);
+  });
+
+  list.innerHTML = Object.entries(groups).map(([team, drivers]) => {
+    const color = TEAM_COLORS[team] || "#444466";
+    const hex20 = color + "33";
+    return `
+      <div style="border:1px solid ${color};border-radius:7px;overflow:hidden;margin-bottom:2px;">
+        <div style="padding:4px 10px;background:${color}22;font-size:8px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${color};">${team}</div>
+        ${drivers.map(d => `
+          <button onclick="triggerBlueFlagForDriver('${d.name}', '${d.number}', '${d.callsign}')"
+            style="display:flex;align-items:center;gap:12px;padding:9px 12px;background:transparent;border:none;border-top:1px solid ${color}33;cursor:pointer;color:var(--text);font-family:'Oxanium',sans-serif;width:100%;transition:background 0.15s;"
+            onmouseover="this.style.background='${color}22'"
+            onmouseout="this.style.background='transparent'">
+            <div style="width:28px;height:28px;border-radius:4px;background:${color}22;border:1px solid ${color}66;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:${color};flex-shrink:0;">#${d.number}</div>
+            <div style="text-align:left;">
+              <div style="font-size:12px;font-weight:700;">${d.name}</div>
+              <div style="font-size:9px;color:var(--muted);">${d.callsign}</div>
+            </div>
+            <div style="margin-left:auto;font-size:16px;">🔵</div>
+          </button>`).join("")}
+      </div>`;
+  }).join("");
+
   document.getElementById("blueflag-modal").style.display = "flex";
 }
 
