@@ -751,7 +751,7 @@ const FLAG_DEFS = {
   yellow:     {emoji:"🟡",title:"Yellow Flag",        sub:"Caution — no overtaking.",                     color:"yellow", sound:"YellowFlag.mp4"},
   fcy:        {emoji:"🟡",title:"Full Course Yellow", sub:"Full Course Yellow — slow down.",              color:"yellow", sound:"FullCourseYellow.mp4"},
   red:        {emoji:"🔴",title:"Red Flag",           sub:"Stop immediately, return to pits.",            color:"red",    sound:"RedFlag.mp4"},
-  blue:       {emoji:"🔵",title:"Blue Flag",          sub:"Let the leaders past.",                        color:"blue",   sound:"LappedCars.mp4"},
+  blue:       {emoji:"🔵",title:"Blue Flag",          sub:"Let the leaders past.",                        color:"blue",   sound:"Blue_Flag.mp4"},
   safety_car: {emoji:"🟠",title:"Safety Car",         sub:"Safety car deployed — hold position.",         color:"orange", sound:"SCDeployed.mp4"},
   sc_ending:  {emoji:"🟠",title:"Safety Car Ending",  sub:"Safety car coming in — prepare for restart.", color:"orange", sound:"SafetyCarEnding.mp4"},
   sc_speedup: {emoji:"🟠",title:"Speed Up",           sub:"Safety car speeding up — get ready.",         color:"orange", sound:"SCSpeedup.mp4"},
@@ -769,25 +769,30 @@ let DRIVER_IDS = {
   "1081740933021835354":"UNLIMITED","1211381460406116375":"COOLCAT","529122061411549185":"HIDDEN",
 };
 
-let DRIVER_INFO = {
-  "ACHILLES":  { number:"09", callsign:"MAR-09"  },
-  "VSCO":      { number:"??", callsign:"ST-??"   },
-  "AUBRN":     { number:"18", callsign:"CRG-18"  },
-  "KEBAB":     { number:"33", callsign:"TNT-33"  },
-  "TON":       { number:"50", callsign:"TNT-50"  },
-  "BRYAN":     { number:"06", callsign:"LND-06"  },
-  "CHASE":     { number:"02", callsign:"MIS-27"  },
-  "SWEATER":   { number:"31", callsign:"MIS-31"  },
-  "CODA":      { number:"56", callsign:"LND-56"  },
-  "LAMAR":     { number:"01", callsign:"MAR-01"  },
-  "COOLCAT":   { number:"27", callsign:"MIS-27"  },
-  "QUAH":      { number:"28", callsign:"LOT-28"  },
-  "SETH":      { number:"03", callsign:"LOT-33"  },
-  "SHADOW":    { number:"18", callsign:"ST-18"   },
-  "SUPA":      { number:"05", callsign:"ST-05"   },
-  "UNLIMITED": { number:"12", callsign:"AWR-12"  },
-  "HIDDEN":    { number:"22", callsign:"NCC-22"  },
-};
+    const DRIVER_INFO = {
+      "ACHILLES":    { number: "09",  callsign: "MAR-09"   },
+      "VSCO":        { number: "51",  callsign: "ST-51"   },
+      "AUBRN":       { number: "18",  callsign: "AWR-18"  },
+      "XPC":         { number: "99",  callsign: "TNT-99"  }, // new
+      "TON":         { number: "50",  callsign: "TNT-50"  },
+      "BRYAN":       { number: "06",  callsign: "LND-06"  },
+      "CHASE":       { number: "02",  callsign: "MIS-27"   },
+      "SWEATER":     { number: "31",  callsign: "MIS-31"  },
+      "CODA":        { number: "56",  callsign: "LND-56"  },
+      "LAMAR":       { number: "01",  callsign: "MAR-01"  }, 
+      "COOLCAT":     { number: "27",  callsign: "MIS-27"  },
+      "QUAH":        { number: "28",  callsign: "LOT-28"  },
+      "SETH":        { number: "03",  callsign: "LOT-33"  },
+      "SHADOW":      { number: "18",  callsign: "ST-18"   },
+      "SUPA":        { number: "05",  callsign: "ST-05"  }, 
+      "SOVO":        { number: "17",  callsign: "SC-17"  }, // new 
+      "ARMIN":       { nunber: "29",  callsign: "SC-29"  }, // new
+      "UNLIMITED":   { number: "12",  callsign: "AWR-12"  },
+      "HIDDEN":      { number: "22",  callsign: "NCC-22"  }, 
+      "NOJO":        { number: "30",  callsign: "AWR-30"  }, // new
+      "CONTRAPTION": { number: "21",  callsign: "AWR-21"  }, // new
+
+    };
 
 let config        = {};
 let user          = null;
@@ -1290,7 +1295,7 @@ if (flagKey && _flagSounds[flagKey]) {
   try {
     const res = await fetch(`${apiUrl}/sounds/${soundFile}`);
     if (!res.ok) {
-      if (soundFile.startsWith("BlueFlag_")) await playFlagAudio("LappedCars.mp4");
+      if (soundFile.startsWith("BlueFlag_")) await playFlagAudio("Blue_Flag.mp4");
       return;
     }
     const blob  = await res.blob();
