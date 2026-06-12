@@ -769,7 +769,7 @@ let DRIVER_IDS = {
   "1081740933021835354":"UNLIMITED","1211381460406116375":"COOLCAT","529122061411549185":"HIDDEN",
 };
 
-    const DRIVER_INFO = {
+    let DRIVER_INFO = {
       "ACHILLES":    { number: "09",  callsign: "MAR-09"   },
       "VSCO":        { number: "51",  callsign: "ST-51"   },
       "AUBRN":       { number: "18",  callsign: "AWR-18"  },
@@ -1728,7 +1728,7 @@ async function submitBugReport() {
   submitBtn.disabled = true;
 
   const version = document.getElementById("app-version")?.textContent || "unknown";
-  const logs = inclLogs ? _devLogs.slice(0, 30).map(e => `[${e.level.toUpperCase()}] ${e.t} — ${e.msg}`) : [];
+  const logs = inclLogs ? _devLogs.slice(0, 30).map(e => `[${(e.level||'log').toUpperCase()}] ${e.t} — ${e.msg}`) : [];
   const report  = { what, steps, expected, actual, frequency, panel, reporter: user?.username || "Unknown", discordId: user?.id || "unknown", version, apiUrl, timestamp: new Date().toISOString(), logs, hasImage: !!_bugImageData };
 
   try {
