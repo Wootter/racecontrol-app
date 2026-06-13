@@ -871,12 +871,14 @@ let prevPanel     = "login";
 let hasDriver     = false;
 let hasMarshal    = false;
 let hasDev        = false;
+let _actionLastFired = {};
 let toastTimer;
 let _currentFlagAudio = null;
 let _lastPlayedSound  = null;
 let _attendance = {};
 let _lastPlayedTime   = 0;
 let listeningKey  = null;
+const ACTION_DEBOUNCE_MS = 500;
 let bfKnownIds    = new Set();
 let bfAlertInterval = null;
 let _lastFlagTimestamp = null;
@@ -1504,6 +1506,7 @@ window.api.onCooldownEnd((slot)      => stopCooldown(slot));
   window.api.onPitStateChanged2(v => updatePitBtn2(v));
   window.api.onFlagEvent(d          => onFlagEvent(d.flag, d));
  window.api.onKeybindFired(action => {
+    if (!_canFire('kb_' + action)) return;
     playKeybindSound(action);
     if (action === 'blue_flag2') doAction2('blue_flag');
     else if (action === 'next_lap2') doAction2('next_lap');
@@ -2466,7 +2469,7 @@ function toggleDevBypass(panel) {
 }
 
 function doAction(action) {
-  if(_cooldownActive) return;
+  if (_cooldownActive || !_canFire(action)) return;
   playKeybindSound(action);
   const btn = document.getElementById(`btn-${action}`);
   if (!btn || btn.disabled) return;
@@ -2474,7 +2477,7 @@ function doAction(action) {
   window.api.sendAction(action);
 }
 function doTogglePitting() {
-  if(_cooldownActive) return;
+  if (_cooldownActive || !_canFire('pitting')) return;
   playKeybindSound("pitting");
   window.api.togglePitting().then(v=>updatePitBtn(v));
 }
@@ -2485,7 +2488,7 @@ function updatePitBtn(v) {
 }
 
 function doAction2(action) {
-  if (_cooldownActive2) return;
+  if (_cooldownActive2 || !_canFire(action + '_2')) return;
   playKeybindSound(action + "2");
   const btn = document.getElementById(`btn2-${action}`);
   if (!btn || btn.disabled) return;
@@ -2493,7 +2496,7 @@ function doAction2(action) {
   window.api.sendAction2(action);
 }
 function doTogglePitting2() {
-  if (_cooldownActive2) return;
+  if (_cooldownActive2 || !_canFire('pitting_2')) return;
   playKeybindSound("pitting2");
   window.api.togglePitting2().then(v => updatePitBtn2(v));
 }
