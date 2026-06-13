@@ -80,6 +80,11 @@ function setupAutoUpdater() {
     return;
   }
 
+  if (config.devPrereleaseOptIn) {
+    autoUpdater.allowPrerelease = true;
+    console.log("[Updater] Pre-release opt-in enabled.");
+  }
+
   autoUpdater.autoDownload         = true;
   autoUpdater.autoInstallOnAppQuit = false;
 
