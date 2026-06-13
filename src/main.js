@@ -18,6 +18,7 @@ let tray       = null;
 let inPits     = false;
 let inPits2 = false;
 let onCooldown = false;
+let onCooldown2 = false;
 
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
@@ -221,8 +222,8 @@ body: JSON.stringify({
       const labels = { blue_flag:"🔵 Blue Flag", next_lap:"🏁 Next Lap", pitting:"🔧 Pitting", in_race:"🏎️ Back on Track" };
       mainWindow?.webContents.send("toast", { msg: `✓ ${labels[action]}`, type: "ok" });
       onCooldown = true;
-      mainWindow?.webContents.send("cooldown-start", 7);
-      setTimeout(() => { onCooldown = false; mainWindow?.webContents.send("cooldown-end"); }, 7000);
+      mainWindow?.webContents.send("cooldown-start", 7, 1);
+      setTimeout(() => { onCooldown = false; mainWindow?.webContents.send("cooldown-end", 1); }, 7000);
     }
   } catch {
     mainWindow?.webContents.send("toast", { msg: "✗ Bot unreachable", type: "err" });
@@ -231,8 +232,8 @@ body: JSON.stringify({
 
 async function sendDriverAction2(action) {
   if (!config.apiUrl || !config.driver2) return;
-  if (onCooldown) {
-    mainWindow?.webContents.send("toast", { msg: "⏳ Cooldown active", type: "err" });
+  if (onCooldown2) {
+    mainWindow?.webContents.send("toast", { msg: "⏳ Cooldown active (D2)", type: "err" });
     return;
   }
   try {
@@ -262,6 +263,9 @@ async function sendDriverAction2(action) {
     if (res.ok) {
       const labels = { blue_flag:"🔵 Blue Flag", next_lap:"🏁 Next Lap", pitting:"🔧 Pitting", in_race:"🏎️ Back on Track" };
       mainWindow?.webContents.send("toast", { msg: `✓ ${labels[action]} (D2)`, type: "ok" });
+      onCooldown2 = true;
+      mainWindow?.webContents.send("cooldown-start", 7, 2);
+      setTimeout(() => { onCooldown2 = false; mainWindow?.webContents.send("cooldown-end", 2); }, 7000);
     }
   } catch {
     mainWindow?.webContents.send("toast", { msg: "✗ Bot unreachable", type: "err" });
