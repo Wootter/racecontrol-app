@@ -143,11 +143,6 @@ function createTray() {
 
   const menu = Menu.buildFromTemplate([
     { label: "Show", click: () => { mainWindow?.show(); mainWindow?.focus(); } },
-    { label: "Always on Top", type: "checkbox", checked: config.alwaysOnTop, click: (item) => {
-      config.alwaysOnTop = item.checked;
-      mainWindow?.setAlwaysOnTop(item.checked, "screen-saver");
-      saveConfig(config);
-    }},
     { type: "separator" },
     { label: "Quit", click: () => { globalShortcut.unregisterAll(); app.quit(); } },
   ]);
