@@ -21,6 +21,8 @@ contextBridge.exposeInMainWorld("api", {
   suspendHotkeys:   ()         => ipcRenderer.invoke("suspend-hotkeys"),
   resumeHotkeys:    ()         => ipcRenderer.invoke("resume-hotkeys"),
   uninstall:       ()    => ipcRenderer.invoke("uninstall"),
+  sendAction2:    (action) => ipcRenderer.invoke('send-action2', action),
+togglePitting2: ()       => ipcRenderer.invoke('toggle-pitting2'),
   openReleases:    ()    => ipcRenderer.invoke("open-releases"),
   devAuthPassword: () => ipcRenderer.invoke("dev-auth-password"),
 
