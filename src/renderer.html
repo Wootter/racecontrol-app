@@ -100,6 +100,7 @@
 
     .lb-row{display:flex;align-items:center;gap:7px;padding:7px 9px;background:var(--surface);border:1px solid var(--border);border-radius:5px;}
     .lb-row.is-me{border-color:rgba(41,121,255,0.4);background:rgba(41,121,255,0.06);}
+    .lb-row.is-me2{border-color:rgba(0,230,118,0.4);background:rgba(0,230,118,0.06);}
     .lb-row.in-pits{border-color:rgba(255,214,0,0.4);background:rgba(255,214,0,0.06);}
     .lb-pos{font-size:11px;font-weight:800;color:var(--muted);width:18px;text-align:center;flex-shrink:0;}
     .lb-pos.p1{color:var(--yellow);}.lb-pos.p2{color:#c0c0c0;}.lb-pos.p3{color:#cd7f32;}
@@ -563,13 +564,12 @@
       <div class="settings-row"><span class="settings-label">🔵 Blue Flag</span><input type="text" class="kb-input" id="kb-blue_flag" readonly onclick="listenKey('blue_flag')"/></div>
       <div class="settings-row"><span class="settings-label">🏁 Next Lap</span><input type="text" class="kb-input" id="kb-next_lap" readonly onclick="listenKey('next_lap')"/></div>
      <div class="settings-row" style="border:none;"><span class="settings-label">🔧 Pitting</span><input type="text" class="kb-input" id="kb-pitting" readonly onclick="listenKey('pitting')"/></div>
-      <div id="kb-driver2-section" style="display:none;border-top:1px solid var(--border);padding-top:8px;margin-top:4px;display:flex;flex-direction:column;gap:0;">
+      <div id="kb-driver2-section" style="display:none;border-top:1px solid var(--border);padding-top:8px;margin-top:4px;flex-direction:column;gap:0;">
         <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:4px 0 6px;">Driver 2 keybinds</div>
         <div class="settings-row"><span class="settings-label">🔵 Blue Flag (D2)</span><input type="text" class="kb-input" id="kb-blue_flag2" readonly onclick="listenKey('blue_flag2')"/></div>
         <div class="settings-row"><span class="settings-label">🏁 Next Lap (D2)</span><input type="text" class="kb-input" id="kb-next_lap2" readonly onclick="listenKey('next_lap2')"/></div>
         <div class="settings-row" style="border:none;"><span class="settings-label">🔧 Pitting (D2)</span><input type="text" class="kb-input" id="kb-pitting2" readonly onclick="listenKey('pitting2')"/></div>
       </div>
-    </div>
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;">
       <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Keybind Sounds</div>
@@ -829,7 +829,7 @@ const DRIVER_INFO = {
   "BRYAN":{ number:"06", callsign:"LND-06" },
   "CHASE":{ number:"02", callsign:"MIS-27" },
   "CODA":{ number:"56", callsign:"LND-56" },
-  "OMB": { number:"??", callsign:"XYZ-??" },
+  "OMB": { number:"36", callsign:"XYZ-36" },
   "LAMAR":{ number:"01", callsign:"MAR-01" },
   "QUAH":{ number:"28", callsign:"LOT-28" },
   "SETH":{ number:"03", callsign:"LOT-33" },
@@ -2266,11 +2266,11 @@ function renderLeaderboard(data) {
   const lb = document.getElementById("d-leaderboard");
   if (!data.drivers?.length) { lb.innerHTML='<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">Waiting for race...</div>'; return; }
   lb.innerHTML = data.drivers.map((d,i) => {
-    const pos=i+1, isMe=d.name===config.driver, pc=pos===1?"p1":pos===2?"p2":pos===3?"p3":"";
-    return `<div class="lb-row ${isMe?"is-me":""} ${d.inPits?"in-pits":""}">
+    const pos=i+1, isMe=d.name===config.driver, isMe2=d.name===config.driver2, pc=pos===1?"p1":pos===2?"p2":pos===3?"p3":"";
+return `<div class="lb-row ${isMe?"is-me":""} ${isMe2?"is-me2":""} ${d.inPits?"in-pits":""}">
       <div class="lb-pos ${pc}">${pos}</div>
       <div class="lb-num">#${d.number}</div>
-      <div class="lb-info"><div class="lb-name">${d.name}${isMe?" ←":""}</div><div class="lb-call">${d.callsign}</div></div>
+      <div class="lb-info"><div class="lb-name">${d.name}${isMe?" ←":""}${isMe2?" ←":""}</div><div class="lb-call">${d.callsign}</div></div>
       <div class="lb-lap">Lap ${d.lap||1}${data.totalLaps?`/${data.totalLaps}`:""}${d.inPits?" 🔧":""}</div>
     </div>`;
   }).join("");
@@ -2867,9 +2867,11 @@ function startCooldown(secs){
   bar.style.display="block";fill.style.transition="none";fill.style.width="100%";
   void fill.offsetWidth;fill.style.transition=`width ${secs}s linear`;fill.style.width="0%";
   _cooldownActive = true;
-  ["blue_flag","next_lap","pitting"].forEach(a=>{
+["blue_flag","next_lap","pitting"].forEach(a=>{
     const b=document.getElementById(`btn-${a}`);
     if(b){ b.disabled=true; b.style.opacity="0.35"; }
+    const b2=document.getElementById(`btn2-${a}`);
+    if(b2){ b2.disabled=true; b2.style.opacity="0.35"; }
   });
   _suspendHotkeys();
 }
@@ -2877,9 +2879,11 @@ function stopCooldown(){
   document.getElementById("cooldown-bar").style.display="none";
   _cooldownActive = false;
   if(_lastRaceState?.raceStarted !== false){
-    ["blue_flag","next_lap","pitting"].forEach(a=>{
+["blue_flag","next_lap","pitting"].forEach(a=>{
       const b=document.getElementById(`btn-${a}`);
       if(b){ b.disabled=false; b.style.opacity=""; }
+      const b2=document.getElementById(`btn2-${a}`);
+      if(b2){ b2.disabled=false; b2.style.opacity=""; }
     });
   }
   _resumeHotkeys();
