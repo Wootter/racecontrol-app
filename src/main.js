@@ -324,8 +324,6 @@ ipcMain.handle("toggle-top", () => {
   saveConfig(config);
   return config.alwaysOnTop;
 });
-  return config.alwaysOnTop;
-});
 ipcMain.handle("open-devtools",  () => mainWindow?.webContents.openDevTools());
 ipcMain.handle("install-update", () => autoUpdater.quitAndInstall());
 ipcMain.handle("check-version",  () => app.getVersion());
