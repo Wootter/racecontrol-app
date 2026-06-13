@@ -891,7 +891,7 @@ let _cooldownActive2 = false;
 
 let _flagVolume = 1.0;
 let _actionLastFired = {};
-const ACTION_DEBOUNCE_MS = 500;
+const ACTION_DEBOUNCE_MS = 1000;
 
 function _canFire(action) {
   const now = Date.now();
@@ -1514,13 +1514,13 @@ window.api.onCooldownEnd((slot)      => stopCooldown(slot));
   window.api.onPitStateChanged(v    => updatePitBtn(v));
   window.api.onPitStateChanged2(v => updatePitBtn2(v));
   window.api.onFlagEvent(d          => onFlagEvent(d.flag, d));
- window.api.onKeybindFired(action => {
-    if (!_canFire('kb_' + action)) return;
-    playKeybindSound(action);
-    if (action === 'blue_flag2') doAction2('blue_flag');
-    else if (action === 'next_lap2') doAction2('next_lap');
-    else if (action === 'pitting2') doTogglePitting2();
-  });
+window.api.onKeybindFired(action => {
+  if (!_canFire(action)) return;
+  playKeybindSound(action);
+  if (action === 'blue_flag2') doAction2('blue_flag');
+  else if (action === 'next_lap2') doAction2('next_lap');
+  else if (action === 'pitting2') doTogglePitting2();
+});
 
   window.api.onUpdateAvailable(v => {
     document.getElementById("update-text").textContent = `🔄 Downloading v${v}...`;
