@@ -2945,7 +2945,11 @@ document.addEventListener("keydown",e=>{
 });
 
 function showScreen(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id)?.classList.add("active");}
-async function toggleTop(){const v=await window.api.toggleTop();document.getElementById("top-btn").style.color=v?"var(--blue)":"var(--muted)";}
+async function toggleTop() {
+  const v = await window.api.toggleTop();
+  document.getElementById("top-btn").style.color = v ? "var(--blue)" : "var(--muted)";
+  showToast(v ? "📌 App pinned!" : "📌 Unpinned", v ? "ok" : "");
+}
 function installUpdate(){window.api.installUpdate();}
 function showToast(msg,type=""){
   const t=document.getElementById("toast");t.textContent=msg;t.className=`show ${type}`;
