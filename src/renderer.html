@@ -508,9 +508,11 @@
     <button class="dev-btn" onclick="openDriverModal()" style="width:auto;padding:5px 12px;font-size:9px;background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);">+ Add</button>
   </div>
   <div id="dev-driver-list" style="display:flex;flex-direction:column;gap:3px;max-height:220px;overflow-y:auto;margin-top:2px;"></div>
-  <div style="display:flex;gap:4px;margin-top:2px;">
-    <button class="dev-btn" onclick="devExportDriverCode()" style="flex:1;font-size:9px;background:rgba(41,121,255,0.1);border-color:rgba(41,121,255,0.3);color:var(--blue);">⬆ Export Code</button>
-    <button class="dev-btn" onclick="devResetDriverDB()" style="flex:0 0 auto;padding:5px 10px;font-size:9px;">↺ Reset</button>
+ <div style="display:flex;gap:4px;margin-top:2px;">
+  <button class="dev-btn" onclick="devPushDriverDB()" style="flex:1;font-size:9px;background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);">⬆ Push to Server</button>
+  <button class="dev-btn" onclick="devExportDriverCode()" style="flex:1;font-size:9px;background:rgba(41,121,255,0.1);border-color:rgba(41,121,255,0.3);color:var(--blue);">Export Code</button>
+  <button class="dev-btn" onclick="devResetDriverDB()" style="flex:0 0 auto;padding:5px 10px;font-size:9px;">↺ Reset</button>
+</div>
   </div>
   <div id="dev-drivers-status" style="font-size:9px;color:var(--muted);min-height:12px;margin-top:2px;"></div>
 </div>
@@ -763,6 +765,7 @@
       <div style="font-size:12px;font-weight:800;color:var(--text);">Export — paste into renderer.html</div>
       <button onclick="document.getElementById('driver-export-modal').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;">✕</button>
     </div>
+    
     <div style="font-size:9px;color:var(--muted);">Replace your DRIVER_IDS and DRIVER_INFO constants with this:</div>
     <pre id="driver-export-code" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;font-family:monospace;font-size:9px;color:var(--text);white-space:pre-wrap;word-break:break-all;max-height:180px;overflow-y:auto;"></pre>
     <button class="save-btn" onclick="devCopyDriverExport()">📋 Copy to Clipboard</button>
@@ -2284,6 +2287,12 @@ function setDriverBtnsEnabled(on) {
 }
 
 function onFlagEvent(flag, customData) {
+  if (flag === "__driver_db_update__" && customData?.drivers) {
+    localStorage.setItem(DRIVER_DB_KEY, JSON.stringify(customData.drivers));
+    loadDriverDB();
+    showToast("🔄 Driver list updated", "ok");
+    return;
+  }
   if (flag === "__custom__" && customData) {
     if (customData.audioCheckId) {
       showAudioCheckPrompt(customData.audioCheckId, customData.text || "Radio Check, Radio Check");
@@ -2588,6 +2597,24 @@ async function dismissBf(id){
   if(!document.querySelectorAll('[id^="bf-"]').length) stopBfAlert();
 }
 
+async function devPushDriverDB() {
+  const drivers = getDriverDB();
+  if (!drivers.length) return showToast("❌ No drivers to push", "err");
+  const statusEl = document.getElementById("dev-drivers-status");
+  statusEl.style.color = "var(--muted)";
+  statusEl.textContent = "Pushing...";
+  try {
+    await saveDriverDB(drivers);
+    statusEl.style.color = "var(--green)";
+    statusEl.textContent = `✓ Pushed ${drivers.length} drivers to server`;
+    showToast(`✓ Driver DB pushed — ${drivers.length} drivers`, "ok");
+  } catch(e) {
+    statusEl.style.color = "var(--red)";
+    statusEl.textContent = "✗ Push failed";
+    showToast("✗ Push failed", "err");
+  }
+}
+  
 async function devAutoAuth() {
   if (user?.token) return true;
   if (user?.marshalToken) { user.token = user.marshalToken; sessionStorage.setItem("rc_user", JSON.stringify(user)); localStorage.setItem("rc_user", JSON.stringify(user)); return true; }
