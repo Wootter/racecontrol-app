@@ -1478,6 +1478,7 @@ document.getElementById("kb-blue_flag").value = config.keybinds?.blue_flag  || "
   window.api.onCooldownStart(s      => startCooldown(s));
   window.api.onCooldownEnd(()       => stopCooldown());
   window.api.onPitStateChanged(v    => updatePitBtn(v));
+  window.api.onPitStateChanged2(v => updatePitBtn2(v));
   window.api.onFlagEvent(d          => onFlagEvent(d.flag, d));
  window.api.onKeybindFired(action => {
     playKeybindSound(action);
