@@ -196,6 +196,7 @@
     <button class="tb-btn" title="Pin" id="top-btn" onclick="toggleTop()">📌</button>
     <button class="tb-btn" title="Minimize"  onclick="window.api.minimize()">─</button>
     <button class="tb-btn close-btn" title="Quit" onclick="window.api.close()">✕</button>
+    
   </div>
 </div>
 
@@ -259,6 +260,21 @@
         </button>
         <button class="action-btn" id="btn-pitting" onclick="doTogglePitting()">
           <span class="a-key" id="key-pitting">F3</span><span class="a-icon" id="pit-icon">🔧</span><span class="a-name" id="pit-label">Pitting</span>
+        </button>
+      </div>
+    </div>
+    <div id="d-actions-section2" style="display:none;">
+      <div class="sec-label" style="margin-top:4px;" id="d-driver2-label">Driver 2 — Quick Actions</div>
+      <div id="d-action-notice2" class="action-notice" style="display:none;"></div>
+      <div class="action-grid" style="margin-top:6px;">
+        <button class="action-btn" id="btn2-blue_flag" onclick="doAction2('blue_flag')">
+          <span class="a-key" id="key2-blue_flag">F4</span><span class="a-icon">🔵</span><span class="a-name">Blue Flag</span>
+        </button>
+        <button class="action-btn" id="btn2-next_lap" onclick="doAction2('next_lap')">
+          <span class="a-key" id="key2-next_lap">F5</span><span class="a-icon">🏁</span><span class="a-name">Next Lap</span>
+        </button>
+        <button class="action-btn" id="btn2-pitting" onclick="doTogglePitting2()">
+          <span class="a-key" id="key2-pitting">F6</span><span class="a-icon" id="pit2-icon">🔧</span><span class="a-name" id="pit2-label">Pitting</span>
         </button>
       </div>
     </div>
@@ -546,7 +562,14 @@
       <div style="font-size:9px;color:var(--muted);padding:4px 0;">Click a field then press any key to rebind. Keybinds are suspended while you type in other fields.</div>
       <div class="settings-row"><span class="settings-label">🔵 Blue Flag</span><input type="text" class="kb-input" id="kb-blue_flag" readonly onclick="listenKey('blue_flag')"/></div>
       <div class="settings-row"><span class="settings-label">🏁 Next Lap</span><input type="text" class="kb-input" id="kb-next_lap" readonly onclick="listenKey('next_lap')"/></div>
-      <div class="settings-row" style="border:none;"><span class="settings-label">🔧 Pitting</span><input type="text" class="kb-input" id="kb-pitting" readonly onclick="listenKey('pitting')"/></div>
+     <div class="settings-row" style="border:none;"><span class="settings-label">🔧 Pitting</span><input type="text" class="kb-input" id="kb-pitting" readonly onclick="listenKey('pitting')"/></div>
+      <div id="kb-driver2-section" style="display:none;border-top:1px solid var(--border);padding-top:8px;margin-top:4px;display:flex;flex-direction:column;gap:0;">
+        <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:4px 0 6px;">Driver 2 keybinds</div>
+        <div class="settings-row"><span class="settings-label">🔵 Blue Flag (D2)</span><input type="text" class="kb-input" id="kb-blue_flag2" readonly onclick="listenKey('blue_flag2')"/></div>
+        <div class="settings-row"><span class="settings-label">🏁 Next Lap (D2)</span><input type="text" class="kb-input" id="kb-next_lap2" readonly onclick="listenKey('next_lap2')"/></div>
+        <div class="settings-row" style="border:none;"><span class="settings-label">🔧 Pitting (D2)</span><input type="text" class="kb-input" id="kb-pitting2" readonly onclick="listenKey('pitting2')"/></div>
+      </div>
+    </div>
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;">
       <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Keybind Sounds</div>
@@ -1443,9 +1466,12 @@ window.addEventListener("DOMContentLoaded", async () => {
   apiUrl = config.apiUrl || "";
 
   document.getElementById("s-api").value        = config.apiUrl || "";
-  document.getElementById("kb-blue_flag").value = config.keybinds?.blue_flag || "F1";
-  document.getElementById("kb-next_lap").value  = config.keybinds?.next_lap  || "F2";
-  document.getElementById("kb-pitting").value   = config.keybinds?.pitting   || "F3";
+document.getElementById("kb-blue_flag").value = config.keybinds?.blue_flag  || "F1";
+  document.getElementById("kb-next_lap").value  = config.keybinds?.next_lap   || "F2";
+  document.getElementById("kb-pitting").value   = config.keybinds?.pitting    || "F3";
+  if (document.getElementById("kb-blue_flag2")) document.getElementById("kb-blue_flag2").value = config.keybinds?.blue_flag2 || "F4";
+  if (document.getElementById("kb-next_lap2"))  document.getElementById("kb-next_lap2").value  = config.keybinds?.next_lap2  || "F5";
+  if (document.getElementById("kb-pitting2"))   document.getElementById("kb-pitting2").value   = config.keybinds?.pitting2   || "F6";
   document.getElementById("btn-discord-login")?.addEventListener("click", loginWithDiscord);
 
   window.api.onToast(({msg,type})   => showToast(msg, type));
@@ -1453,7 +1479,12 @@ window.addEventListener("DOMContentLoaded", async () => {
   window.api.onCooldownEnd(()       => stopCooldown());
   window.api.onPitStateChanged(v    => updatePitBtn(v));
   window.api.onFlagEvent(d          => onFlagEvent(d.flag, d));
-  window.api.onKeybindFired(action  => playKeybindSound(action));
+ window.api.onKeybindFired(action => {
+    playKeybindSound(action);
+    if (action === 'blue_flag2') doAction2('blue_flag');
+    else if (action === 'next_lap2') doAction2('next_lap');
+    else if (action === 'pitting2') doTogglePitting2();
+  });
 
   window.api.onUpdateAvailable(v => {
     document.getElementById("update-text").textContent = `🔄 Downloading v${v}...`;
@@ -1672,9 +1703,16 @@ function showEngineerScreen() {
         <img src="${user.avatar?`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`:`https://cdn.discordapp.com/embed/avatars/${parseInt(user.id)%5}.png`}" style="width:28px;height:28px;border-radius:50%;"/>
         <div><div class="uname">${user.username}</div><div class="vrfd" style="color:var(--muted);">🎧 Engineer</div></div>
       </div>
-      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Who are you engineering for?</div>
+<div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Driver 1 (required)</div>
       <select id="eng-driver-select" style="width:100%;">
         <option value="">Select a driver...</option>
+        ${Object.entries(DRIVER_INFO).sort((a,b)=>parseInt(a[1].number)-parseInt(b[1].number)).map(([name,info])=>
+          `<option value="${name}">${name} #${info.number} (${info.callsign})</option>`
+        ).join("")}
+      </select>
+      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:4px;">Driver 2 (optional)</div>
+      <select id="eng-driver2-select" style="width:100%;">
+        <option value="">None</option>
         ${Object.entries(DRIVER_INFO).sort((a,b)=>parseInt(a[1].number)-parseInt(b[1].number)).map(([name,info])=>
           `<option value="${name}">${name} #${info.number} (${info.callsign})</option>`
         ).join("")}
@@ -1846,8 +1884,12 @@ function reLogin() {
 async function confirmEngineer() {
   const name = document.getElementById("eng-driver-select")?.value;
   if (!name) { document.getElementById("eng-error").textContent = "Please select a driver."; return; }
+  const name2 = document.getElementById("eng-driver2-select")?.value || "";
+  if (name2 && name2 === name) { document.getElementById("eng-error").textContent = "Driver 2 must be different from Driver 1."; return; }
   const info = DRIVER_INFO[name];
+  const info2 = name2 ? DRIVER_INFO[name2] : null;
   config.driver=name; config.number=info.number; config.callsign=info.callsign;
+  config.driver2=name2; config.number2=info2?.number||""; config.callsign2=info2?.callsign||"";
   config.discordId=user.id; config.engineer=true; isEngineer=true;
   engineerPending = false;
   window.api.saveConfig(config);
@@ -1977,8 +2019,20 @@ function launchDriverPanel(startPoll=true) {
   updateSwitcher(); updateKeybindLabels();
   const actSection = document.getElementById("d-actions-section");
   const kbSection  = document.getElementById("d-keybind-info");
-  if (isEngineer) { actSection.style.display="block"; kbSection.style.display="none"; }
-  else            { actSection.style.display="none";  kbSection.style.display="block"; }
+const actSection2 = document.getElementById("d-actions-section2");
+  const labelEl2    = document.getElementById("d-driver2-label");
+  if (isEngineer) {
+    actSection.style.display  = "block";
+    kbSection.style.display   = "none";
+    if (actSection2) {
+      actSection2.style.display = config.driver2 ? "block" : "none";
+      if (config.driver2 && labelEl2) labelEl2.textContent = `${config.driver2} — Quick Actions`;
+    }
+  } else {
+    actSection.style.display  = "none";
+    kbSection.style.display   = "block";
+    if (actSection2) actSection2.style.display = "none";
+  }
   if (startPoll) {
     if (_driverPollInterval) clearInterval(_driverPollInterval);
     pollDriverState();
@@ -2033,8 +2087,9 @@ if (res.status === 403) {
     } else {
       hideShutdownBanner("driver");
       hideDisabledScreen();
-      if (isEngineer) {
+if (isEngineer) {
         setDriverBtnsEnabled(raceOn);
+        if (config.driver2) setDriverBtnsEnabled2(raceOn);
       } else {
         const notice = document.getElementById("d-action-notice");
         if (notice) {
@@ -2383,6 +2438,32 @@ function updatePitBtn(v) {
   document.getElementById("pit-icon").textContent  = "🔧";
   document.getElementById("pit-label").textContent = v?"In Pits":"Pitting";
   document.getElementById("btn-pitting")?.classList.toggle("pit-active",v);
+}
+
+function doAction2(action) {
+  if (_cooldownActive) return;
+  playKeybindSound(action + "2");
+  const btn = document.getElementById(`btn2-${action}`);
+  if (!btn || btn.disabled) return;
+  btn.classList.add("fired"); setTimeout(() => btn.classList.remove("fired"), 300);
+  window.api.sendAction2(action);
+}
+function doTogglePitting2() {
+  if (_cooldownActive) return;
+  playKeybindSound("pitting2");
+  window.api.togglePitting2().then(v => updatePitBtn2(v));
+}
+function updatePitBtn2(v) {
+  document.getElementById("pit2-icon").textContent  = "🔧";
+  document.getElementById("pit2-label").textContent = v ? "In Pits" : "Pitting";
+  document.getElementById("btn2-pitting")?.classList.toggle("pit-active", v);
+}
+function setDriverBtnsEnabled2(on) {
+  ["blue_flag","next_lap","pitting"].forEach(a => {
+    const b = document.getElementById(`btn2-${a}`); if (b) b.disabled = !on;
+  });
+  const notice = document.getElementById("d-action-notice2");
+  if (notice) { notice.style.display = on ? "none" : "block"; notice.textContent = on ? "" : "⏳ Waiting for race to start..."; }
 }
 
 async function triggerFlag(flag) {
@@ -2804,7 +2885,14 @@ function stopCooldown(){
 async function saveSettings(){
   const newApi=hasDev?document.getElementById("s-api").value.trim():(config.apiUrl||apiUrl);
   apiUrl=newApi;
-  const keybinds={blue_flag:document.getElementById("kb-blue_flag").value||"F1",next_lap:document.getElementById("kb-next_lap").value||"F2",pitting:document.getElementById("kb-pitting").value||"F3"};
+  const keybinds={
+    blue_flag:  document.getElementById("kb-blue_flag").value||"F1",
+    next_lap:   document.getElementById("kb-next_lap").value||"F2",
+    pitting:    document.getElementById("kb-pitting").value||"F3",
+    blue_flag2: document.getElementById("kb-blue_flag2")?.value||"F4",
+    next_lap2:  document.getElementById("kb-next_lap2")?.value||"F5",
+    pitting2:   document.getElementById("kb-pitting2")?.value||"F6",
+  };
   const newConfig={...config,apiUrl:newApi,keybinds};
   await window.api.saveConfig(newConfig); await window.api.registerHotkeys(keybinds);
   localStorage.setItem("rc_flag_volume", Math.round(_flagVolume * 100));
@@ -2817,6 +2905,8 @@ function updateKeybindLabels(){
   if(bf)bf.textContent=kb.blue_flag||"F1";if(nl)nl.textContent=kb.next_lap||"F2";if(pt)pt.textContent=kb.pitting||"F3";
   const d1=document.getElementById("kb-display-blue_flag"),d2=document.getElementById("kb-display-next_lap"),d3=document.getElementById("kb-display-pitting");
   if(d1)d1.textContent=kb.blue_flag||"F1";if(d2)d2.textContent=kb.next_lap||"F2";if(d3)d3.textContent=kb.pitting||"F3";
+  const b2=document.getElementById("key2-blue_flag"),n2=document.getElementById("key2-next_lap"),p2=document.getElementById("key2-pitting");
+  if(b2)b2.textContent=kb.blue_flag2||"F4";if(n2)n2.textContent=kb.next_lap2||"F5";if(p2)p2.textContent=kb.pitting2||"F6";
 }
 
 function listenKey(action){
