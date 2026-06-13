@@ -327,6 +327,10 @@ ipcMain.handle("toggle-top", () => {
   config.alwaysOnTop = !config.alwaysOnTop;
   mainWindow?.setAlwaysOnTop(config.alwaysOnTop, "screen-saver");
   saveConfig(config);
+  mainWindow?.webContents.send("toast", {
+    msg: config.alwaysOnTop ? "📌 App pinned!" : "📌 App unpinned",
+    type: config.alwaysOnTop ? "ok" : ""
+  });
   return config.alwaysOnTop;
 });
 ipcMain.handle("open-devtools",  () => mainWindow?.webContents.openDevTools());
