@@ -696,7 +696,10 @@
       </div>
       <button onclick="closeBlueFlagModal()" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;">✕</button>
     </div>
-    <div id="blueflag-driver-list" style="display:flex;flex-direction:column;gap:6px;margin-top:4px;"></div>
+    <input type="text" id="bf-search" placeholder="Search driver..."
+  style="width:100%;font-size:10px;padding:5px 8px;"
+  oninput="filterBlueFlagList(this.value)"/>
+<div id="blueflag-driver-list" style="display:flex;flex-direction:column;gap:6px;margin-top:4px;"></div>
   </div>
 </div>
 
@@ -1320,7 +1323,9 @@ function openBlueFlagModal() {
       </div>`;
   }).join("");
 
-  document.getElementById("blueflag-modal").style.display = "flex";
+const bfSearchEl = document.getElementById("bf-search");
+if (bfSearchEl) { bfSearchEl.value = ""; filterBlueFlagList(""); }
+document.getElementById("blueflag-modal").style.display = "flex";
 }
 
 function closeBlueFlagModal() {
@@ -1675,6 +1680,18 @@ async function fetchApiUrlFromGist() {
   } catch(e) { console.error("[Gist] Failed to fetch URL:", e); return null; }
 }
 
+function filterBlueFlagList(q) {
+  const term = q.toLowerCase().trim();
+  document.querySelectorAll("#blueflag-driver-list button").forEach(btn => {
+    const text = btn.textContent.toLowerCase();
+    btn.closest("button") && (btn.style.display = (!term || text.includes(term)) ? "" : "none");
+  });
+  document.querySelectorAll("#blueflag-driver-list > div").forEach(group => {
+    const visible = [...group.querySelectorAll("button")].some(b => b.style.display !== "none");
+    group.style.display = visible ? "" : "none";
+  });
+}
+  
 function showChangeUrlPrompt() {
   const errEl = document.getElementById("login-error");
   errEl.innerHTML = `❌ Can't reach API. <button onclick="resetApiUrl()" style="background:none;border:none;color:var(--blue);font-family:'Oxanium',sans-serif;font-size:9px;cursor:pointer;text-decoration:underline;padding:0;">Change URL</button>`;
