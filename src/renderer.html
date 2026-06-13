@@ -1318,7 +1318,6 @@ function openBlueFlagModal() {
               <div style="font-size:12px;font-weight:700;">${d.name}</div>
               <div style="font-size:9px;color:var(--muted);">${d.callsign}</div>
             </div>
-            <div style="margin-left:auto;font-size:16px;">🔵</div>
           </button>`).join("")}
       </div>`;
   }).join("");
@@ -1682,13 +1681,15 @@ async function fetchApiUrlFromGist() {
 
 function filterBlueFlagList(q) {
   const term = q.toLowerCase().trim();
-  document.querySelectorAll("#blueflag-driver-list button").forEach(btn => {
-    const text = btn.textContent.toLowerCase();
-    btn.closest("button") && (btn.style.display = (!term || text.includes(term)) ? "" : "none");
-  });
   document.querySelectorAll("#blueflag-driver-list > div").forEach(group => {
-    const visible = [...group.querySelectorAll("button")].some(b => b.style.display !== "none");
-    group.style.display = visible ? "" : "none";
+    let anyVisible = false;
+    group.querySelectorAll("button").forEach(btn => {
+      const text = btn.textContent.toLowerCase();
+      const show = !term || text.includes(term);
+      btn.style.display = show ? "" : "none";
+      if (show) anyVisible = true;
+    });
+    group.style.display = anyVisible ? "" : "none";
   });
 }
   
