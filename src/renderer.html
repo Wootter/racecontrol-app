@@ -953,12 +953,14 @@ function loadVolumePrefs() {
 }
 
 function setTheme(theme) {
-  document.documentElement.classList.add("theme-flash");
+  document.body.style.transition = "opacity 0.14s ease";
+  document.body.style.opacity = "0";
   setTimeout(() => {
     document.documentElement.classList.toggle("light-mode", theme === "light");
-    document.documentElement.classList.remove("theme-flash");
     localStorage.setItem("rc_theme", theme);
     updateThemeBtns();
+    document.body.style.opacity = "1";
+    setTimeout(() => { document.body.style.transition = ""; }, 150);
   }, 140);
 }
 
