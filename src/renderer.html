@@ -1306,7 +1306,7 @@ function openBlueFlagModal() {
 list.innerHTML = Object.entries(groups).map(([team, drivers]) => {
   const color = TEAM_COLORS[team] || "#444466";
   return `
-    <div style="border:1px solid ${color};border-radius:7px;overflow:hidden;margin-bottom:2px;">
+    <div style="border:1px solid ${color};border-radius:7px;overflow:hidden;margin-bottom:2px;width:100%;">
       <div style="padding:4px 10px;background:${color}22;font-size:8px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${color};">${team}</div>
       ${drivers.map(d => `
         <button onclick="triggerBlueFlagForDriver('${d.name}', '${d.number}', '${d.callsign}')"
