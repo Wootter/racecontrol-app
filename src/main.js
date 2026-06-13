@@ -122,7 +122,7 @@ function createWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname, "renderer.html"));
-  if (config.alwaysOnTop) mainWindow.setAlwaysOnTop(true, "floating");
+  if (config.alwaysOnTop) mainWindow.setAlwaysOnTop(true, "screen-saver");
 
   mainWindow.on("close", () => {
     globalShortcut.unregisterAll();
@@ -145,7 +145,7 @@ function createTray() {
     { label: "Show", click: () => { mainWindow?.show(); mainWindow?.focus(); } },
     { label: "Always on Top", type: "checkbox", checked: config.alwaysOnTop, click: (item) => {
       config.alwaysOnTop = item.checked;
-      mainWindow?.setAlwaysOnTop(item.checked);
+      mainWindow?.setAlwaysOnTop(item.checked, "screen-saver");
       saveConfig(config);
     }},
     { type: "separator" },
@@ -325,7 +325,7 @@ ipcMain.handle("dev-auth-password", () => {
 ipcMain.handle("close-app",      () => { globalShortcut.unregisterAll(); app.quit(); });
 ipcMain.handle("toggle-top", () => {
   config.alwaysOnTop = !config.alwaysOnTop;
-  mainWindow?.setAlwaysOnTop(config.alwaysOnTop, "floating");
+  mainWindow?.setAlwaysOnTop(config.alwaysOnTop, "screen-saver");
   saveConfig(config);
   return config.alwaysOnTop;
 });
