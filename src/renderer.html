@@ -3155,7 +3155,17 @@ function listenKey(action){
 }
 document.addEventListener("keydown",e=>{
   if(!listeningKey)return;e.preventDefault();
-  const key=e.key===" "?"Space":e.key.length===1?e.key.toUpperCase():e.key;
+  const numpadMap = {
+  Numpad0:"Num0", Numpad1:"Num1", Numpad2:"Num2", Numpad3:"Num3",
+  Numpad4:"Num4", Numpad5:"Num5", Numpad6:"Num6", Numpad7:"Num7",
+  Numpad8:"Num8", Numpad9:"Num9", NumpadAdd:"Num+", NumpadSubtract:"Num-",
+  NumpadMultiply:"Num*", NumpadDivide:"Num/", NumpadDecimal:"Num.",
+  NumpadEnter:"NumEnter",
+};
+const key = e.code in numpadMap ? numpadMap[e.code]
+  : e.key===" " ? "Space"
+  : e.key.length===1 ? e.key.toUpperCase()
+  : e.key;
   document.getElementById(`kb-${listeningKey}`).value=key;
   document.getElementById(`kb-${listeningKey}`).classList.remove("listening");
   listeningKey=null;
