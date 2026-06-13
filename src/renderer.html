@@ -311,11 +311,14 @@
       <div id="m-race-pill" style="font-size:10px;color:var(--muted);">● Waiting</div>
     </div>
     <div id="m-bf-container" style="display:flex;flex-direction:column;gap:4px;"></div>
-    <div id="m-leaderboard-section">
+<div id="m-leaderboard-section">
   <div class="sec-label" style="display:flex;align-items:center;justify-content:space-between;">
     <span>Leaderboard</span>
     <span id="m-lap-counter" style="font-size:9px;color:var(--muted);font-weight:700;"></span>
   </div>
+  <input type="text" id="m-lb-search" placeholder="Search driver..." 
+    style="width:100%;font-size:10px;padding:5px 8px;margin-bottom:4px;" 
+    oninput="filterMarshalLeaderboard(this.value)"/>
   <div id="m-leaderboard"><div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">Waiting for race...</div></div>
 </div>
     <div>
@@ -940,6 +943,16 @@ function _initHotkeyPauseObserver() {
 }
 
 
+function filterMarshalLeaderboard(q) {
+  const rows = document.querySelectorAll("#m-leaderboard .lb-row");
+  const term = q.toLowerCase().trim();
+  rows.forEach(row => {
+    const name     = row.querySelector(".lb-name")?.textContent?.toLowerCase() || "";
+    const callsign = row.querySelector(".lb-call")?.textContent?.toLowerCase() || "";
+    row.style.display = (!term || name.includes(term) || callsign.includes(term)) ? "" : "none";
+  });
+}
+  
 function updatePreview() {
   const hexInput   = document.getElementById("dev-flag-hex");
   const emojiInput = document.getElementById("dev-flag-emoji");
