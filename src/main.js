@@ -103,7 +103,7 @@ function setupAutoUpdater() {
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 440, height: 740, minWidth: 380, minHeight: 500,
-    alwaysOnTop: config.alwaysOnTop,
+    alwaysOnTop: config.alwaysOnTop ?? true,
     frame: false, transparent: false, backgroundColor: "#0a0a0f",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -116,6 +116,7 @@ function createWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname, "renderer.html"));
+  if (config.alwaysOnTop) mainWindow.setAlwaysOnTop(true, "floating");
 
   mainWindow.on("close", () => {
     globalShortcut.unregisterAll();
@@ -313,17 +314,15 @@ ipcMain.handle("dev-auth-password", () => {
   return process.env.ADMIN_PASSWORD || secrets.adminPassword || null;
 });
 ipcMain.handle("close-app",      () => { globalShortcut.unregisterAll(); app.quit(); });
-ipcMain.handle("toggle-top",     () => { config.alwaysOnTop = !config.alwaysOnTop; mainWindow?.setAlwaysOnTop(config.alwaysOnTop); saveConfig(config); return config.alwaysOnTop; });
+ipcMain.handle("toggle-top", () => {
+  config.alwaysOnTop = !config.alwaysOnTop;
+  mainWindow?.setAlwaysOnTop(config.alwaysOnTop, "floating");
+  saveConfig(config);
+  return config.alwaysOnTop;
+});
 ipcMain.handle("open-devtools",  () => mainWindow?.webContents.openDevTools());
 ipcMain.handle("install-update", () => autoUpdater.quitAndInstall());
 ipcMain.handle("check-version",  () => app.getVersion());
-ipcMain.handle("send-action2",    (_, action) => sendDriverAction2(action));
-ipcMain.handle("toggle-pitting2", () => {
-  inPits2 = !inPits2;
-  sendDriverAction2(inPits2 ? "pitting" : "in_race");
-  mainWindow?.webContents.send("pit-state-changed2", inPits2);
-  return inPits2;
-});
 ipcMain.handle("flag-broadcast", (_, data) => mainWindow?.webContents.send("flag-event", data));
 ipcMain.handle("register-hotkeys",  (_, keybinds) => { registerHotkeys(keybinds); return true; });
 ipcMain.handle("suspend-hotkeys",   () => { globalShortcut.unregisterAll(); return true; });
