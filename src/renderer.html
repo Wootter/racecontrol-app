@@ -877,6 +877,7 @@ let _driverPollInterval  = null;
 let _marshalPollInterval = null;
 let _holoMode = false;
 let _cooldownActive = false;
+let _cooldownActive2 = false;
 
 let _flagVolume = 1.0;
 
@@ -1477,8 +1478,8 @@ document.getElementById("kb-blue_flag").value = config.keybinds?.blue_flag  || "
   document.getElementById("btn-discord-login")?.addEventListener("click", loginWithDiscord);
 
   window.api.onToast(({msg,type})   => showToast(msg, type));
-  window.api.onCooldownStart(s      => startCooldown(s));
-  window.api.onCooldownEnd(()       => stopCooldown());
+window.api.onCooldownStart((s, slot) => startCooldown(s, slot));
+window.api.onCooldownEnd((slot)      => stopCooldown(slot));
   window.api.onPitStateChanged(v    => updatePitBtn(v));
   window.api.onPitStateChanged2(v => updatePitBtn2(v));
   window.api.onFlagEvent(d          => onFlagEvent(d.flag, d));
@@ -2444,7 +2445,7 @@ function updatePitBtn(v) {
 }
 
 function doAction2(action) {
-  if (_cooldownActive) return;
+  if (_cooldownActive2) return;
   playKeybindSound(action + "2");
   const btn = document.getElementById(`btn2-${action}`);
   if (!btn || btn.disabled) return;
@@ -2452,7 +2453,7 @@ function doAction2(action) {
   window.api.sendAction2(action);
 }
 function doTogglePitting2() {
-  if (_cooldownActive) return;
+  if (_cooldownActive2) return;
   playKeybindSound("pitting2");
   window.api.togglePitting2().then(v => updatePitBtn2(v));
 }
@@ -2862,31 +2863,45 @@ async function devTogglePanel(target,enable){
   }catch{showToast("✗ Bot unreachable","err");}
 }
 
-function startCooldown(secs){
-  const bar=document.getElementById("cooldown-bar"),fill=document.getElementById("cooldown-fill");
-  bar.style.display="block";fill.style.transition="none";fill.style.width="100%";
-  void fill.offsetWidth;fill.style.transition=`width ${secs}s linear`;fill.style.width="0%";
-  _cooldownActive = true;
-["blue_flag","next_lap","pitting"].forEach(a=>{
-    const b=document.getElementById(`btn-${a}`);
-    if(b){ b.disabled=true; b.style.opacity="0.35"; }
-    const b2=document.getElementById(`btn2-${a}`);
-    if(b2){ b2.disabled=true; b2.style.opacity="0.35"; }
-  });
-  _suspendHotkeys();
-}
-function stopCooldown(){
-  document.getElementById("cooldown-bar").style.display="none";
-  _cooldownActive = false;
-  if(_lastRaceState?.raceStarted !== false){
-["blue_flag","next_lap","pitting"].forEach(a=>{
-      const b=document.getElementById(`btn-${a}`);
-      if(b){ b.disabled=false; b.style.opacity=""; }
-      const b2=document.getElementById(`btn2-${a}`);
-      if(b2){ b2.disabled=false; b2.style.opacity=""; }
+function startCooldown(secs, slot = 1) {
+  if (slot === 1) {
+    const bar = document.getElementById("cooldown-bar"), fill = document.getElementById("cooldown-fill");
+    bar.style.display = "block"; fill.style.transition = "none"; fill.style.width = "100%";
+    void fill.offsetWidth; fill.style.transition = `width ${secs}s linear`; fill.style.width = "0%";
+    _cooldownActive = true;
+    ["blue_flag","next_lap","pitting"].forEach(a => {
+      const b = document.getElementById(`btn-${a}`);
+      if (b) { b.disabled = true; b.style.opacity = "0.35"; }
+    });
+    _suspendHotkeys();
+  } else {
+    _cooldownActive2 = true;
+    ["blue_flag","next_lap","pitting"].forEach(a => {
+      const b2 = document.getElementById(`btn2-${a}`);
+      if (b2) { b2.disabled = true; b2.style.opacity = "0.35"; }
     });
   }
-  _resumeHotkeys();
+}
+function stopCooldown(slot = 1) {
+  if (slot === 1) {
+    document.getElementById("cooldown-bar").style.display = "none";
+    _cooldownActive = false;
+    if (_lastRaceState?.raceStarted !== false) {
+      ["blue_flag","next_lap","pitting"].forEach(a => {
+        const b = document.getElementById(`btn-${a}`);
+        if (b) { b.disabled = false; b.style.opacity = ""; }
+      });
+    }
+    _resumeHotkeys();
+  } else {
+    _cooldownActive2 = false;
+    if (_lastRaceState?.raceStarted !== false) {
+      ["blue_flag","next_lap","pitting"].forEach(a => {
+        const b2 = document.getElementById(`btn2-${a}`);
+        if (b2) { b2.disabled = false; b2.style.opacity = ""; }
+      });
+    }
+  }
 }
 
 async function saveSettings(){
