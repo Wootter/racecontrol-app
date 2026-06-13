@@ -871,14 +871,12 @@ let prevPanel     = "login";
 let hasDriver     = false;
 let hasMarshal    = false;
 let hasDev        = false;
-let _actionLastFired = {};
 let toastTimer;
 let _currentFlagAudio = null;
 let _lastPlayedSound  = null;
 let _attendance = {};
 let _lastPlayedTime   = 0;
 let listeningKey  = null;
-const ACTION_DEBOUNCE_MS = 500;
 let bfKnownIds    = new Set();
 let bfAlertInterval = null;
 let _lastFlagTimestamp = null;
@@ -892,6 +890,15 @@ let _cooldownActive = false;
 let _cooldownActive2 = false;
 
 let _flagVolume = 1.0;
+let _actionLastFired = {};
+const ACTION_DEBOUNCE_MS = 500;
+
+function _canFire(action) {
+  const now = Date.now();
+  if (now - (_actionLastFired[action] || 0) < ACTION_DEBOUNCE_MS) return false;
+  _actionLastFired[action] = now;
+  return true;
+}
 
 function onVolumeSlider(val) {
   _flagVolume = parseInt(val, 10) / 100;
@@ -1297,7 +1304,6 @@ function openBlueFlagModal() {
     : Object.entries(DRIVER_INFO).sort((a,b) => parseInt(a[1].number) - parseInt(b[1].number))
         .map(([name, info]) => ({ name, number: info.number, callsign: info.callsign }));
 
-  // Group by team
   const groups = {};
   activePlayers.forEach(d => {
     const team = getTeamFromCallsign(d.callsign) || "OTHER";
@@ -1305,24 +1311,31 @@ function openBlueFlagModal() {
     groups[team].push(d);
   });
 
-list.innerHTML = Object.entries(groups).map(([team, drivers]) => {
-  const color = TEAM_COLORS[team] || "#444466";
-  return `
-    <div style="border:1px solid ${color};border-radius:7px;overflow:hidden;margin-bottom:2px;width:100%;">
-      <div style="padding:4px 10px;background:${color}22;font-size:8px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${color};">${team}</div>
-      ${drivers.map(d => `
-        <button onclick="triggerBlueFlagForDriver('${d.name}', '${d.number}', '${d.callsign}')"
-          style="display:flex;flex-direction:row;align-items:center;gap:10px;padding:9px 12px;background:transparent;border:none;border-top:1px solid ${color}33;cursor:pointer;color:var(--text);font-family:'Oxanium',sans-serif;width:100%;text-align:left;transition:background 0.15s;"
-          onmouseover="this.style.background='${color}22'"
-          onmouseout="this.style.background='transparent'">
-          <div style="width:28px;height:28px;border-radius:4px;background:${color}22;border:1px solid ${color}66;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:${color};flex-shrink:0;">#${d.number}</div>
-          <div>
-            <div style="font-size:12px;font-weight:700;">${d.name}</div>
-            <div style="font-size:9px;color:var(--muted);">${d.callsign}</div>
-          </div>
-        </button>`).join("")}
-    </div>`;
-}).join("");
+  list.innerHTML = Object.entries(groups).map(([team, drivers]) => {
+    const color = TEAM_COLORS[team] || "#444466";
+    return `
+      <div style="border:1px solid ${color};border-radius:7px;overflow:hidden;margin-bottom:4px;">
+        <div style="padding:3px 8px;background:${color}22;font-size:8px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${color};">${team}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:${color}22;">
+          ${drivers.map(d => `
+            <button onclick="triggerBlueFlagForDriver('${d.name}', '${d.number}', '${d.callsign}')"
+              style="display:flex;align-items:center;gap:7px;padding:7px 9px;background:var(--surface);border:none;cursor:pointer;color:var(--text);font-family:'Oxanium',sans-serif;width:100%;text-align:left;transition:background 0.12s;"
+              onmouseover="this.style.background='${color}22'"
+              onmouseout="this.style.background='var(--surface)'">
+              <div style="width:22px;height:22px;border-radius:3px;background:${color}22;border:1px solid ${color}66;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:${color};flex-shrink:0;">#${d.number}</div>
+              <div style="min-width:0;">
+                <div style="font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.name}</div>
+                <div style="font-size:8px;color:var(--muted);">${d.callsign}</div>
+              </div>
+            </button>`).join("")}
+        </div>
+      </div>`;
+  }).join("");
+
+  const bfSearchEl = document.getElementById("bf-search");
+  if (bfSearchEl) { bfSearchEl.value = ""; filterBlueFlagList(""); }
+  document.getElementById("blueflag-modal").style.display = "flex";
+}
 
 const bfSearchEl = document.getElementById("bf-search");
 if (bfSearchEl) { bfSearchEl.value = ""; filterBlueFlagList(""); }
