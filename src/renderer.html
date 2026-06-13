@@ -953,15 +953,100 @@ function loadVolumePrefs() {
 }
 
 function setTheme(theme) {
-  document.body.style.transition = "opacity 0.14s ease";
-  document.body.style.opacity = "0";
+  const isLight = theme === "light";
+  const color = isLight ? "#ffffff" : "#0a0a0f";
+
+  const ripple = document.createElement("div");
+  ripple.style.cssText = `
+    position:fixed;
+    top:50%;left:50%;
+    width:0;height:0;
+    border-radius:50%;
+    background:${color};
+    transform:translate(-50%,-50%) scale(1);
+    z-index:99999;
+    pointer-events:none;
+    transition:none;
+  `;
+  document.body.appendChild(ripple);
+
+  const size = Math.max(window.innerWidth, window.innerHeight) * 3;
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      ripple.style.transition = "width 0.55s cubic-bezier(0.4,0,0.2,1), height 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.2s ease 0.4s";
+      ripple.style.width  = size + "px";
+      ripple.style.height = size + "px";
+    });
+  });
+
   setTimeout(() => {
-    document.documentElement.classList.toggle("light-mode", theme === "light");
+    document.documentElement.classList.toggle("light-mode", isLight);
     localStorage.setItem("rc_theme", theme);
     updateThemeBtns();
-    document.body.style.opacity = "1";
-    setTimeout(() => { document.body.style.transition = ""; }, 150);
-  }, 140);
+  }, 280);
+
+  setTimeout(() => {
+    ripple.style.opacity = "0";
+    setTimeout(() => ripple.remove(), 250);
+  }, 400);
+
+  const icon = document.createElement("div");
+  icon.textContent = isLight ? "☀️" : "🌙";
+  icon.style.cssText = `
+    position:fixed;
+    top:50%;left:50%;
+    transform:translate(-50%,-50%) scale(0) rotate(-180deg);
+    font-size:52px;
+    z-index:100000;
+    pointer-events:none;
+    transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease 0.45s;
+    opacity:1;
+  `;
+  document.body.appendChild(icon);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      icon.style.transform = "translate(-50%,-50%) scale(1) rotate(0deg)";
+    });
+  });
+
+  setTimeout(() => {
+    icon.style.opacity = "0";
+    setTimeout(() => icon.remove(), 300);
+  }, 450);
+
+  const stars = isLight ? ["✨","⭐","🌟","💫"] : ["⭐","🌟","💫","✨"];
+  stars.forEach((s, i) => {
+    const star = document.createElement("div");
+    const angle = (i / stars.length) * 360;
+    const dist  = 70 + Math.random() * 40;
+    const rx = Math.cos(angle * Math.PI / 180) * dist;
+    const ry = Math.sin(angle * Math.PI / 180) * dist;
+    star.textContent = s;
+    star.style.cssText = `
+      position:fixed;
+      top:50%;left:50%;
+      transform:translate(-50%,-50%) translate(0px,0px) scale(0);
+      font-size:${16 + Math.random() * 14}px;
+      z-index:100000;
+      pointer-events:none;
+      transition:transform 0.5s cubic-bezier(0.34,1.56,0.64,1) ${i*0.06}s, opacity 0.3s ease ${0.35+i*0.06}s;
+      opacity:1;
+    `;
+    document.body.appendChild(star);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        star.style.transform = `translate(-50%,-50%) translate(${rx}px,${ry}px) scale(1)`;
+      });
+    });
+
+    setTimeout(() => {
+      star.style.opacity = "0";
+      setTimeout(() => star.remove(), 350);
+    }, 350 + i * 60);
+  });
 }
 
 function updateThemeBtns() {
