@@ -150,7 +150,7 @@ function createTray() {
 
 function registerHotkeys(keybinds) {
   globalShortcut.unregisterAll();
-  const { blue_flag, next_lap, pitting } = keybinds || {};
+  const { blue_flag, next_lap, pitting, blue_flag2, next_lap2, pitting2 } = keybinds || {};
   if (blue_flag) globalShortcut.register(blue_flag, () => {
     mainWindow?.webContents.send("keybind-fired", "blue_flag");
     sendDriverAction("blue_flag");
@@ -164,6 +164,20 @@ function registerHotkeys(keybinds) {
     mainWindow?.webContents.send("keybind-fired", "pitting");
     sendDriverAction(inPits ? "pitting" : "in_race");
     mainWindow?.webContents.send("pit-state-changed", inPits);
+  });
+  if (blue_flag2) globalShortcut.register(blue_flag2, () => {
+    mainWindow?.webContents.send("keybind-fired", "blue_flag2");
+    sendDriverAction2("blue_flag");
+  });
+  if (next_lap2) globalShortcut.register(next_lap2, () => {
+    mainWindow?.webContents.send("keybind-fired", "next_lap2");
+    sendDriverAction2("next_lap");
+  });
+  if (pitting2) globalShortcut.register(pitting2, () => {
+    inPits2 = !inPits2;
+    mainWindow?.webContents.send("keybind-fired", "pitting2");
+    sendDriverAction2(inPits2 ? "pitting" : "in_race");
+    mainWindow?.webContents.send("pit-state-changed2", inPits2);
   });
 }
 
@@ -265,9 +279,14 @@ ipcMain.handle("install-update", () => autoUpdater.quitAndInstall());
 ipcMain.handle("check-version",  () => app.getVersion());
 ipcMain.handle("flag-broadcast", (_, data) => mainWindow?.webContents.send("flag-event", data));
 ipcMain.handle("register-hotkeys",  (_, keybinds) => { registerHotkeys(keybinds); return true; });
-sendAction2:    (action) => ipcRenderer.invoke('send-action2', action),
-togglePitting2: ()       => ipcRenderer.invoke('toggle-pitting2'),
 ipcMain.handle("suspend-hotkeys",   () => { globalShortcut.unregisterAll(); return true; });
+ipcMain.handle("send-action2",    (_, action) => sendDriverAction2(action));
+ipcMain.handle("toggle-pitting2", () => {
+  inPits2 = !inPits2;
+  sendDriverAction2(inPits2 ? "pitting" : "in_race");
+  mainWindow?.webContents.send("pit-state-changed2", inPits2);
+  return inPits2;
+});
 ipcMain.handle("resume-hotkeys",    () => { registerHotkeys(config.keybinds); return true; });
 ipcMain.handle("open-releases", () => shell.openExternal("https://github.com/AleEjx/racecontrol-app/releases/latest"));
 ipcMain.handle("uninstall", () => {
