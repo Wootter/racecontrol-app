@@ -51,7 +51,27 @@
     .pw-btn{width:100%;padding:10px;background:rgba(255,23,68,0.15);border:1px solid rgba(255,23,68,0.4);color:var(--red);font-family:'Oxanium',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--radius);cursor:pointer;}
     .pw-btn:hover{background:rgba(255,23,68,0.25);}
     .pw-error{font-size:10px;color:var(--red);text-align:center;min-height:14px;}
+    :root.light-mode {
+  --bg: #f0f0f5;
+  --surface: #ffffff;
+  --border: #d0d0e0;
+  --text: #111118;
+  --muted: #7070a0;
+  --green: #00a854;
+  --red: #e0112d;
+  --blue: #1a5fd4;
+  --yellow: #c9a000;
+  --orange: #d45a00;
+}
 
+.theme-flash {
+  animation: themeFlash 0.35s ease forwards;
+}
+@keyframes themeFlash {
+  0%   { opacity:1; }
+  40%  { opacity:0; }
+  100% { opacity:1; }
+}
     .sec-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
 
     .flag-card{border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;border:1.5px solid;animation:slideIn 0.3s cubic-bezier(0.34,1.56,0.64,1);}
@@ -543,10 +563,24 @@
 
 <div class="screen" id="screen-settings">
   <div class="scroll-body">
-    <div style="display:flex;align-items:center;justify-content:space-between;">
-      <div style="font-size:13px;font-weight:800;color:var(--text);">Settings</div>
-      <div id="app-version" style="font-size:9px;color:var(--muted);font-weight:700;letter-spacing:1px;"></div>
-    </div>
+<div style="display:flex;align-items:center;justify-content:space-between;">
+  <div style="font-size:13px;font-weight:800;color:var(--text);">Settings</div>
+  <div id="app-version" style="font-size:9px;color:var(--muted);font-weight:700;letter-spacing:1px;"></div>
+</div>
+
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:10px;">
+  <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Appearance</div>
+  <div style="display:flex;gap:8px;">
+    <button id="theme-dark-btn" onclick="setTheme('dark')"
+      style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px;border-radius:6px;border:2px solid transparent;cursor:pointer;font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;background:#0a0a0f;color:#e8e8f0;transition:border-color 0.2s;">
+      🌙 Dark
+    </button>
+    <button id="theme-light-btn" onclick="setTheme('light')"
+      style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px;border-radius:6px;border:2px solid transparent;cursor:pointer;font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;background:#ffffff;color:#111118;transition:border-color 0.2s;">
+      ☀️ Light
+    </button>
+  </div>
+</div>
     <div id="s-api-card" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;flex-direction:column;gap:8px;">
       <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">API Connection</div>
       <input type="url" id="s-api" placeholder="https://xxx.trycloudflare.com"/>
@@ -918,6 +952,30 @@ function loadVolumePrefs() {
   }
 }
 
+function setTheme(theme) {
+  document.documentElement.classList.add("theme-flash");
+  setTimeout(() => {
+    document.documentElement.classList.toggle("light-mode", theme === "light");
+    document.documentElement.classList.remove("theme-flash");
+    localStorage.setItem("rc_theme", theme);
+    updateThemeBtns();
+  }, 140);
+}
+
+function updateThemeBtns() {
+  const isLight = document.documentElement.classList.contains("light-mode");
+  const darkBtn  = document.getElementById("theme-dark-btn");
+  const lightBtn = document.getElementById("theme-light-btn");
+  if (darkBtn)  darkBtn.style.borderColor  = isLight ? "transparent" : "var(--blue)";
+  if (lightBtn) lightBtn.style.borderColor = isLight ? "var(--blue)" : "transparent";
+}
+
+function loadThemePrefs() {
+  const saved = localStorage.getItem("rc_theme");
+  if (saved === "light") document.documentElement.classList.add("light-mode");
+  updateThemeBtns();
+}
+  
 function _suspendHotkeys() { window.api.suspendHotkeys(); }
 function _resumeHotkeys()  { window.api.resumeHotkeys();  }
 
@@ -1583,6 +1641,7 @@ window.api.onKeybindFired(action => {
   loadFlagSounds();
   loadToolboxPrefs();
   loadKeybindSounds();
+  loadThemePrefs();
   loadVolumePrefs();
 
 
@@ -2034,6 +2093,7 @@ function switchPanel(panel) {
     const label  = document.getElementById("vol-label");
     if (slider) slider.value = volPct;
     if (label)  label.textContent = volPct + "%";
+    updateThemeBtns();
     showScreen("screen-settings");
   }
 }
