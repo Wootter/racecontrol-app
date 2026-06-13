@@ -16,6 +16,7 @@ let config     = loadConfig();
 let mainWindow = null;
 let tray       = null;
 let inPits     = false;
+let inPits2 = false;
 let onCooldown = false;
 
 const gotLock = app.requestSingleInstanceLock();
@@ -227,6 +228,45 @@ body: JSON.stringify({
   }
 }
 
+async function sendDriverAction2(action) {
+  if (!config.apiUrl || !config.driver2) return;
+  if (onCooldown) {
+    mainWindow?.webContents.send("toast", { msg: "⏳ Cooldown active", type: "err" });
+    return;
+  }
+  try {
+    const stateRes = await fetch(`${config.apiUrl}/driver/state`, {
+      headers: { "x-discord-id": config.discordId || "" }
+    });
+    const stateData = await stateRes.json();
+    if (!stateData.raceStarted) {
+      mainWindow?.webContents.send("toast", { msg: "⏳ Race not started", type: "err" });
+      return;
+    }
+  } catch {}
+  try {
+    const res = await fetch(`${config.apiUrl}/driver/action`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action,
+        driver:    config.driver2,
+        callsign:  config.callsign2,
+        number:    config.number2,
+        discordId: config.discordId,
+        username:  config.username || config.driver2,
+        engineer:  config.engineer || false,
+      }),
+    });
+    if (res.ok) {
+      const labels = { blue_flag:"🔵 Blue Flag", next_lap:"🏁 Next Lap", pitting:"🔧 Pitting", in_race:"🏎️ Back on Track" };
+      mainWindow?.webContents.send("toast", { msg: `✓ ${labels[action]} (D2)`, type: "ok" });
+    }
+  } catch {
+    mainWindow?.webContents.send("toast", { msg: "✗ Bot unreachable", type: "err" });
+  }
+}
+
 ipcMain.handle("open-oauth", (_, _url) => {
   return new Promise((resolve) => {
     const CLIENT_ID  = "1467595519718195473";
@@ -277,6 +317,13 @@ ipcMain.handle("toggle-top",     () => { config.alwaysOnTop = !config.alwaysOnTo
 ipcMain.handle("open-devtools",  () => mainWindow?.webContents.openDevTools());
 ipcMain.handle("install-update", () => autoUpdater.quitAndInstall());
 ipcMain.handle("check-version",  () => app.getVersion());
+ipcMain.handle("send-action2",    (_, action) => sendDriverAction2(action));
+ipcMain.handle("toggle-pitting2", () => {
+  inPits2 = !inPits2;
+  sendDriverAction2(inPits2 ? "pitting" : "in_race");
+  mainWindow?.webContents.send("pit-state-changed2", inPits2);
+  return inPits2;
+});
 ipcMain.handle("flag-broadcast", (_, data) => mainWindow?.webContents.send("flag-event", data));
 ipcMain.handle("register-hotkeys",  (_, keybinds) => { registerHotkeys(keybinds); return true; });
 ipcMain.handle("suspend-hotkeys",   () => { globalShortcut.unregisterAll(); return true; });
