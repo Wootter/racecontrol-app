@@ -212,12 +212,14 @@ async function sendDriverAction(action) {
     mainWindow?.webContents.send("toast", { msg: "⏳ Cooldown active", type: "err" });
     return;
   }
+    onCooldown = true;
   try {
     const stateRes = await fetch(`${config.apiUrl}/driver/state`, {
       headers: { "x-discord-id": config.discordId || "" }
     });
     const stateData = await stateRes.json();
-    if (!stateData.raceStarted) {
+if (!stateData.raceStarted) {
+      onCooldown = false;
       mainWindow?.webContents.send("toast", { msg: "⏳ Race not started", type: "err" });
       return;
     }
@@ -237,10 +239,9 @@ body: JSON.stringify({
   engineer:  config.engineer || false,
 }),
     });
-    if (res.ok) {
+if (res.ok) {
       const labels = { blue_flag:"🔵 Blue Flag", next_lap:"🏁 Next Lap", pitting:"🔧 Pitting", in_race:"🏎️ Back on Track" };
       mainWindow?.webContents.send("toast", { msg: `✓ ${labels[action]}`, type: "ok" });
-      onCooldown = true;
       mainWindow?.webContents.send("cooldown-start", 7, 1);
       setTimeout(() => { onCooldown = false; mainWindow?.webContents.send("cooldown-end", 1); }, 7000);
     }
@@ -255,12 +256,14 @@ async function sendDriverAction2(action) {
     mainWindow?.webContents.send("toast", { msg: "⏳ Cooldown active (D2)", type: "err" });
     return;
   }
+  onCooldown2 = true;
   try {
     const stateRes = await fetch(`${config.apiUrl}/driver/state`, {
       headers: { "x-discord-id": config.discordId || "" }
     });
     const stateData = await stateRes.json();
-    if (!stateData.raceStarted) {
+if (!stateData.raceStarted) {
+      onCooldown2 = false;
       mainWindow?.webContents.send("toast", { msg: "⏳ Race not started", type: "err" });
       return;
     }
@@ -282,7 +285,6 @@ async function sendDriverAction2(action) {
     if (res.ok) {
       const labels = { blue_flag:"🔵 Blue Flag", next_lap:"🏁 Next Lap", pitting:"🔧 Pitting", in_race:"🏎️ Back on Track" };
       mainWindow?.webContents.send("toast", { msg: `✓ ${labels[action]} (D2)`, type: "ok" });
-      onCooldown2 = true;
       mainWindow?.webContents.send("cooldown-start", 7, 2);
       setTimeout(() => { onCooldown2 = false; mainWindow?.webContents.send("cooldown-end", 2); }, 7000);
     }
