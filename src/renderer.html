@@ -64,6 +64,46 @@
   --orange: #d45a00;
 }
 
+:root.transparent-mode {
+  --bg: rgba(0,0,0,0);
+  --surface: rgba(10,10,15,0.45);
+  --border: rgba(255,255,255,0.08);
+  --text: #e8e8f0;
+  --muted: #70708a;
+  --green: #00e676;
+  --red: #ff1744;
+  --blue: #2979ff;
+  --yellow: #ffd600;
+  --orange: #ff6d00;
+  --radius: 6px;
+}
+
+:root.transparent-mode body {
+  background: transparent !important;
+}
+
+:root.transparent-mode .titlebar {
+  background: rgba(10,10,15,0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+:root.transparent-mode .screen,
+:root.transparent-mode .scroll-body {
+  background: transparent;
+}
+
+:root.transparent-mode .lb-row,
+:root.transparent-mode .action-btn,
+:root.transparent-mode .flag-btn,
+:root.transparent-mode .status-row,
+:root.transparent-mode .dev-card,
+:root.transparent-mode .login-card,
+:root.transparent-mode .pw-card {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
 .theme-flash {
   animation: themeFlash 0.35s ease forwards;
 }
@@ -570,16 +610,20 @@
 
 <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:10px;">
   <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Appearance</div>
-  <div style="display:flex;gap:8px;">
-    <button id="theme-dark-btn" onclick="setTheme('dark')"
-      style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px;border-radius:6px;border:2px solid transparent;cursor:pointer;font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;background:#0a0a0f;color:#e8e8f0;transition:border-color 0.2s;">
-      🌙 Dark
-    </button>
-    <button id="theme-light-btn" onclick="setTheme('light')"
-      style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px;border-radius:6px;border:2px solid transparent;cursor:pointer;font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;background:#ffffff;color:#111118;transition:border-color 0.2s;">
-      ☀️ Light
-    </button>
-  </div>
+<div style="display:flex;gap:8px;">
+  <button id="theme-dark-btn" onclick="setTheme('dark')"
+    style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px;border-radius:6px;border:2px solid transparent;cursor:pointer;font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;background:#0a0a0f;color:#e8e8f0;transition:border-color 0.2s;">
+    🌙 Dark
+  </button>
+  <button id="theme-light-btn" onclick="setTheme('light')"
+    style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px;border-radius:6px;border:2px solid transparent;cursor:pointer;font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;background:#ffffff;color:#111118;transition:border-color 0.2s;">
+    ☀️ Light
+  </button>
+  <button id="theme-transparent-btn" onclick="setTheme('transparent')"
+    style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px;border-radius:6px;border:2px solid transparent;cursor:pointer;font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;background:linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03));color:#e8e8f0;transition:border-color 0.2s;backdrop-filter:blur(4px);">
+    🪟 Glass
+  </button>
+</div>
 </div>
     <div id="s-api-card" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;flex-direction:column;gap:8px;">
       <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">API Connection</div>
@@ -953,116 +997,68 @@ function loadVolumePrefs() {
 }
 
 function setTheme(theme) {
-  const isLight = theme === "light";
-  const color = isLight ? "#ffffff" : "#0a0a0f";
+  const colors = { light:"#ffffff", dark:"#0a0a0f", transparent:"rgba(0,0,0,0.01)" };
+  const color = colors[theme] || "#0a0a0f";
 
   const ripple = document.createElement("div");
-  ripple.style.cssText = `
-    position:fixed;
-    top:50%;left:50%;
-    width:0;height:0;
-    border-radius:50%;
-    background:${color};
-    transform:translate(-50%,-50%) scale(1);
-    z-index:99999;
-    pointer-events:none;
-    transition:none;
-  `;
+  ripple.style.cssText = `position:fixed;top:50%;left:50%;width:0;height:0;border-radius:50%;background:${color};transform:translate(-50%,-50%) scale(1);z-index:99999;pointer-events:none;transition:none;`;
   document.body.appendChild(ripple);
-
   const size = Math.max(window.innerWidth, window.innerHeight) * 3;
-
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      ripple.style.transition = "width 0.55s cubic-bezier(0.4,0,0.2,1), height 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.2s ease 0.4s";
-      ripple.style.width  = size + "px";
-      ripple.style.height = size + "px";
-    });
-  });
-
+  requestAnimationFrame(() => { requestAnimationFrame(() => {
+    ripple.style.transition = "width 0.55s cubic-bezier(0.4,0,0.2,1), height 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.2s ease 0.4s";
+    ripple.style.width = size + "px"; ripple.style.height = size + "px";
+  }); });
   setTimeout(() => {
-    document.documentElement.classList.toggle("light-mode", isLight);
+    document.documentElement.classList.remove("light-mode", "transparent-mode");
+    if (theme === "light") document.documentElement.classList.add("light-mode");
+    if (theme === "transparent") document.documentElement.classList.add("transparent-mode");
     localStorage.setItem("rc_theme", theme);
     updateThemeBtns();
   }, 280);
+  setTimeout(() => { ripple.style.opacity = "0"; setTimeout(() => ripple.remove(), 250); }, 400);
 
-  setTimeout(() => {
-    ripple.style.opacity = "0";
-    setTimeout(() => ripple.remove(), 250);
-  }, 400);
-
+  const icons = { light:"☀️", dark:"🌙", transparent:"🪟" };
   const icon = document.createElement("div");
-  icon.textContent = isLight ? "☀️" : "🌙";
-  icon.style.cssText = `
-    position:fixed;
-    top:50%;left:50%;
-    transform:translate(-50%,-50%) scale(0) rotate(-180deg);
-    font-size:52px;
-    z-index:100000;
-    pointer-events:none;
-    transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease 0.45s;
-    opacity:1;
-  `;
+  icon.textContent = icons[theme] || "🌙";
+  icon.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0) rotate(-180deg);font-size:52px;z-index:100000;pointer-events:none;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease 0.45s;opacity:1;`;
   document.body.appendChild(icon);
+  requestAnimationFrame(() => { requestAnimationFrame(() => { icon.style.transform = "translate(-50%,-50%) scale(1) rotate(0deg)"; }); });
+  setTimeout(() => { icon.style.opacity = "0"; setTimeout(() => icon.remove(), 300); }, 450);
 
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      icon.style.transform = "translate(-50%,-50%) scale(1) rotate(0deg)";
-    });
-  });
-
-  setTimeout(() => {
-    icon.style.opacity = "0";
-    setTimeout(() => icon.remove(), 300);
-  }, 450);
-
-  const stars = isLight ? ["✨","⭐","🌟","💫"] : ["⭐","🌟","💫","✨"];
+  const stars = ["✨","⭐","🌟","💫"];
   stars.forEach((s, i) => {
     const star = document.createElement("div");
     const angle = (i / stars.length) * 360;
-    const dist  = 70 + Math.random() * 40;
+    const dist = 70 + Math.random() * 40;
     const rx = Math.cos(angle * Math.PI / 180) * dist;
     const ry = Math.sin(angle * Math.PI / 180) * dist;
     star.textContent = s;
-    star.style.cssText = `
-      position:fixed;
-      top:50%;left:50%;
-      transform:translate(-50%,-50%) translate(0px,0px) scale(0);
-      font-size:${16 + Math.random() * 14}px;
-      z-index:100000;
-      pointer-events:none;
-      transition:transform 0.5s cubic-bezier(0.34,1.56,0.64,1) ${i*0.06}s, opacity 0.3s ease ${0.35+i*0.06}s;
-      opacity:1;
-    `;
+    star.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) translate(0px,0px) scale(0);font-size:${16+Math.random()*14}px;z-index:100000;pointer-events:none;transition:transform 0.5s cubic-bezier(0.34,1.56,0.64,1) ${i*0.06}s, opacity 0.3s ease ${0.35+i*0.06}s;opacity:1;`;
     document.body.appendChild(star);
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        star.style.transform = `translate(-50%,-50%) translate(${rx}px,${ry}px) scale(1)`;
-      });
-    });
-
-    setTimeout(() => {
-      star.style.opacity = "0";
-      setTimeout(() => star.remove(), 350);
-    }, 350 + i * 60);
+    requestAnimationFrame(() => { requestAnimationFrame(() => { star.style.transform = `translate(-50%,-50%) translate(${rx}px,${ry}px) scale(1)`; }); });
+    setTimeout(() => { star.style.opacity = "0"; setTimeout(() => star.remove(), 350); }, 350 + i * 60);
   });
 }
 
 function updateThemeBtns() {
-  const isLight = document.documentElement.classList.contains("light-mode");
-  const darkBtn  = document.getElementById("theme-dark-btn");
-  const lightBtn = document.getElementById("theme-light-btn");
-  if (darkBtn)  darkBtn.style.borderColor  = isLight ? "transparent" : "var(--blue)";
-  if (lightBtn) lightBtn.style.borderColor = isLight ? "var(--blue)" : "transparent";
+  const isLight       = document.documentElement.classList.contains("light-mode");
+  const isTransparent = document.documentElement.classList.contains("transparent-mode");
+  const darkBtn        = document.getElementById("theme-dark-btn");
+  const lightBtn       = document.getElementById("theme-light-btn");
+  const transparentBtn = document.getElementById("theme-transparent-btn");
+  if (darkBtn)        darkBtn.style.borderColor        = (!isLight && !isTransparent) ? "var(--blue)" : "transparent";
+  if (lightBtn)       lightBtn.style.borderColor       = isLight       ? "var(--blue)" : "transparent";
+  if (transparentBtn) transparentBtn.style.borderColor = isTransparent ? "var(--blue)" : "transparent";
 }
 
 function loadThemePrefs() {
   const saved = localStorage.getItem("rc_theme");
-  if (saved === "light") document.documentElement.classList.add("light-mode");
+  document.documentElement.classList.remove("light-mode", "transparent-mode");
+  if (saved === "light")       document.documentElement.classList.add("light-mode");
+  if (saved === "transparent") document.documentElement.classList.add("transparent-mode");
   updateThemeBtns();
 }
-  
+ 
 function _suspendHotkeys() { window.api.suspendHotkeys(); }
 function _resumeHotkeys()  { window.api.resumeHotkeys();  }
 
