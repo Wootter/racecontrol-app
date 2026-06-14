@@ -1759,6 +1759,14 @@ window.api.onCooldownEnd((slot)      => stopCooldown(slot));
   window.api.onPitStateChanged2(v => updatePitBtn2(v));
   window.api.onFlagEvent(d          => onFlagEvent(d.flag, d));
 window.api.onKeybindFired(action => {
+  if (action === 'dnf') {
+    if (document.getElementById("dnf-modal").style.display === "flex") {
+      closeDNFModal();
+    } else {
+      confirmDNF();
+    }
+    return;
+  }
   if (!_canFire(action)) return;
   playKeybindSound(action);
   if (action === 'blue_flag2') doAction2('blue_flag');
