@@ -194,12 +194,17 @@ function registerHotkeys(keybinds) {
     mainWindow?.webContents.send("keybind-fired", "next_lap2");
     sendDriverAction2("next_lap");
   });
-  if (pitting2) globalShortcut.register(toElectronAccelerator(pitting2), () => {
+if (pitting2) globalShortcut.register(toElectronAccelerator(pitting2), () => {
     if (onCooldown2) return;
     inPits2 = !inPits2;
     mainWindow?.webContents.send("keybind-fired", "pitting2");
     sendDriverAction2(inPits2 ? "pitting" : "in_race");
     mainWindow?.webContents.send("pit-state-changed2", inPits2);
+  });
+
+  const { dnf } = keybinds || {};
+  if (dnf) globalShortcut.register(toElectronAccelerator(dnf), () => {
+    mainWindow?.webContents.send("keybind-fired", "dnf");
   });
 }
 
