@@ -333,8 +333,11 @@
         <button class="action-btn" id="btn-next_lap" onclick="doAction('next_lap')">
           <span class="a-key" id="key-next_lap">F2</span><span class="a-icon">🏁</span><span class="a-name">Next Lap</span>
         </button>
-        <button class="action-btn" id="btn-pitting" onclick="doTogglePitting()">
+<button class="action-btn" id="btn-pitting" onclick="doTogglePitting()">
           <span class="a-key" id="key-pitting">F3</span><span class="a-icon" id="pit-icon">🔧</span><span class="a-name" id="pit-label">Pitting</span>
+        </button>
+        <button class="action-btn" id="btn-dnf" onclick="confirmDNF()" style="border-color:rgba(255,23,68,0.4);color:var(--red);">
+          <span class="a-icon">🚫</span><span class="a-name">DNF</span>
         </button>
       </div>
     </div>
@@ -348,8 +351,11 @@
         <button class="action-btn" id="btn2-next_lap" onclick="doAction2('next_lap')">
           <span class="a-key" id="key2-next_lap">F5</span><span class="a-icon">🏁</span><span class="a-name">Next Lap</span>
         </button>
-        <button class="action-btn" id="btn2-pitting" onclick="doTogglePitting2()">
+<button class="action-btn" id="btn2-pitting" onclick="doTogglePitting2()">
           <span class="a-key" id="key2-pitting">F6</span><span class="a-icon" id="pit2-icon">🔧</span><span class="a-name" id="pit2-label">Pitting</span>
+        </button>
+        <button class="action-btn" id="btn2-dnf" onclick="confirmDNF2()" style="border-color:rgba(255,23,68,0.4);color:var(--red);">
+          <span class="a-icon">🚫</span><span class="a-name">DNF</span>
         </button>
       </div>
     </div>
@@ -721,6 +727,18 @@
 </div>
 <input type="file" id="sound-picker" accept="audio/*" style="display:none;"/>
 <input type="file" id="flag-sound-picker" accept="audio/*" style="display:none;"/>
+
+<div id="dnf-modal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid rgba(255,23,68,0.4);border-radius:10px;padding:20px;width:100%;max-width:280px;display:flex;flex-direction:column;gap:12px;">
+    <div style="font-size:13px;font-weight:800;color:var(--red);">🚫 Confirm DNF</div>
+    <div style="font-size:11px;color:var(--muted);" id="dnf-modal-text">Are you sure you want to DNF?</div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="closeDNFModal()" style="flex:1;padding:9px;background:var(--bg);border:1px solid var(--border);color:var(--muted);font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--radius);cursor:pointer;">No</button>
+      <button onclick="submitDNF()" style="flex:1;padding:9px;background:rgba(255,23,68,0.15);border:1px solid rgba(255,23,68,0.4);color:var(--red);font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--radius);cursor:pointer;">Yes, DNF</button>
+    </div>
+  </div>
+</div>
+  
 <div id="toast"></div>
 
 <div id="bug-modal" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;overflow-y:auto;padding:20px;">
@@ -2537,11 +2555,11 @@ function renderLeaderboard(data) {
   if (!data.drivers?.length) { lb.innerHTML='<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">Waiting for race...</div>'; return; }
   lb.innerHTML = data.drivers.map((d,i) => {
     const pos=i+1, isMe=d.name===config.driver, isMe2=d.name===config.driver2, pc=pos===1?"p1":pos===2?"p2":pos===3?"p3":"";
-return `<div class="lb-row ${isMe?"is-me":""} ${isMe2?"is-me2":""} ${d.inPits?"in-pits":""}">
+return `<div class="lb-row ${isMe?"is-me":""} ${isMe2?"is-me2":""} ${d.inPits?"in-pits":""}" style="${d.dnf?"opacity:0.35;filter:grayscale(1);":""}">
       <div class="lb-pos ${pc}">${pos}</div>
       <div class="lb-num">#${d.number}</div>
       <div class="lb-info"><div class="lb-name">${d.name}${isMe?" ←":""}${isMe2?" ←":""}</div><div class="lb-call">${d.callsign}</div></div>
-      <div class="lb-lap">${d.finished ? "Finished 🏁" : `Lap ${d.lap||1}${data.totalLaps?`/${data.totalLaps}`:""}${d.inPits?" 🔧":""}`}</div>
+      <div class="lb-lap">${d.dnf ? "Out " : d.finished ? "Finished 🏁" : `Lap ${d.lap||1}${data.totalLaps?`/${data.totalLaps}`:""}${d.inPits?" 🔧":""}`}</div>
     </div>`;
   }).join("");
 }
@@ -2549,7 +2567,7 @@ return `<div class="lb-row ${isMe?"is-me":""} ${isMe2?"is-me2":""} ${d.inPits?"i
 function setDriverBtnsEnabled(on) {
   const myDriver = _lastRaceState?.drivers?.find(d => d.name === config.driver);
   const finished = myDriver?.finished || false;
-  ["blue_flag","next_lap","pitting"].forEach(a=>{const b=document.getElementById(`btn-${a}`);if(b)b.disabled=!on||finished;});
+  const dnfd = myDriver?.dnf || false;   ["blue_flag","next_lap","pitting","dnf"].forEach(a=>{const b=document.getElementById(`btn-${a}`);if(b)b.disabled=!on||finished||dnfd;});
   const notice=document.getElementById("d-action-notice");
   if (notice) { notice.style.display=on&&!finished?"none":"block"; notice.textContent=on&&!finished?"":finished?"🏁 Race finished":"⏳ Waiting for race to start..."; }
 }
@@ -2734,6 +2752,48 @@ function doTogglePitting2() {
   playKeybindSound("pitting2");
   window.api.togglePitting2().then(v => updatePitBtn2(v));
 }
+
+let _dnfSlot = 1;
+
+function confirmDNF() { _dnfSlot = 1; showDNFModal(config.driver); }
+function confirmDNF2() { _dnfSlot = 2; showDNFModal(config.driver2); }
+
+function showDNFModal(name) {
+  document.getElementById("dnf-modal-text").textContent = `Are you sure you want to DNF ${name}?`;
+  document.getElementById("dnf-modal").style.display = "flex";
+}
+
+function closeDNFModal() {
+  document.getElementById("dnf-modal").style.display = "none";
+}
+
+async function submitDNF() {
+  closeDNFModal();
+  const driver = _dnfSlot === 1 ? config.driver : config.driver2;
+  const number = _dnfSlot === 1 ? config.number : config.number2;
+  const callsign = _dnfSlot === 1 ? config.callsign : config.callsign2;
+  try {
+    const res = await fetch(`${apiUrl}/driver/action`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "dnf", driver, number, callsign,
+        discordId: config.discordId, username: config.username || driver,
+        engineer: config.engineer || false,
+      }),
+    });
+    if (res.ok) {
+      showToast(`🚫 ${driver} DNF`, "err");
+      const btns = _dnfSlot === 1
+        ? ["btn-blue_flag","btn-next_lap","btn-pitting","btn-dnf"]
+        : ["btn2-blue_flag","btn2-next_lap","btn2-pitting","btn2-dnf"];
+      btns.forEach(id => { const b = document.getElementById(id); if (b) b.disabled = true; });
+    } else {
+      showToast("✗ DNF failed", "err");
+    }
+  } catch { showToast("✗ Bot unreachable", "err"); }
+}
+  
 function updatePitBtn2(v) {
   document.getElementById("pit2-icon").textContent  = "🔧";
   document.getElementById("pit2-label").textContent = v ? "In Pits" : "Pitting";
@@ -2742,8 +2802,9 @@ function updatePitBtn2(v) {
 function setDriverBtnsEnabled2(on) {
   const myDriver2 = _lastRaceState?.drivers?.find(d => d.name === config.driver2);
   const finished = myDriver2?.finished || false;
-  ["blue_flag","next_lap","pitting"].forEach(a => {
-    const b2 = document.getElementById(`btn2-${a}`); if (b2) b2.disabled = !on || finished;
+const dnfd2 = myDriver2?.dnf || false;
+  ["blue_flag","next_lap","pitting","dnf"].forEach(a => {
+    const b2 = document.getElementById(`btn2-${a}`); if (b2) b2.disabled = !on || finished || dnfd2;
   });
   const notice = document.getElementById("d-action-notice2");
   if (notice) { notice.style.display = on ? "none" : "block"; notice.textContent = on ? "" : "⏳ Waiting for race to start..."; }
@@ -2805,7 +2866,7 @@ async function pollMarshalState() {
       const pos = i + 1, pc = pos===1?"p1":pos===2?"p2":pos===3?"p3":"";
       const team = getTeamFromCallsign(d.callsign);
       const tc   = (team && TEAM_COLORS[team]) ? TEAM_COLORS[team] : null;
-      return `<div class="lb-row ${d.inPits?"in-pits":""}" style="border-left:3px solid ${tc||"var(--border)"};padding-left:8px;">
+      return `<div class="lb-row ${d.inPits?"in-pits":""}" style="border-left:3px solid ${tc||"var(--border)"};padding-left:8px;${d.dnf?"opacity:0.35;filter:grayscale(1);":""}">
         <div class="lb-pos ${pc}">${pos}</div>
         <div class="lb-num" style="${tc?`background:${tc}22;border-color:${tc}66;color:${tc};`:""}">#${d.number}</div>
         <div class="lb-info">
@@ -2813,7 +2874,7 @@ async function pollMarshalState() {
           <div class="lb-call">${d.callsign}</div>
         </div>
         <div class="lb-lap" style="text-align:right;">
-          <div>${d.finished ? "Finished 🏁" : `Lap ${d.lap||1}${data.totalLaps?`<span style="color:var(--muted);">/${data.totalLaps}</span>`:""}`}</div>
+          <div>${d.dnf ? "Out " : d.finished ? "Finished 🏁" : `Lap ${d.lap||1}${data.totalLaps?`<span style="color:var(--muted);">/${data.totalLaps}</span>`:""}`}</div>
           ${d.inPits?'<div style="font-size:8px;color:var(--yellow);">🔧 IN PITS</div>':(d.gap&&d.gap!=="Leader"?`<div style="font-size:8px;color:var(--muted);">${d.gap}</div>`:"")}
         </div>
       </div>`;
