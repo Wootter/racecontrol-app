@@ -1836,7 +1836,7 @@ window.api.onKeybindFired(action => {
     if (apiDisplay) apiDisplay.textContent = apiUrl;
   }
 
-  const saved = sessionStorage.getItem("rc_user") || localStorage.getItem("rc_user");
+const saved = sessionStorage.getItem("rc_user") || localStorage.getItem("rc_user");
   if (saved && apiUrl) {
     user = JSON.parse(saved);
     delete user.isAdmin;
@@ -1844,7 +1844,9 @@ window.api.onKeybindFired(action => {
     await afterLogin();
   }
 
- startSSE();
+  startSSE();
+
+  if (apiUrl && !_sseSource) _connectSSE();
 
   window.api.checkVersion().then(v => {
     const el = document.getElementById("app-version");
@@ -2004,6 +2006,7 @@ async function resetApiUrl() {
 async function afterLogin() {
   loadDriverDB();
   await syncDriverDBFromServer();
+  if (apiUrl) { _sseStarted = true; _connectSSE(); }
 const driverName = DRIVER_IDS[user.id];
   hasDriver = true;
   hasDev = user.id === DEV_USER_ID;
