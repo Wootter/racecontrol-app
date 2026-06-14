@@ -1117,16 +1117,32 @@ function _suspendHotkeys() { window.api.suspendHotkeys(); }
 function _resumeHotkeys()  { window.api.resumeHotkeys();  }
 
 let _sseStarted = false;
+let _sseSource = null;
+
 function startSSE() {
   if (_sseStarted) return;
-  if (!apiUrl) return; 
+  if (!apiUrl) return;
   _sseStarted = true;
+  _connectSSE();
+}
+
+function _connectSSE() {
+  if (_sseSource) { try { _sseSource.close(); } catch {} _sseSource = null; }
+  if (!apiUrl) return;
+
   const evtSource = new EventSource(`${apiUrl}/events`);
+  _sseSource = evtSource;
+
   evtSource.addEventListener("flag", e => {
     try { const d = JSON.parse(e.data); onFlagEvent(d.flag, d); } catch {}
   });
-  evtSource.onerror = () =>
-    console.warn("[SSE] Connection lost — will retry automatically");
+
+  evtSource.onerror = () => {
+    console.warn("[SSE] Connection lost — reconnecting in 5s...");
+    evtSource.close();
+    _sseSource = null;
+    setTimeout(_connectSSE, 5000);
+  };
 }
   
 function _resumeHotkeys() {
@@ -3001,10 +3017,15 @@ async function devPushDriverDB() {
   statusEl.style.color = "var(--muted)";
   statusEl.textContent = "Pushing...";
   try {
+    if (!user?.token) {
+      const ok = await devAutoAuth();
+      if (!ok) { statusEl.style.color="var(--red)"; statusEl.textContent="✗ Auth failed"; return; }
+    }
     await saveDriverDB(drivers);
     statusEl.style.color = "var(--green)";
     statusEl.textContent = `✓ Pushed ${drivers.length} drivers to server`;
     showToast(`✓ Driver DB pushed — ${drivers.length} drivers`, "ok");
+    onFlagEvent("__driver_db_update__", { drivers });
   } catch(e) {
     statusEl.style.color = "var(--red)";
     statusEl.textContent = "✗ Push failed";
