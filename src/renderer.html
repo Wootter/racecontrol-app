@@ -2527,16 +2527,15 @@ return `<div class="lb-row ${isMe?"is-me":""} ${isMe2?"is-me2":""} ${d.inPits?"i
       <div class="lb-pos ${pc}">${pos}</div>
       <div class="lb-num">#${d.number}</div>
       <div class="lb-info"><div class="lb-name">${d.name}${isMe?" ←":""}${isMe2?" ←":""}</div><div class="lb-call">${d.callsign}</div></div>
-      <div class="lb-lap">Lap ${d.lap||1}${data.totalLaps?`/${data.totalLaps}`:""}${d.inPits?" 🔧":""}</div>
+      <div class="lb-lap">${d.finished ? "Finished 🏁" : `Lap ${d.lap||1}${data.totalLaps?`/${data.totalLaps}`:""}${d.inPits?" 🔧":""}`}</div>
     </div>`;
   }).join("");
 }
 
 function setDriverBtnsEnabled(on) {
-  ["blue_flag","next_lap","pitting"].forEach(a=>{const b=document.getElementById(`btn-${a}`);if(b)b.disabled=!on;});
-  const notice=document.getElementById("d-action-notice");
-  notice.style.display=on?"none":"block"; notice.textContent=on?"":"⏳ Waiting for race to start...";
-}
+  const myDriver = _lastRaceState?.drivers?.find(d => d.name === config.driver);
+  const finished = myDriver?.finished || false;
+  ["blue_flag","next_lap","pitting"].forEach(a=>{const b=document.getElementById(`btn-${a}`);if(b)b.disabled=!on||finished;});
 
 function onFlagEvent(flag, customData) {
   if (flag === "__driver_db_update__" && customData?.drivers) {
@@ -2724,8 +2723,10 @@ function updatePitBtn2(v) {
   document.getElementById("btn2-pitting")?.classList.toggle("pit-active", v);
 }
 function setDriverBtnsEnabled2(on) {
+  const myDriver2 = _lastRaceState?.drivers?.find(d => d.name === config.driver2);
+  const finished = myDriver2?.finished || false;
   ["blue_flag","next_lap","pitting"].forEach(a => {
-    const b = document.getElementById(`btn2-${a}`); if (b) b.disabled = !on;
+    const b2 = document.getElementById(`btn2-${a}`); if (b2) b2.disabled = !on || finished;
   });
   const notice = document.getElementById("d-action-notice2");
   if (notice) { notice.style.display = on ? "none" : "block"; notice.textContent = on ? "" : "⏳ Waiting for race to start..."; }
@@ -2795,7 +2796,7 @@ async function pollMarshalState() {
           <div class="lb-call">${d.callsign}</div>
         </div>
         <div class="lb-lap" style="text-align:right;">
-          <div>Lap ${d.lap||1}${data.totalLaps?`<span style="color:var(--muted);">/${data.totalLaps}</span>`:""}</div>
+          <div>${d.finished ? "Finished 🏁" : `Lap ${d.lap||1}${data.totalLaps?`<span style="color:var(--muted);">/${data.totalLaps}</span>`:""}`}</div>
           ${d.inPits?'<div style="font-size:8px;color:var(--yellow);">🔧 IN PITS</div>':(d.gap&&d.gap!=="Leader"?`<div style="font-size:8px;color:var(--muted);">${d.gap}</div>`:"")}
         </div>
       </div>`;
