@@ -1120,7 +1120,6 @@ let _sseStarted = false;
 let _sseSource = null;
 
 function startSSE() {
-  if (_sseStarted) return;
   if (!apiUrl) return;
   _sseStarted = true;
   _connectSSE();
@@ -1130,7 +1129,7 @@ function _connectSSE() {
   if (_sseSource) { try { _sseSource.close(); } catch {} _sseSource = null; }
   if (!apiUrl) return;
 
-  const evtSource = new EventSource(`${apiUrl}/events`);
+  const evtSource = new EventSource(`${apiUrl}/events?type=app`);
   _sseSource = evtSource;
 
   evtSource.addEventListener("flag", e => {
