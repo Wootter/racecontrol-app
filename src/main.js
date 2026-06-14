@@ -100,9 +100,12 @@ function setupAutoUpdater() {
   autoUpdater.autoDownload         = true;
   autoUpdater.autoInstallOnAppQuit = false;
 
+let updateAvailable = false;
+
   autoUpdater.on("checking-for-update", () => console.log("[Updater] Checking..."));
   autoUpdater.on("update-not-available", () => console.log("[Updater] Up to date."));
   autoUpdater.on("update-available",  (info) => {
+    updateAvailable = true;
     mainWindow?.webContents.send("update-available",  info.version);
     console.log(`[Updater] Available: v${info.version}`);
   });
@@ -112,7 +115,7 @@ function setupAutoUpdater() {
   });
   autoUpdater.on("error", (err) => {
     console.log("[Updater] Error:", err.message);
-    mainWindow?.webContents.send("update-error", err.message);
+    if (updateAvailable) mainWindow?.webContents.send("update-error", err.message);
   });
 
   setTimeout(() => autoUpdater.checkForUpdates().catch(e => console.log("[Updater]", e.message)), 5000);
