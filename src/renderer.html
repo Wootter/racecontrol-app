@@ -2409,6 +2409,15 @@ if (res.status === 403) {
     _lastRaceState = data;
     const filteredDrivers = data.drivers?.filter(d => _attendance[d.name] !== false) || [];
     renderLeaderboard({ ...data, drivers: filteredDrivers });
+
+    if (config.driver) {
+      const myDriver = data.drivers?.find(d => d.name === config.driver);
+      if (myDriver) updatePitBtn(myDriver.inPits);
+    }
+    if (config.driver2) {
+      const myDriver2 = data.drivers?.find(d => d.name === config.driver2);
+      if (myDriver2) updatePitBtn2(myDriver2.inPits);
+    }
     const panelOn = data.webPanelEnabled!==false, raceOn = data.raceStarted;
     if (!panelOn) {
       if (hasDev) {
