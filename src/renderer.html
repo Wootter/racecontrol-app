@@ -1587,11 +1587,9 @@ async function toggleActionLogging() {
 }
   
 async function syncDriverDBFromServer() {
-  if (!apiUrl || !user?.token) return;
+  if (!apiUrl) return;
   try {
-    const res = await fetch(`${apiUrl}/admin/driver-db`, {
-      headers: { "x-discord-id": user.id, "x-discord-token": user.token }
-    });
+    const res = await fetch(`${apiUrl}/driver-db`); 
     if (!res.ok) return;
     const data = await res.json();
     if (data.drivers?.length) {
@@ -2587,13 +2585,43 @@ function setDriverBtnsEnabled(on) {
   if (notice) { notice.style.display=on&&!finished?"none":"block"; notice.textContent=on&&!finished?"":finished?"🏁 Race finished":"⏳ Waiting for race to start..."; }
 }
 
-function onFlagEvent(flag, customData) {
-  if (flag === "__driver_db_update__" && customData?.drivers) {
-    localStorage.setItem(DRIVER_DB_KEY, JSON.stringify(customData.drivers));
-    loadDriverDB();
-    showToast("🔄 Driver list updated", "ok");
-    return;
-  }
+if (flag === "__driver_db_update__" && customData?.drivers) {
+  localStorage.setItem(DRIVER_DB_KEY, JSON.stringify(customData.drivers));
+  loadDriverDB();
+
+  const banner = document.createElement("div");
+  banner.id = "db-update-banner";
+  banner.style.cssText = "position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;";
+  banner.innerHTML = `
+    <div style="background:var(--surface);border:1px solid rgba(41,121,255,0.4);border-radius:12px;padding:24px 32px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;">
+      <div style="font-size:22px;">🔄</div>
+      <div style="font-size:13px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:1px;">Pulling Latest Data</div>
+      <div style="font-size:10px;color:var(--muted);">Driver list has been updated by the director.</div>
+    </div>`;
+  document.body.appendChild(banner);
+
+  if (currentPanel === "dev") renderDriverDB();
+  if (currentPanel === "marshal") renderAttendance();
+
+  const engSel = document.getElementById("eng-driver-select");
+  const engSel2 = document.getElementById("eng-driver2-select");
+  const optionsHtml = `<option value="">Select a driver...</option>` +
+    Object.entries(DRIVER_INFO).sort((a,b) => parseInt(a[1].number)-parseInt(b[1].number))
+      .map(([name,info]) => `<option value="${name}">${name} #${info.number} (${info.callsign})</option>`)
+      .join("");
+  if (engSel)  engSel.innerHTML  = optionsHtml;
+  if (engSel2) engSel2.innerHTML = `<option value="">None</option>` +
+    Object.entries(DRIVER_INFO).sort((a,b) => parseInt(a[1].number)-parseInt(b[1].number))
+      .map(([name,info]) => `<option value="${name}">${name} #${info.number} (${info.callsign})</option>`)
+      .join("");
+
+  setTimeout(() => {
+    document.getElementById("db-update-banner")?.remove();
+    showToast("✓ Driver list updated", "ok");
+  }, 1800);
+
+  return;
+}
   if (flag === "__custom__" && customData) {
     if (customData.audioCheckId) {
       showAudioCheckPrompt(customData.audioCheckId, customData.text || "Radio Check, Radio Check");
