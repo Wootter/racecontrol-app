@@ -337,7 +337,7 @@
           <span class="a-key" id="key-pitting">F3</span><span class="a-icon" id="pit-icon">🔧</span><span class="a-name" id="pit-label">Pitting</span>
         </button>
         <button class="action-btn" id="btn-dnf" onclick="confirmDNF()" style="border-color:rgba(255,23,68,0.4);color:var(--red);">
-          <span class="a-icon">🚫</span><span class="a-name">DNF</span>
+          <span class="a-key" id="key-dnf">F8</span><span class="a-icon">🚫</span><span class="a-name">DNF</span>
         </button>
       </div>
     </div>
@@ -355,7 +355,7 @@
           <span class="a-key" id="key2-pitting">F6</span><span class="a-icon" id="pit2-icon">🔧</span><span class="a-name" id="pit2-label">Pitting</span>
         </button>
         <button class="action-btn" id="btn2-dnf" onclick="confirmDNF2()" style="border-color:rgba(255,23,68,0.4);color:var(--red);">
-          <span class="a-icon">🚫</span><span class="a-name">DNF</span>
+          <span class="a-key" id="key2-dnf">F8</span><span class="a-icon">🚫</span><span class="a-name">DNF</span>
         </button>
       </div>
     </div>
@@ -3320,6 +3320,8 @@ function updateKeybindLabels(){
   const kb=config.keybinds||{};
   const bf=document.getElementById("key-blue_flag"),nl=document.getElementById("key-next_lap"),pt=document.getElementById("key-pitting");
   if(bf)bf.textContent=kb.blue_flag||"F1";if(nl)nl.textContent=kb.next_lap||"F2";if(pt)pt.textContent=kb.pitting||"F3";
+  const df=document.getElementById("key-dnf"); if(df)df.textContent=kb.dnf||"F8";
+const df2=document.getElementById("key2-dnf"); if(df2)df2.textContent=kb.dnf||"F8";
   const d1=document.getElementById("kb-display-blue_flag"),d2=document.getElementById("kb-display-next_lap"),d3=document.getElementById("kb-display-pitting");
   if(d1)d1.textContent=kb.blue_flag||"F1";if(d2)d2.textContent=kb.next_lap||"F2";if(d3)d3.textContent=kb.pitting||"F3";
   const b2=document.getElementById("key2-blue_flag"),n2=document.getElementById("key2-next_lap"),p2=document.getElementById("key2-pitting");
