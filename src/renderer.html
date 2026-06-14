@@ -465,6 +465,22 @@
     </div>
 
     <div class="dev-card">
+  <div class="dev-title">Action Logging</div>
+  <div style="font-size:9px;color:var(--muted);margin-bottom:8px;">
+    Posts a message in the marshalling channel when a driver logs a lap, pit, or returns to track.
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;
+    background:var(--bg);border:1px solid var(--border);border-radius:4px;">
+    <span style="font-size:11px;">📋 Log laps &amp; pits to Discord</span>
+    <button id="action-log-toggle-btn" onclick="toggleActionLogging()"
+      style="font-size:9px;font-weight:800;padding:3px 10px;border-radius:4px;border:1px solid;
+        cursor:pointer;font-family:'Oxanium',sans-serif;">
+    </button>
+  </div>
+  <div id="action-log-status" style="font-size:9px;color:var(--muted);margin-top:4px;"></div>
+</div>
+    
+    <div class="dev-card">
       <div class="dev-title">Engineering Assignments</div>
       <div id="dev-engineers" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;font-size:10px;color:var(--muted);">Loading...</div>
       <button class="dev-btn" onclick="clearLocalEngineers()" style="margin-top:4px;font-size:9px;">🗑️ Clear Local Engineers</button>
@@ -951,6 +967,7 @@ let hasMarshal    = false;
 let hasDev        = false;
 let toastTimer;
 let _currentFlagAudio = null;
+let _actionLoggingEnabled = false;
 let _lastPlayedSound  = null;
 let _attendance = {};
 let _lastPlayedTime   = 0;
@@ -1288,6 +1305,7 @@ async function saveDriverDB(drivers) {
   }
 }
 
+
 function getDriverDB() {
   try {
     const saved = localStorage.getItem(DRIVER_DB_KEY);
@@ -1483,6 +1501,55 @@ function closeBlueFlagModal() {
   document.getElementById("blueflag-modal").style.display = "none";
 }
 
+async function loadActionLoggingState() {
+  if (!apiUrl || !user?.token) return;
+  try {
+    const res  = await fetch(`${apiUrl}/admin/action-logging`, {
+      headers: { "x-discord-id": user.id, "x-discord-token": user.token }
+    });
+    const data = await res.json();
+    _actionLoggingEnabled = data.enabled;
+    updateActionLogBtn();
+  } catch {}
+}
+
+function updateActionLogBtn() {
+  const btn = document.getElementById("action-log-toggle-btn");
+  const st  = document.getElementById("action-log-status");
+  if (!btn) return;
+  const on = _actionLoggingEnabled;
+  btn.textContent       = on ? "ON" : "OFF";
+  btn.style.background  = on ? "rgba(0,230,118,0.15)" : "rgba(255,23,68,0.15)";
+  btn.style.borderColor = on ? "var(--green)" : "var(--red)";
+  btn.style.color       = on ? "var(--green)" : "var(--red)";
+  if (st) st.textContent = on ? "✓ Logging is active" : "Logging is off";
+}
+
+async function toggleActionLogging() {
+  if (!user?.token) return showToast("✗ Not authenticated", "err");
+  _actionLoggingEnabled = !_actionLoggingEnabled;
+  updateActionLogBtn();
+  try {
+    const res = await fetch(`${apiUrl}/admin/action-logging`, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+      body:    JSON.stringify({ enabled: _actionLoggingEnabled }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showToast(_actionLoggingEnabled ? "✓ Action logging ON" : "✓ Action logging OFF", "ok");
+    } else {
+      _actionLoggingEnabled = !_actionLoggingEnabled;
+      updateActionLogBtn();
+      showToast(`✗ ${data.error}`, "err");
+    }
+  } catch {
+    _actionLoggingEnabled = !_actionLoggingEnabled; 
+    updateActionLogBtn();
+    showToast("✗ Bot unreachable", "err");
+  }
+}
+  
 async function syncDriverDBFromServer() {
   if (!apiUrl || !user?.token) return;
   try {
@@ -2823,6 +2890,7 @@ async function loadDevInfo() {
   if (!user?.token && !user?.marshalToken) { showToast("❌ Marshal login required for Dev panel", "err"); return; }
   if (!user?.token) { const ok=await devAutoAuth(); if(!ok){showToast("❌ Dev auth failed","err");return;} }
   try {
+    await loadActionLoggingState();
     const headers={"x-discord-id":user.id,"x-discord-token":user.token};
     const [ai,si,li,dl]=await Promise.all([
       fetch(`${apiUrl}/admin/info`,{headers}).then(r=>r.json()),
