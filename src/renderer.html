@@ -1753,6 +1753,19 @@ function toggleHoloMode() {
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
+
+  setInterval(async () => {
+  const freshUrl = await fetchApiUrlFromGist();
+  if (freshUrl && freshUrl !== apiUrl) {
+    console.log("[Gist] URL changed — reconnecting SSE");
+    apiUrl = freshUrl;
+    config.apiUrl = freshUrl;
+    await window.api.saveConfig({ apiUrl: freshUrl });
+    _sseStarted = false;
+    startSSE();
+  }
+}, 60_000);
+  
   loadDriverDB();
   config = await window.api.getConfig();
   apiUrl = config.apiUrl || "";
