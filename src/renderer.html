@@ -374,7 +374,10 @@
           <span style="font-size:11px;">🔧 Pit / Back on Track</span>
           <span style="font-size:11px;font-weight:700;color:var(--blue);" id="kb-display-pitting">F3</span>
         </div>
-        <div style="font-size:9px;color:var(--muted);margin-top:2px;">These work even when the app is minimized.</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-top:1px solid var(--border);margin-top:2px;">
+          <span style="font-size:11px;">🚫 DNF</span>
+          <span style="font-size:11px;font-weight:700;color:var(--blue);" id="kb-display-dnf">F8</span>
+        </div>
       </div>
     </div>
   </div>
@@ -683,7 +686,7 @@
       <div style="font-size:9px;color:var(--muted);padding:4px 0;">Click a field then press any key to rebind. Keybinds are suspended while you type in other fields.</div>
       <div class="settings-row"><span class="settings-label">🔵 Blue Flag</span><input type="text" class="kb-input" id="kb-blue_flag" readonly onclick="listenKey('blue_flag')"/></div>
       <div class="settings-row"><span class="settings-label">🏁 Next Lap</span><input type="text" class="kb-input" id="kb-next_lap" readonly onclick="listenKey('next_lap')"/></div>
-     <div class="settings-row" style="border:none;"><span class="settings-label">🔧 Pitting</span><input type="text" class="kb-input" id="kb-pitting" readonly onclick="listenKey('pitting')"/></div>
+     <div class="settings-row" style="border:none;"><span class="settings-label">🚫 DNF</span><input type="text" class="kb-input" id="kb-dnf" readonly onclick="listenKey('dnf')"/></div>
       <div id="kb-driver2-section" style="display:none;border-top:1px solid var(--border);padding-top:8px;margin-top:4px;flex-direction:column;gap:0;">
         <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:4px 0 6px;">Driver 2 keybinds</div>
         <div class="settings-row"><span class="settings-label">🔵 Blue Flag (D2)</span><input type="text" class="kb-input" id="kb-blue_flag2" readonly onclick="listenKey('blue_flag2')"/></div>
@@ -732,6 +735,7 @@
   <div style="background:var(--surface);border:1px solid rgba(255,23,68,0.4);border-radius:10px;padding:20px;width:100%;max-width:280px;display:flex;flex-direction:column;gap:12px;">
     <div style="font-size:13px;font-weight:800;color:var(--red);">🚫 Confirm DNF</div>
     <div style="font-size:11px;color:var(--muted);" id="dnf-modal-text">Are you sure you want to DNF?</div>
+    <div style="font-size:9px;color:var(--red);text-align:center;" id="dnf-timer"></div>
     <div style="display:flex;gap:8px;">
       <button onclick="closeDNFModal()" style="flex:1;padding:9px;background:var(--bg);border:1px solid var(--border);color:var(--muted);font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--radius);cursor:pointer;">No</button>
       <button onclick="submitDNF()" style="flex:1;padding:9px;background:rgba(255,23,68,0.15);border:1px solid rgba(255,23,68,0.4);color:var(--red);font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--radius);cursor:pointer;">Yes, DNF</button>
@@ -1745,6 +1749,7 @@ document.getElementById("kb-blue_flag").value = config.keybinds?.blue_flag  || "
   if (document.getElementById("kb-blue_flag2")) document.getElementById("kb-blue_flag2").value = config.keybinds?.blue_flag2 || "F4";
   if (document.getElementById("kb-next_lap2"))  document.getElementById("kb-next_lap2").value  = config.keybinds?.next_lap2  || "F5";
   if (document.getElementById("kb-pitting2"))   document.getElementById("kb-pitting2").value   = config.keybinds?.pitting2   || "F6";
+  if (document.getElementById("kb-dnf")) document.getElementById("kb-dnf").value = config.keybinds?.dnf || "F8";
   document.getElementById("btn-discord-login")?.addEventListener("click", loginWithDiscord);
 
   window.api.onToast(({msg,type})   => showToast(msg, type));
@@ -2268,6 +2273,7 @@ function switchPanel(panel) {
     document.getElementById("kb-blue_flag").value = config.keybinds?.blue_flag || "F1";
     document.getElementById("kb-next_lap").value  = config.keybinds?.next_lap  || "F2";
     document.getElementById("kb-pitting").value   = config.keybinds?.pitting   || "F3";
+    if (document.getElementById("kb-dnf")) document.getElementById("kb-dnf").value = config.keybinds?.dnf || "F8";
     document.getElementById("s-api-card").style.display = hasDev ? "flex" : "none";
     const volPct = Math.round(_flagVolume * 100);
     const slider = document.getElementById("vol-slider");
@@ -2754,6 +2760,8 @@ function doTogglePitting2() {
 }
 
 let _dnfSlot = 1;
+let _dnfTimer = null;
+let _dnfCountdown = null;
 
 function confirmDNF() { _dnfSlot = 1; showDNFModal(config.driver); }
 function confirmDNF2() { _dnfSlot = 2; showDNFModal(config.driver2); }
@@ -2761,10 +2769,28 @@ function confirmDNF2() { _dnfSlot = 2; showDNFModal(config.driver2); }
 function showDNFModal(name) {
   document.getElementById("dnf-modal-text").textContent = `Are you sure you want to DNF ${name}?`;
   document.getElementById("dnf-modal").style.display = "flex";
+  _startDNFTimer();
 }
 
 function closeDNFModal() {
   document.getElementById("dnf-modal").style.display = "none";
+  _clearDNFTimer();
+}
+
+function _startDNFTimer() {
+  _clearDNFTimer();
+  let secs = 15;
+  const timerEl = document.getElementById("dnf-timer");
+  if (timerEl) timerEl.textContent = `Closes in ${secs}s`;
+  _dnfCountdown = setInterval(() => {
+    secs--;
+    if (timerEl) timerEl.textContent = `Closes in ${secs}s`;
+    if (secs <= 0) closeDNFModal();
+  }, 1000);
+}
+
+function _clearDNFTimer() {
+  if (_dnfCountdown) { clearInterval(_dnfCountdown); _dnfCountdown = null; }
 }
 
 async function submitDNF() {
@@ -3266,13 +3292,14 @@ function stopCooldown(slot = 1) {
 async function saveSettings(){
   const newApi=hasDev?document.getElementById("s-api").value.trim():(config.apiUrl||apiUrl);
   apiUrl=newApi;
-  const keybinds={
+const keybinds={
     blue_flag:  document.getElementById("kb-blue_flag").value||"F1",
     next_lap:   document.getElementById("kb-next_lap").value||"F2",
     pitting:    document.getElementById("kb-pitting").value||"F3",
     blue_flag2: document.getElementById("kb-blue_flag2")?.value||"F4",
     next_lap2:  document.getElementById("kb-next_lap2")?.value||"F5",
     pitting2:   document.getElementById("kb-pitting2")?.value||"F6",
+    dnf:        document.getElementById("kb-dnf")?.value||"F8",
   };
   const newConfig={...config,apiUrl:newApi,keybinds};
   await window.api.saveConfig(newConfig); await window.api.registerHotkeys(keybinds);
@@ -3288,6 +3315,10 @@ function updateKeybindLabels(){
   if(d1)d1.textContent=kb.blue_flag||"F1";if(d2)d2.textContent=kb.next_lap||"F2";if(d3)d3.textContent=kb.pitting||"F3";
   const b2=document.getElementById("key2-blue_flag"),n2=document.getElementById("key2-next_lap"),p2=document.getElementById("key2-pitting");
   if(b2)b2.textContent=kb.blue_flag2||"F4";if(n2)n2.textContent=kb.next_lap2||"F5";if(p2)p2.textContent=kb.pitting2||"F6";
+  const dnfD=document.getElementById("kb-display-dnf");
+  if(dnfD)dnfD.textContent=kb.dnf||"F8";
+  const dnfI=document.getElementById("kb-dnf");
+  if(dnfI)dnfI.value=kb.dnf||"F8";
 }
 
 function listenKey(action){
