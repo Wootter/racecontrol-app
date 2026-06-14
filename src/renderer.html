@@ -2536,6 +2536,9 @@ function setDriverBtnsEnabled(on) {
   const myDriver = _lastRaceState?.drivers?.find(d => d.name === config.driver);
   const finished = myDriver?.finished || false;
   ["blue_flag","next_lap","pitting"].forEach(a=>{const b=document.getElementById(`btn-${a}`);if(b)b.disabled=!on||finished;});
+  const notice=document.getElementById("d-action-notice");
+  if (notice) { notice.style.display=on&&!finished?"none":"block"; notice.textContent=on&&!finished?"":finished?"🏁 Race finished":"⏳ Waiting for race to start..."; }
+}
 
 function onFlagEvent(flag, customData) {
   if (flag === "__driver_db_update__" && customData?.drivers) {
