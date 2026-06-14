@@ -110,7 +110,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 440, height: 740, minWidth: 380, minHeight: 500,
     alwaysOnTop: config.alwaysOnTop ?? true,
-    frame: false, transparent: false, backgroundColor: "#0a0a0f",
+    frame: false, transparent: true, backgroundColor: "#00000000",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
