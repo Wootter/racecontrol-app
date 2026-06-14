@@ -108,7 +108,7 @@ function setupAutoUpdater() {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 440, height: 740, minWidth: 380, minHeight: 500,
+    width: 440, height: 740, minWidth: 200, minHeight: 80,
     alwaysOnTop: config.alwaysOnTop ?? true,
     frame: false, transparent: true, backgroundColor: "#00000000",
     webPreferences: {
