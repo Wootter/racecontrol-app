@@ -3038,7 +3038,18 @@ async function devPushDriverDB() {
     statusEl.style.color = "var(--green)";
     statusEl.textContent = `✓ Pushed ${drivers.length} drivers to server`;
     showToast(`✓ Driver DB pushed — ${drivers.length} drivers`, "ok");
-    onFlagEvent("__driver_db_update__", { drivers });
+    await fetch(`${apiUrl}/flag`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "x-discord-id": user.id,
+    "x-discord-token": user.token
+  },
+  body: JSON.stringify({
+    flag: "__driver_db_update__",
+    drivers
+  })
+});
   } catch(e) {
     statusEl.style.color = "var(--red)";
     statusEl.textContent = "✗ Push failed";
