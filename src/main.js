@@ -74,6 +74,18 @@ app.whenReady().then(() => {
 
 app.on("window-all-closed", () => app.quit());
 
+function toElectronAccelerator(key) {
+  const map = {
+    "Num0": "num0", "Num1": "num1", "Num2": "num2", "Num3": "num3",
+    "Num4": "num4", "Num5": "num5", "Num6": "num6", "Num7": "num7",
+    "Num8": "num8", "Num9": "num9",
+    "Num+": "numadd", "Num-": "numsub",
+    "Num*": "nummult", "Num/": "numdiv",
+    "Num.": "numdec", "NumEnter": "num enter",
+  };
+  return map[key] || key;
+}
+
 function setupAutoUpdater() {
   if (!app.isPackaged) {
     console.log("[Updater] Skipping — running in dev mode.");
@@ -154,29 +166,36 @@ function createTray() {
 function registerHotkeys(keybinds) {
   globalShortcut.unregisterAll();
   const { blue_flag, next_lap, pitting, blue_flag2, next_lap2, pitting2 } = keybinds || {};
-  if (blue_flag) globalShortcut.register(blue_flag, () => {
+
+  if (blue_flag) globalShortcut.register(toElectronAccelerator(blue_flag), () => {
+    if (onCooldown) return;
     mainWindow?.webContents.send("keybind-fired", "blue_flag");
     sendDriverAction("blue_flag");
   });
-  if (next_lap) globalShortcut.register(next_lap, () => {
+  if (next_lap) globalShortcut.register(toElectronAccelerator(next_lap), () => {
+    if (onCooldown) return;
     mainWindow?.webContents.send("keybind-fired", "next_lap");
     sendDriverAction("next_lap");
   });
-  if (pitting) globalShortcut.register(pitting, () => {
+  if (pitting) globalShortcut.register(toElectronAccelerator(pitting), () => {
+    if (onCooldown) return;
     inPits = !inPits;
     mainWindow?.webContents.send("keybind-fired", "pitting");
     sendDriverAction(inPits ? "pitting" : "in_race");
     mainWindow?.webContents.send("pit-state-changed", inPits);
   });
-  if (blue_flag2) globalShortcut.register(blue_flag2, () => {
+  if (blue_flag2) globalShortcut.register(toElectronAccelerator(blue_flag2), () => {
+    if (onCooldown2) return;
     mainWindow?.webContents.send("keybind-fired", "blue_flag2");
     sendDriverAction2("blue_flag");
   });
-  if (next_lap2) globalShortcut.register(next_lap2, () => {
+  if (next_lap2) globalShortcut.register(toElectronAccelerator(next_lap2), () => {
+    if (onCooldown2) return;
     mainWindow?.webContents.send("keybind-fired", "next_lap2");
     sendDriverAction2("next_lap");
   });
-  if (pitting2) globalShortcut.register(pitting2, () => {
+  if (pitting2) globalShortcut.register(toElectronAccelerator(pitting2), () => {
+    if (onCooldown2) return;
     inPits2 = !inPits2;
     mainWindow?.webContents.send("keybind-fired", "pitting2");
     sendDriverAction2(inPits2 ? "pitting" : "in_race");
