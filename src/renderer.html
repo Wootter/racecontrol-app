@@ -3034,22 +3034,32 @@ async function devPushDriverDB() {
       const ok = await devAutoAuth();
       if (!ok) { statusEl.style.color="var(--red)"; statusEl.textContent="✗ Auth failed"; return; }
     }
-    await saveDriverDB(drivers);
+    const res = await fetch(`${apiUrl}/admin/driver-db`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-discord-id": user.id,
+        "x-discord-token": user.token
+      },
+      body: JSON.stringify({ drivers }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      showToast(`✗ ${data.error}`, "err");
+      statusEl.style.color = "var(--red)";
+      statusEl.textContent = "✗ Push failed";
+      return;
+    }
+    localStorage.setItem("rc_driver_db", JSON.stringify(drivers));
+    DRIVER_IDS = {};
+    DRIVER_INFO = {};
+    drivers.forEach(d => {
+      DRIVER_IDS[d.discordId] = d.name;
+      DRIVER_INFO[d.name] = { number: d.number, callsign: d.callsign };
+    });
     statusEl.style.color = "var(--green)";
-    statusEl.textContent = `✓ Pushed ${drivers.length} drivers to server`;
+    statusEl.textContent = `✓ Pushed ${drivers.length} drivers — broadcasting to all clients`;
     showToast(`✓ Driver DB pushed — ${drivers.length} drivers`, "ok");
-    await fetch(`${apiUrl}/flag`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "x-discord-id": user.id,
-    "x-discord-token": user.token
-  },
-  body: JSON.stringify({
-    flag: "__driver_db_update__",
-    drivers
-  })
-});
   } catch(e) {
     statusEl.style.color = "var(--red)";
     statusEl.textContent = "✗ Push failed";
