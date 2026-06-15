@@ -2627,23 +2627,23 @@ function setDriverBtnsEnabled(on) {
 }
 
   function onFlagEvent(flag, customData) {
-  if (flag === "__driver_db_update__" && customData?.drivers) {
-    localStorage.setItem(DRIVER_DB_KEY, JSON.stringify(customData.drivers));
-    loadDriverDB();
+if (flag === "__driver_db_update__" && customData?.drivers) {
+  localStorage.setItem(DRIVER_DB_KEY, JSON.stringify(customData.drivers));
 
-    const banner = document.createElement("div");
-    banner.id = "db-update-banner";
-    banner.style.cssText = "position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;";
-    banner.innerHTML = `
-      <div style="background:var(--surface);border:1px solid rgba(41,121,255,0.4);border-radius:12px;padding:24px 32px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;">
-        <div style="font-size:22px;">🔄</div>
-        <div style="font-size:13px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:1px;">Pulling Latest Data</div>
-        <div style="font-size:10px;color:var(--muted);">Driver list has been updated by the director.</div>
-      </div>`;
-    document.body.appendChild(banner);
+  const banner = document.createElement("div");
+  banner.id = "db-update-banner";
+  banner.style.cssText = "position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;";
+  banner.innerHTML = `
+    <div style="background:var(--surface);border:1px solid rgba(41,121,255,0.4);border-radius:12px;padding:24px 32px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;">
+      <div style="font-size:22px;">🔄</div>
+      <div style="font-size:13px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:1px;">Restarting</div>
+      <div style="font-size:10px;color:var(--muted);">Driver list updated — applying changes...</div>
+    </div>`;
+  document.body.appendChild(banner);
 
-    if (currentPanel === "dev") renderDriverDB();
-    if (currentPanel === "marshal") renderAttendance();
+  setTimeout(() => location.reload(), 1500);
+  return;
+}
 
     const engSel = document.getElementById("eng-driver-select");
     const engSel2 = document.getElementById("eng-driver2-select");
