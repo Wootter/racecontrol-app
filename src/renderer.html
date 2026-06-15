@@ -2626,9 +2626,10 @@ function setDriverBtnsEnabled(on) {
   if (notice) { notice.style.display=on&&!finished?"none":"block"; notice.textContent=on&&!finished?"":finished?"🏁 Race finished":"⏳ Waiting for race to start..."; }
 }
 
-  function onFlagEvent(flag, customData) {
-if (flag === "__driver_db_update__" && customData?.drivers) {
-  localStorage.setItem(DRIVER_DB_KEY, JSON.stringify(customData.drivers));
+if (flag === "__driver_db_update__") {
+  if (customData?.drivers) {
+    localStorage.setItem(DRIVER_DB_KEY, JSON.stringify(customData.drivers));
+  }
 
   const banner = document.createElement("div");
   banner.id = "db-update-banner";
@@ -2641,7 +2642,7 @@ if (flag === "__driver_db_update__" && customData?.drivers) {
     </div>`;
   document.body.appendChild(banner);
 
-setTimeout(() => location.reload(), 1500);
+  setTimeout(() => location.reload(), 1500);
   return;
 }
 
