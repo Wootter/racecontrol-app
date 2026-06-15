@@ -2645,26 +2645,6 @@ setTimeout(() => location.reload(), 1500);
   return;
 }
 
-    const engSel = document.getElementById("eng-driver-select");
-    const engSel2 = document.getElementById("eng-driver2-select");
-    const optionsHtml = `<option value="">Select a driver...</option>` +
-      Object.entries(DRIVER_INFO).sort((a,b) => parseInt(a[1].number)-parseInt(b[1].number))
-        .map(([name,info]) => `<option value="${name}">${name} #${info.number} (${info.callsign})</option>`)
-        .join("");
-    if (engSel)  engSel.innerHTML  = optionsHtml;
-    if (engSel2) engSel2.innerHTML = `<option value="">None</option>` +
-      Object.entries(DRIVER_INFO).sort((a,b) => parseInt(a[1].number)-parseInt(b[1].number))
-        .map(([name,info]) => `<option value="${name}">${name} #${info.number} (${info.callsign})</option>`)
-        .join("");
-
-    setTimeout(() => {
-      document.getElementById("db-update-banner")?.remove();
-      showToast("✓ Driver list updated", "ok");
-    }, 1800);
-
-    return;
-  }
-
   if (flag === "__custom__" && customData) {
     if (customData.audioCheckId) {
       showAudioCheckPrompt(customData.audioCheckId, customData.text || "Radio Check, Radio Check");
