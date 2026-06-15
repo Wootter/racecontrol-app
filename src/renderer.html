@@ -176,13 +176,13 @@
     .lb-row.is-me{border-color:rgba(41,121,255,0.4);background:rgba(41,121,255,0.06);}
     .lb-row.is-me2{border-color:rgba(0,230,118,0.4);background:rgba(0,230,118,0.06);}
     .lb-row.in-pits{border-color:rgba(255,214,0,0.4);background:rgba(255,214,0,0.06);}
-    .lb-pos{font-size:11px;font-weight:800;color:var(--muted);width:18px;text-align:center;flex-shrink:0;}
+    .lb-pos{font-size:11px;font-weight:800;color:var(--muted);width:18px;text-align:center;flex-shrink:0;font-family:'Arial',sans-serif;}
     .lb-pos.p1{color:var(--yellow);}.lb-pos.p2{color:#c0c0c0;}.lb-pos.p3{color:#cd7f32;}
-    .lb-num{width:24px;height:24px;border-radius:3px;background:rgba(255,255,255,0.05);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;flex-shrink:0;}
+    .lb-num{width:24px;height:24px;border-radius:3px;background:rgba(255,255,255,0.05);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;flex-shrink:0;font-family:'Arial',sans-serif;}
     .lb-info{flex:1;min-width:0;}
-    .lb-name{font-size:11px;font-weight:700;}
-    .lb-call{font-size:8px;color:var(--muted);}
-    .lb-lap{font-size:9px;font-weight:700;color:var(--text);text-align:right;flex-shrink:0;}
+.lb-name{font-size:11px;font-weight:700;font-family:'Arial',sans-serif;}
+.lb-call{font-size:8px;color:var(--muted);font-family:'Arial',sans-serif;}
+.lb-lap{font-size:9px;font-weight:700;color:var(--text);text-align:right;flex-shrink:0;font-family:'Arial',sans-serif;}
 
     .action-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
     .action-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:11px 5px;background:var(--surface);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-family:'Oxanium',sans-serif;color:var(--text);transition:transform 0.1s,border-color 0.15s;position:relative;}
@@ -2628,6 +2628,7 @@ function setDriverBtnsEnabled(on) {
 
 async function onFlagEvent(flag, customData) {
   if (flag === "__driver_db_update__") {
+  console.log("[SSE] __driver_db_update__ received");
   try {
     const res = await fetch(`${apiUrl}/driver-db`);
     if (res.ok) {
@@ -3056,9 +3057,10 @@ async function devPushDriverDB() {
       DRIVER_IDS[d.discordId] = d.name;
       DRIVER_INFO[d.name] = { number: d.number, callsign: d.callsign };
     });
-    statusEl.style.color = "var(--green)";
-    statusEl.textContent = `✓ Pushed ${drivers.length} drivers — broadcasting to all clients`;
-    showToast(`✓ Driver DB pushed — ${drivers.length} drivers`, "ok");
+statusEl.style.color = "var(--green)";
+statusEl.textContent = `✓ Pushed ${drivers.length} drivers — broadcasting to all clients`;
+showToast(`✓ Driver DB pushed — ${drivers.length} drivers`, "ok");
+console.log("[SSE] source state:", _sseSource?.readyState);
   } catch(e) {
     statusEl.style.color = "var(--red)";
     statusEl.textContent = "✗ Push failed";
