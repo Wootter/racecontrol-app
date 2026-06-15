@@ -2606,16 +2606,63 @@ function loadToolboxPrefs() {
 
 function renderLeaderboard(data) {
   const lb = document.getElementById("d-leaderboard");
-  if (!data.drivers?.length) { lb.innerHTML='<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">Waiting for race...</div>'; return; }
-  lb.innerHTML = data.drivers.map((d,i) => {
-    const pos=i+1, isMe=d.name===config.driver, isMe2=d.name===config.driver2, pc=pos===1?"p1":pos===2?"p2":pos===3?"p3":"";
-return `<div class="lb-row ${isMe?"is-me":""} ${isMe2?"is-me2":""} ${d.inPits?"in-pits":""}" style="${d.dnf?"opacity:0.35;filter:grayscale(1);":""}">
-      <div class="lb-pos ${pc}">${pos}</div>
-      <div class="lb-num">#${d.number}</div>
-      <div class="lb-info"><div class="lb-name">${d.name}${isMe?" ←":""}${isMe2?" ←":""}</div><div class="lb-call">${d.callsign}</div></div>
-      <div class="lb-lap">${d.dnf ? "Out " : d.finished ? "Finished 🏁" : `Lap ${d.lap||1}${data.totalLaps?`/${data.totalLaps}`:""}${d.inPits?" 🔧":""}`}</div>
+  if (!data.drivers?.length) {
+    lb.innerHTML = '<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">Waiting for race...</div>';
+    return;
+  }
+  lb.innerHTML = data.drivers.map((d, i) => {
+    const pos = i + 1;
+    const isMe  = d.name === config.driver;
+    const isMe2 = d.name === config.driver2;
+    const team  = getTeamFromCallsign(d.callsign);
+    const tc    = (team && TEAM_COLORS[team]) ? TEAM_COLORS[team] : null;
+    const posColor = pos === 1 ? 'var(--yellow)' : pos === 2 ? '#c0c0c0' : pos === 3 ? '#cd7f32' : 'var(--muted)';
+    const lapDiff  = data.drivers[0]?.lap && d.lap ? data.drivers[0].lap - d.lap : 0;
+    const gapText  = i === 0 ? '' : lapDiff > 0 ? `+${lapDiff}L` : (d.gap && d.gap !== 'Leader' ? d.gap : '');
+
+    return `<div class="lb-row ${isMe ? 'is-me' : ''} ${isMe2 ? 'is-me2' : ''} ${d.inPits ? 'in-pits' : ''}"
+      style="border-left:3px solid ${tc || 'var(--border)'};padding-left:8px;${d.dnf ? 'opacity:0.4;' : ''}">
+
+      <div style="font-size:13px;font-weight:900;color:${posColor};width:20px;text-align:center;flex-shrink:0;letter-spacing:-0.5px;">
+        ${pos}
+      </div>
+
+      <div style="width:28px;height:28px;border-radius:4px;
+        background:${tc ? tc + '22' : 'rgba(255,255,255,0.05)'};
+        border:1px solid ${tc ? tc + '66' : 'var(--border)'};
+        display:flex;align-items:center;justify-content:center;
+        font-size:8px;font-weight:800;flex-shrink:0;
+        color:${tc || 'var(--muted)'};">
+        #${d.number}
+      </div>
+
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          ${d.name}${isMe ? ' <span style="font-size:9px;color:var(--blue);font-weight:700;">YOU</span>' : ''}${isMe2 ? ' <span style="font-size:9px;color:var(--green);font-weight:700;">D2</span>' : ''}
+        </div>
+        <div style="font-size:9px;color:var(--muted);">${d.callsign}</div>
+      </div>
+
+      <div style="text-align:right;flex-shrink:0;">
+        ${d.dnf
+          ? '<div style="font-size:9px;font-weight:800;color:var(--red);letter-spacing:1px;">DNF</div>'
+          : d.finished
+          ? '<div style="font-size:9px;font-weight:800;color:var(--green);">FINISHED 🏁</div>'
+          : `<div style="font-size:10px;font-weight:700;">Lap ${d.lap || 1}${data.totalLaps ? `<span style="color:var(--muted);font-weight:400;">/${data.totalLaps}</span>` : ''}</div>`
+        }
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-top:2px;">
+          ${d.inPits && !d.dnf && !d.finished
+            ? '<span style="font-size:8px;font-weight:800;letter-spacing:0.5px;padding:1px 5px;border-radius:3px;background:rgba(255,214,0,0.15);border:1px solid rgba(255,214,0,0.4);color:var(--yellow);">PITS</span>'
+            : ''
+          }
+          ${gapText
+            ? `<span style="font-size:8px;color:var(--muted);">${gapText}</span>`
+            : ''
+          }
+        </div>
+      </div>
     </div>`;
-  }).join("");
+  }).join('');
 }
 
 async function onFlagEvent(flag, customData) {
