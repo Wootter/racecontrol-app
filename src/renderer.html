@@ -2618,41 +2618,23 @@ return `<div class="lb-row ${isMe?"is-me":""} ${isMe2?"is-me2":""} ${d.inPits?"i
   }).join("");
 }
 
-function setDriverBtnsEnabled(on) {
-  const myDriver = _lastRaceState?.drivers?.find(d => d.name === config.driver);
-  const finished = myDriver?.finished || false;
-  const dnfd = myDriver?.dnf || false;   ["blue_flag","next_lap","pitting","dnf"].forEach(a=>{const b=document.getElementById(`btn-${a}`);if(b)b.disabled=!on||finished||dnfd;});
-  const notice=document.getElementById("d-action-notice");
-  if (notice) { notice.style.display=on&&!finished?"none":"block"; notice.textContent=on&&!finished?"":finished?"🏁 Race finished":"⏳ Waiting for race to start..."; }
-}
-
 async function onFlagEvent(flag, customData) {
   if (flag === "__driver_db_update__") {
-  console.log("[SSE] __driver_db_update__ received");
-  try {
-    const res = await fetch(`${apiUrl}/driver-db`);
-    if (res.ok) {
-      const data = await res.json();
-      if (data.drivers?.length) {
-        localStorage.setItem(DRIVER_DB_KEY, JSON.stringify(data.drivers));
-      }
-    }
-  } catch(e) { console.warn("[DriverDB] Fetch failed on update:", e); }
+    console.log("[SSE] __driver_db_update__ hit — showing banner");
 
-  const banner = document.createElement("div");
-  banner.id = "db-update-banner";
-  banner.style.cssText = "position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;";
-  banner.innerHTML = `
-    <div style="background:var(--surface);border:1px solid rgba(41,121,255,0.4);border-radius:12px;padding:24px 32px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;">
-      <div style="font-size:22px;">🔄</div>
-      <div style="font-size:13px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:1px;">Restarting</div>
-      <div style="font-size:10px;color:var(--muted);">Driver list updated — applying changes...</div>
-    </div>`;
-  document.body.appendChild(banner);
-
-  setTimeout(() => location.reload(), 1500);
-  return;
-}
+    const banner = document.createElement("div");
+    banner.id = "db-update-banner";
+    banner.style.cssText = "position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;";
+    banner.innerHTML = `
+      <div style="background:var(--surface);border:1px solid rgba(41,121,255,0.4);border-radius:12px;padding:24px 32px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;">
+        <div style="font-size:22px;">🔄</div>
+        <div style="font-size:13px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:1px;">Restarting</div>
+        <div style="font-size:10px;color:var(--muted);">Driver list updated — applying changes...</div>
+      </div>`;
+    document.body.appendChild(banner);
+    setTimeout(() => location.reload(), 1500);
+    return;
+  }
 
   if (flag === "__custom__" && customData) {
     if (customData.audioCheckId) {
@@ -2664,19 +2646,14 @@ async function onFlagEvent(flag, customData) {
     if (customData.html) {
       html = customData.html;
     } else if (isHolo) {
-      html = `<div class="flag-card-holo">
-        <span class="fc-emoji">${customData.emoji||"🌈"}</span>
-        <div><div class="fc-title">${customData.text||customData.label||"Custom Flag"}</div></div>
-      </div>`;
+      html = `<div class="flag-card-holo"><span class="fc-emoji">${customData.emoji||"🌈"}</span><div><div class="fc-title">${customData.text||customData.label||"Custom Flag"}</div></div></div>`;
     } else {
       const isHex    = customData.color?.startsWith("#");
       const colorMap = {green:"green",yellow:"yellow",red:"red",blue:"blue",orange:"orange",white:"white"};
       const color    = colorMap[customData.color]||"white";
       const bgStyle  = customData.bgImage
         ? `background:url(${customData.bgImage}) center/cover;border-color:${isHex?customData.color:"rgba(255,255,255,0.3)"};color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.9);`
-        : isHex
-          ? `background:${customData.color}22;border-color:${customData.color};color:${customData.color};`
-          : "";
+        : isHex ? `background:${customData.color}22;border-color:${customData.color};color:${customData.color};` : "";
       const bgClass = (!customData.bgImage && !isHex) ? color : "";
       html = `<div class="flag-card ${bgClass}" style="${bgStyle}"><span class="fc-emoji">${customData.emoji||"🏴"}</span><div><div class="fc-title">${customData.text||customData.label||"Custom Flag"}</div></div></div>`;
     }
@@ -2688,19 +2665,13 @@ async function onFlagEvent(flag, customData) {
 
   const def = FLAG_DEFS[flag]; if (!def) return;
 
-if (flag === "blue") {
+  if (flag === "blue") {
     if (customData?.driver) {
       _lastBlueFlagDriver = { name: customData.driver, number: customData.number, callsign: customData.callsign };
     }
     const d = _lastBlueFlagDriver;
     if (d) {
-      const html = `<div class="flag-card blue">
-        <span class="fc-emoji">🔵</span>
-        <div>
-          <div class="fc-title">Blue Flag — ${d.name}</div>
-          <div class="fc-sub">#${d.number} · ${d.callsign} — let the leaders past.</div>
-        </div>
-      </div>`;
+      const html = `<div class="flag-card blue"><span class="fc-emoji">🔵</span><div><div class="fc-title">Blue Flag — ${d.name}</div><div class="fc-sub">#${d.number} · ${d.callsign} — let the leaders past.</div></div></div>`;
       document.getElementById("flag-notif-driver").innerHTML  = html;
       document.getElementById("flag-notif-marshal").innerHTML = html;
       document.getElementById("flag-notif-marshal").style.display = "block";
@@ -2721,6 +2692,14 @@ if (flag === "blue") {
     const el=document.getElementById(id);
     if(el){el.style.color=colors[def.color]||"#fff";el.textContent=`${def.emoji} ${def.title}`;}
   });
+}
+
+function setDriverBtnsEnabled(on) {
+  const myDriver = _lastRaceState?.drivers?.find(d => d.name === config.driver);
+  const finished = myDriver?.finished || false;
+  const dnfd = myDriver?.dnf || false;   ["blue_flag","next_lap","pitting","dnf"].forEach(a=>{const b=document.getElementById(`btn-${a}`);if(b)b.disabled=!on||finished||dnfd;});
+  const notice=document.getElementById("d-action-notice");
+  if (notice) { notice.style.display=on&&!finished?"none":"block"; notice.textContent=on&&!finished?"":finished?"🏁 Race finished":"⏳ Waiting for race to start..."; }
 }
 
 function showMarshalDisabledScreen() {
