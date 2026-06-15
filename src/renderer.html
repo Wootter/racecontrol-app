@@ -2626,11 +2626,17 @@ function setDriverBtnsEnabled(on) {
   if (notice) { notice.style.display=on&&!finished?"none":"block"; notice.textContent=on&&!finished?"":finished?"🏁 Race finished":"⏳ Waiting for race to start..."; }
 }
 
-function onFlagEvent(flag, customData) {
+async function onFlagEvent(flag, customData) {
   if (flag === "__driver_db_update__") {
-  if (customData?.drivers) {
-    localStorage.setItem(DRIVER_DB_KEY, JSON.stringify(customData.drivers));
-  }
+  try {
+    const res = await fetch(`${apiUrl}/driver-db`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.drivers?.length) {
+        localStorage.setItem(DRIVER_DB_KEY, JSON.stringify(data.drivers));
+      }
+    }
+  } catch(e) { console.warn("[DriverDB] Fetch failed on update:", e); }
 
   const banner = document.createElement("div");
   banner.id = "db-update-banner";
