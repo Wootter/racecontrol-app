@@ -1390,10 +1390,6 @@ function updateDevTabBtns() {
 function renderAttendance() {
   const el = document.getElementById("m-attendance");
   if (!el) return;
-  try {
-    const saved = localStorage.getItem("rc_attendance");
-    if (saved) _attendance = JSON.parse(saved);
-  } catch {}
   const drivers = Object.entries(DRIVER_INFO).sort((a, b) => parseInt(a[1].number) - parseInt(b[1].number));
   el.innerHTML = drivers.map(([name, info]) => {
     const present = _attendance[name] !== false;
@@ -1417,12 +1413,24 @@ function renderAttendance() {
   }).join("");
 }
 
-function toggleAttendance(name) {
+async function toggleAttendance(name) {
   const present = _attendance[name] !== false;
   _attendance[name] = !present;
   localStorage.setItem("rc_attendance", JSON.stringify(_attendance));
   renderAttendance();
   syncAttendanceToLeaderboard();
+  await pushAttendanceToServer();
+}
+
+async function pushAttendanceToServer() {
+  if (!apiUrl || !user?.token) return;
+  try {
+    await fetch(`${apiUrl}/admin/attendance`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+      body: JSON.stringify({ attendance: _attendance }),
+    });
+  } catch (e) { console.warn("[Attendance] Push failed:", e.message); }
 }
 
 function syncAttendanceToLeaderboard() {
@@ -1622,6 +1630,18 @@ function devResetDriverDB() {
   showToast("✓ Driver DB reset to defaults", "ok");
 }
 
+async function fetchAttendanceFromServer() {
+  if (!apiUrl) return;
+  try {
+    const res = await fetch(`${apiUrl}/attendance`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.attendance) {
+      _attendance = data.attendance;
+      localStorage.setItem("rc_attendance", JSON.stringify(_attendance));
+    }
+  } catch (e) { console.warn("[Attendance] Fetch failed:", e.message); }
+}
 
 function resetKeybindSound(action) {
   delete _keybindSounds[action];
@@ -2581,6 +2601,7 @@ if (startPoll) {
 async function pollDriverState() {
   if (!apiUrl) return;
   try {
+    await fetchAttendanceFromServer();
     const res  = await fetch(`${apiUrl}/driver/state`, { headers:{"x-discord-id":user?.id||""} });
 if (res.status === 403) {
       const data = await res.json().catch(() => ({}));
@@ -3205,6 +3226,8 @@ async function marshalResetRace() {
 async function pollMarshalState() {
   if (!apiUrl) return;
   try {
+    await fetchAttendanceFromServer();
+    renderAttendance();
     const res = await fetch(`${apiUrl}/driver/state`, { headers: { "x-discord-id": user?.id || "" } });
     if (!res.ok) return;
     const data = await res.json();
