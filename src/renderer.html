@@ -41,6 +41,30 @@
     .screen.active{display:flex;}
     .scroll-body{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;}
 
+.stab{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 12px;border:none;border-bottom:2px solid transparent;background:none;color:var(--muted);cursor:pointer;font-family:'Oxanium',sans-serif;white-space:nowrap;transition:color 0.15s,border-color 0.15s;}
+.stab:hover{color:var(--text);}
+.stab.active{color:var(--text);border-bottom-color:var(--red);}
+.stab-panel{display:none;flex-direction:column;gap:0;}
+.stab-panel.active{display:flex;}
+
+.s-section-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;margin-top:2px;}
+.s-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;}
+.s-kb-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);}
+.s-kb-row:last-child{border:none;padding-bottom:0;}
+.s-kb-row .settings-label{font-size:11px;}
+.s-sound-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);}
+.s-sound-row:last-child{border:none;padding-bottom:0;}
+.s-sound-label{font-size:11px;}
+.snd-reset-btn{font-size:9px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;font-family:'Oxanium',sans-serif;}
+.s-danger-btn{width:100%;padding:9px;background:rgba(255,23,68,0.08);border:1px solid rgba(255,23,68,0.25);color:var(--red);font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:5px;cursor:pointer;}
+.s-danger-btn:hover{background:rgba(255,23,68,0.16);}
+
+.theme-tile{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 6px;background:var(--surface);border:2px solid transparent;border-radius:8px;cursor:pointer;font-family:'Oxanium',sans-serif;transition:border-color 0.15s;}
+.theme-tile.active{border-color:var(--red);}
+.theme-tile:hover{border-color:var(--border);}
+.theme-preview{width:100%;height:38px;border-radius:5px;padding:8px 7px;display:flex;flex-direction:column;justify-content:center;}
+.theme-label{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+
     .login-logo{font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#fff;}
     .login-logo span{color:var(--red);}
     .login-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;width:100%;max-width:320px;display:flex;flex-direction:column;gap:12px;}
@@ -647,84 +671,169 @@
 </div>
 
 <div class="screen" id="screen-settings">
-  <div class="scroll-body">
-<div style="display:flex;align-items:center;justify-content:space-between;">
-  <div style="font-size:13px;font-weight:800;color:var(--text);">Settings</div>
-  <div id="app-version" style="font-size:9px;color:var(--muted);font-weight:700;letter-spacing:1px;"></div>
-</div>
+  <div style="display:flex;align-items:center;gap:0;padding:0 10px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;">
+    <button class="stab active" data-tab="appearance" onclick="openSettingsTab('appearance')">🎨 Look</button>
+    <button class="stab" data-tab="audio"      onclick="openSettingsTab('audio')">🔊 Audio</button>
+    <button class="stab" data-tab="keybinds"   onclick="openSettingsTab('keybinds')">⌨️ Keys</button>
+    <button class="stab" data-tab="connection" onclick="openSettingsTab('connection')">🔗 API</button>
+    <button class="stab" data-tab="account"    onclick="openSettingsTab('account')">👤 Account</button>
+  </div>
 
-<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:10px;">
-  <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Appearance</div>
-<div style="display:flex;gap:8px;">
-  <button id="theme-dark-btn" onclick="setTheme('dark')"
-    style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px;border-radius:6px;border:2px solid transparent;cursor:pointer;font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;background:#0a0a0f;color:#e8e8f0;transition:border-color 0.2s;">
-    🌙 Dark
-  </button>
-  <button id="theme-light-btn" onclick="setTheme('light')"
-    style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px;border-radius:6px;border:2px solid transparent;cursor:pointer;font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;background:#ffffff;color:#111118;transition:border-color 0.2s;">
-    ☀️ Light
-  </button>
-  <button id="theme-transparent-btn" onclick="setTheme('transparent')"
-    style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:10px;border-radius:6px;border:2px solid transparent;cursor:pointer;font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;background:linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03));color:#e8e8f0;transition:border-color 0.2s;backdrop-filter:blur(4px);">
-    🪟 Glass
-  </button>
-</div>
-</div>
-    <div id="s-api-card" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;flex-direction:column;gap:8px;">
-      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">API Connection</div>
-      <input type="url" id="s-api" placeholder="https://xxx.trycloudflare.com"/>
-    </div>
+  <div class="scroll-body" style="gap:12px;padding:14px 12px;">
 
-    <!-- FIX: Volume control card -->
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:10px;">
-      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Flag Audio Volume</div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:14px;">🔈</span>
-        <input type="range" id="vol-slider" class="vol-slider" min="0" max="100" value="100" oninput="onVolumeSlider(this.value)"/>
-        <span style="font-size:14px;">🔊</span>
-        <span id="vol-label" style="font-size:11px;font-weight:700;color:var(--blue);width:34px;text-align:right;">100%</span>
+    <div class="stab-panel active" id="stab-appearance">
+      <div class="s-section-title">Theme</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:16px;">
+        <button id="theme-dark-btn" onclick="setTheme('dark')" class="theme-tile">
+          <div class="theme-preview" style="background:#0a0a0f;border:1px solid #1e1e2a;">
+            <div style="width:65%;height:4px;background:#1e1e2a;border-radius:2px;margin-bottom:4px;"></div>
+            <div style="width:85%;height:3px;background:#1e1e2a;border-radius:2px;margin-bottom:3px;"></div>
+            <div style="width:50%;height:3px;background:#1e1e2a;border-radius:2px;"></div>
+          </div>
+          <span class="theme-label">Dark</span>
+        </button>
+        <button id="theme-light-btn" onclick="setTheme('light')" class="theme-tile">
+          <div class="theme-preview" style="background:#f0f0f5;border:1px solid #d0d0e0;">
+            <div style="width:65%;height:4px;background:#d0d0e0;border-radius:2px;margin-bottom:4px;"></div>
+            <div style="width:85%;height:3px;background:#d0d0e0;border-radius:2px;margin-bottom:3px;"></div>
+            <div style="width:50%;height:3px;background:#d0d0e0;border-radius:2px;"></div>
+          </div>
+          <span class="theme-label">Light</span>
+        </button>
+        <button id="theme-transparent-btn" onclick="setTheme('transparent')" class="theme-tile">
+          <div class="theme-preview" style="background:rgba(10,10,20,0.45);border:1px solid rgba(255,255,255,0.1);">
+            <div style="width:65%;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin-bottom:4px;"></div>
+            <div style="width:85%;height:3px;background:rgba(255,255,255,0.07);border-radius:2px;margin-bottom:3px;"></div>
+            <div style="width:50%;height:3px;background:rgba(255,255,255,0.07);border-radius:2px;"></div>
+          </div>
+          <span class="theme-label">Glass</span>
+        </button>
       </div>
-      <div style="font-size:9px;color:var(--muted);">Controls the volume of all flag audio alerts.</div>
-    </div>
 
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;">
-      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Global Keybinds</div>
-      <div style="font-size:9px;color:var(--muted);padding:4px 0;">Click a field then press any key to rebind. Keybinds are suspended while you type in other fields.</div>
-      <div class="settings-row"><span class="settings-label">🔵 Blue Flag</span><input type="text" class="kb-input" id="kb-blue_flag" readonly onclick="listenKey('blue_flag')"/></div>
-      <div class="settings-row"><span class="settings-label">🏁 Next Lap</span><input type="text" class="kb-input" id="kb-next_lap" readonly onclick="listenKey('next_lap')"/></div>
-      <div class="settings-row"><span class="settings-label">🔧 Pitting</span><input type="text" class="kb-input" id="kb-pitting" readonly onclick="listenKey('pitting')"/></div>
-      <div class="settings-row"><span class="settings-label">🚫 DNF</span><input type="text" class="kb-input" id="kb-dnf" readonly onclick="listenKey('dnf')"/></div>
-      <div id="kb-driver2-section" style="display:none;border-top:1px solid var(--border);padding-top:8px;margin-top:4px;flex-direction:column;gap:0;">
-        <div style="font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:4px 0 6px;">Driver 2 keybinds</div>
-        <div class="settings-row"><span class="settings-label">🔵 Blue Flag (D2)</span><input type="text" class="kb-input" id="kb-blue_flag2" readonly onclick="listenKey('blue_flag2')"/></div>
-        <div class="settings-row"><span class="settings-label">🏁 Next Lap (D2)</span><input type="text" class="kb-input" id="kb-next_lap2" readonly onclick="listenKey('next_lap2')"/></div>
-        <div class="settings-row" style="border:none;"><span class="settings-label">🔧 Pitting (D2)</span><input type="text" class="kb-input" id="kb-pitting2" readonly onclick="listenKey('pitting2')"/></div>
+      <div class="s-section-title">Font Size</div>
+      <div class="s-card" style="gap:10px;margin-bottom:0;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:10px;color:var(--muted);font-weight:700;flex-shrink:0;">A</span>
+          <input type="range" id="font-size-slider" class="vol-slider" min="10" max="16" step="1" value="12" oninput="onFontSizeSlider(this.value)"/>
+          <span style="font-size:15px;color:var(--muted);font-weight:700;flex-shrink:0;">A</span>
+          <span id="font-size-label" style="font-size:11px;font-weight:700;color:var(--blue);width:32px;text-align:right;flex-shrink:0;">12px</span>
+        </div>
+        <div style="font-size:9px;color:var(--muted);">Controls all text sizes throughout the app.</div>
       </div>
     </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;">
-      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Keybind Sounds</div>
-      <div class="settings-row"><span class="settings-label">🔵 Blue Flag sound</span><div style="display:flex;gap:4px;"><button onclick="pickKeybindSound('blue_flag')" id="snd-blue_flag-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetKeybindSound('blue_flag')" style="font-size:9px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;font-family:'Oxanium',sans-serif;">✕</button></div></div>
-      <div class="settings-row"><span class="settings-label">🏁 Next Lap sound</span><div style="display:flex;gap:4px;"><button onclick="pickKeybindSound('next_lap')" id="snd-next_lap-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetKeybindSound('next_lap')" style="font-size:9px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;font-family:'Oxanium',sans-serif;">✕</button></div></div>
-      <div class="settings-row" style="border:none;"><span class="settings-label">🔧 Pitting sound</span><div style="display:flex;gap:4px;"><button onclick="pickKeybindSound('pitting')" id="snd-pitting-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetKeybindSound('pitting')" style="font-size:9px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;font-family:'Oxanium',sans-serif;">✕</button></div></div>
-      <div style="font-size:9px;color:var(--muted);">Custom local sounds played when keybind is pressed.</div>
+
+    <div class="stab-panel" id="stab-audio">
+      <div class="s-section-title">Flag Alert Volume</div>
+      <div class="s-card" style="gap:10px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:16px;flex-shrink:0;">🔈</span>
+          <input type="range" id="vol-slider" class="vol-slider" min="0" max="100" value="100" oninput="onVolumeSlider(this.value)"/>
+          <span style="font-size:16px;flex-shrink:0;">🔊</span>
+          <span id="vol-label" style="font-size:11px;font-weight:700;color:var(--blue);width:34px;text-align:right;flex-shrink:0;">100%</span>
+        </div>
+        <div style="font-size:9px;color:var(--muted);">Controls volume of all flag audio alerts.</div>
+      </div>
+
+      <div class="s-section-title">Custom Flag Sounds</div>
+      <div class="s-card" style="gap:0;margin-bottom:16px;">
+        <div style="font-size:9px;color:var(--muted);padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:2px;">Override flag sounds locally — only you hear these.</div>
+        <div class="s-sound-row"><span class="s-sound-label">🟢 Green Flag</span><div style="display:flex;gap:4px;"><button onclick="pickFlagSound('green')"     id="fsnd-green-btn"     class="snd-pick-btn">📁 Choose</button><button onclick="resetFlagSound('green')"     class="snd-reset-btn">✕</button></div></div>
+        <div class="s-sound-row"><span class="s-sound-label">🟡 Yellow Flag</span><div style="display:flex;gap:4px;"><button onclick="pickFlagSound('yellow')"    id="fsnd-yellow-btn"    class="snd-pick-btn">📁 Choose</button><button onclick="resetFlagSound('yellow')"    class="snd-reset-btn">✕</button></div></div>
+        <div class="s-sound-row"><span class="s-sound-label">🟡 Full Course Yellow</span><div style="display:flex;gap:4px;"><button onclick="pickFlagSound('fcy')" id="fsnd-fcy-btn"       class="snd-pick-btn">📁 Choose</button><button onclick="resetFlagSound('fcy')"       class="snd-reset-btn">✕</button></div></div>
+        <div class="s-sound-row"><span class="s-sound-label">🔴 Red Flag</span><div style="display:flex;gap:4px;"><button onclick="pickFlagSound('red')"      id="fsnd-red-btn"       class="snd-pick-btn">📁 Choose</button><button onclick="resetFlagSound('red')"       class="snd-reset-btn">✕</button></div></div>
+        <div class="s-sound-row"><span class="s-sound-label">🟠 Safety Car</span><div style="display:flex;gap:4px;"><button onclick="pickFlagSound('safety_car')" id="fsnd-safety_car-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetFlagSound('safety_car')" class="snd-reset-btn">✕</button></div></div>
+        <div class="s-sound-row"><span class="s-sound-label">🟠 SC Ending</span><div style="display:flex;gap:4px;"><button onclick="pickFlagSound('sc_ending')"  id="fsnd-sc_ending-btn"  class="snd-pick-btn">📁 Choose</button><button onclick="resetFlagSound('sc_ending')"  class="snd-reset-btn">✕</button></div></div>
+        <div class="s-sound-row"><span class="s-sound-label">🟠 Speed Up</span><div style="display:flex;gap:4px;"><button onclick="pickFlagSound('sc_speedup')" id="fsnd-sc_speedup-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetFlagSound('sc_speedup')" class="snd-reset-btn">✕</button></div></div>
+        <div class="s-sound-row"><span class="s-sound-label">🟠 Single File</span><div style="display:flex;gap:4px;"><button onclick="pickFlagSound('sfl')"       id="fsnd-sfl-btn"       class="snd-pick-btn">📁 Choose</button><button onclick="resetFlagSound('sfl')"       class="snd-reset-btn">✕</button></div></div>
+        <div class="s-sound-row" style="border:none;padding-bottom:0;"><span class="s-sound-label">🏁 Checkered</span><div style="display:flex;gap:4px;"><button onclick="pickFlagSound('checkered')" id="fsnd-checkered-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetFlagSound('checkered')" class="snd-reset-btn">✕</button></div></div>
+      </div>
+
+      <div class="s-section-title">Keybind Sounds</div>
+      <div class="s-card" style="gap:0;">
+        <div style="font-size:9px;color:var(--muted);padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:2px;">Sounds played locally when you press a keybind.</div>
+        <div class="s-sound-row"><span class="s-sound-label">🔵 Blue Flag</span><div style="display:flex;gap:4px;"><button onclick="pickKeybindSound('blue_flag')" id="snd-blue_flag-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetKeybindSound('blue_flag')" class="snd-reset-btn">✕</button></div></div>
+        <div class="s-sound-row"><span class="s-sound-label">🏁 Next Lap</span><div style="display:flex;gap:4px;"><button onclick="pickKeybindSound('next_lap')"   id="snd-next_lap-btn"  class="snd-pick-btn">📁 Choose</button><button onclick="resetKeybindSound('next_lap')"   class="snd-reset-btn">✕</button></div></div>
+        <div class="s-sound-row" style="border:none;padding-bottom:0;"><span class="s-sound-label">🔧 Pitting</span><div style="display:flex;gap:4px;"><button onclick="pickKeybindSound('pitting')" id="snd-pitting-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetKeybindSound('pitting')" class="snd-reset-btn">✕</button></div></div>
+      </div>
     </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;">
-      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Local Flag Sounds</div>
-      <div style="font-size:9px;color:var(--muted);">Override flag sounds locally — only you hear these.</div>
-      <div class="settings-row"><span class="settings-label">🟢 Green Flag</span><div style="display:flex;gap:4px;"><button onclick="pickFlagSound('green')" id="fsnd-green-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetFlagSound('green')" style="font-size:9px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;font-family:'Oxanium',sans-serif;">✕</button></div></div>
-      <div class="settings-row"><span class="settings-label">🟡 Yellow Flag</span><div style="display:flex;gap:4px;"><button onclick="pickFlagSound('yellow')" id="fsnd-yellow-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetFlagSound('yellow')" style="font-size:9px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;font-family:'Oxanium',sans-serif;">✕</button></div></div>
-      <div class="settings-row"><span class="settings-label">🟡 Full Course Yellow</span><div style="display:flex;gap:4px;"><button onclick="pickFlagSound('fcy')" id="fsnd-fcy-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetFlagSound('fcy')" style="font-size:9px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;font-family:'Oxanium',sans-serif;">✕</button></div></div>
-      <div class="settings-row"><span class="settings-label">🔴 Red Flag</span><div style="display:flex;gap:4px;"><button onclick="pickFlagSound('red')" id="fsnd-red-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetFlagSound('red')" style="font-size:9px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;font-family:'Oxanium',sans-serif;">✕</button></div></div>
-      <div class="settings-row"><span class="settings-label">🟠 Safety Car</span><div style="display:flex;gap:4px;"><button onclick="pickFlagSound('safety_car')" id="fsnd-safety_car-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetFlagSound('safety_car')" style="font-size:9px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;font-family:'Oxanium',sans-serif;">✕</button></div></div>
-      <div class="settings-row"><span class="settings-label">🟠 SC Ending</span><div style="display:flex;gap:4px;"><button onclick="pickFlagSound('sc_ending')" id="fsnd-sc_ending-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetFlagSound('sc_ending')" style="font-size:9px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;font-family:'Oxanium',sans-serif;">✕</button></div></div>
-      <div class="settings-row"><span class="settings-label">🟠 Speed Up</span><div style="display:flex;gap:4px;"><button onclick="pickFlagSound('sc_speedup')" id="fsnd-sc_speedup-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetFlagSound('sc_speedup')" style="font-size:9px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;font-family:'Oxanium',sans-serif;">✕</button></div></div>
-      <div class="settings-row"><span class="settings-label">🟠 Single File</span><div style="display:flex;gap:4px;"><button onclick="pickFlagSound('sfl')" id="fsnd-sfl-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetFlagSound('sfl')" style="font-size:9px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;font-family:'Oxanium',sans-serif;">✕</button></div></div>
-      <div class="settings-row" style="border:none;"><span class="settings-label">🏁 Checkered</span><div style="display:flex;gap:4px;"><button onclick="pickFlagSound('checkered')" id="fsnd-checkered-btn" class="snd-pick-btn">📁 Choose</button><button onclick="resetFlagSound('checkered')" style="font-size:9px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;font-family:'Oxanium',sans-serif;">✕</button></div></div>
+
+    <div class="stab-panel" id="stab-keybinds">
+      <div style="font-size:9px;color:var(--muted);padding:7px 10px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:5px;margin-bottom:12px;line-height:1.6;">
+        Click a field, then press any key to rebind. Hotkeys suspend automatically while you type elsewhere.
+      </div>
+
+      <div class="s-section-title">Driver 1</div>
+      <div class="s-card" style="gap:0;margin-bottom:14px;">
+        <div class="s-kb-row"><span class="settings-label">🔵 Blue Flag</span><input type="text" class="kb-input" id="kb-blue_flag" readonly onclick="listenKey('blue_flag')"/></div>
+        <div class="s-kb-row"><span class="settings-label">🏁 Next Lap</span><input type="text" class="kb-input" id="kb-next_lap"  readonly onclick="listenKey('next_lap')"/></div>
+        <div class="s-kb-row"><span class="settings-label">🔧 Pitting</span><input type="text" class="kb-input" id="kb-pitting"    readonly onclick="listenKey('pitting')"/></div>
+        <div class="s-kb-row" style="border:none;padding-bottom:0;"><span class="settings-label">🚫 DNF</span><input type="text" class="kb-input" id="kb-dnf" readonly onclick="listenKey('dnf')"/></div>
+      </div>
+
+      <div id="kb-driver2-section" style="display:none;flex-direction:column;gap:0;">
+        <div class="s-section-title">Driver 2</div>
+        <div class="s-card" style="gap:0;">
+          <div class="s-kb-row"><span class="settings-label">🔵 Blue Flag</span><input type="text" class="kb-input" id="kb-blue_flag2" readonly onclick="listenKey('blue_flag2')"/></div>
+          <div class="s-kb-row"><span class="settings-label">🏁 Next Lap</span><input type="text" class="kb-input" id="kb-next_lap2"  readonly onclick="listenKey('next_lap2')"/></div>
+          <div class="s-kb-row" style="border:none;padding-bottom:0;"><span class="settings-label">🔧 Pitting</span><input type="text" class="kb-input" id="kb-pitting2" readonly onclick="listenKey('pitting2')"/></div>
+        </div>
+      </div>
     </div>
-    <button class="save-btn" onclick="saveSettings()">✓ Save Settings</button>
-    <button class="save-btn" onclick="goBack()" style="background:rgba(255,255,255,0.03);border-color:var(--border);color:var(--muted);">← Back</button>
-    <button class="save-btn" onclick="reLogin()" style="background:rgba(255,23,68,0.08);border-color:rgba(255,23,68,0.3);color:var(--red);">↩ Re-Login</button>
-    <button class="save-btn" onclick="uninstallApp()" style="background:rgba(255,23,68,0.08);border-color:rgba(255,23,68,0.3);color:var(--red);">🗑️ Uninstall App</button>
+
+    <div class="stab-panel" id="stab-connection">
+      <div class="s-section-title">Status</div>
+      <div class="s-card" style="gap:8px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="status-dot live"></div>
+          <span style="font-size:11px;font-weight:700;color:var(--green);">Auto-resolved via Gist</span>
+        </div>
+        <div id="conn-api-url-display" style="font-size:9px;color:var(--muted);word-break:break-all;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;"></div>
+        <button onclick="resetApiUrl()" style="background:rgba(41,121,255,0.1);border:1px solid rgba(41,121,255,0.3);color:var(--blue);font-family:'Oxanium',sans-serif;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:6px 12px;border-radius:4px;cursor:pointer;align-self:flex-start;">🔄 Override URL</button>
+      </div>
+
+      <div id="s-api-card" style="display:none;flex-direction:column;gap:8px;">
+        <div class="s-section-title">Dev — Manual Override</div>
+        <div class="s-card" style="gap:8px;">
+          <input type="url" id="s-api" placeholder="https://xxx.trycloudflare.com"/>
+          <div style="font-size:9px;color:rgba(255,214,0,0.7);padding:5px 8px;background:rgba(255,214,0,0.06);border:1px solid rgba(255,214,0,0.2);border-radius:4px;">
+            ⚠️ Dev-only. Auto-refreshes from Gist every 60 s.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stab-panel" id="stab-account">
+      <div class="s-section-title">Signed In As</div>
+      <div class="s-card" style="gap:10px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;">
+          <img id="settings-avatar" src="" style="width:34px;height:34px;border-radius:50%;display:none;flex-shrink:0;"/>
+          <div>
+            <div id="settings-username" style="font-size:12px;font-weight:700;"></div>
+            <div style="font-size:9px;color:var(--muted);">Discord verified</div>
+          </div>
+        </div>
+        <button onclick="reLogin()" class="s-danger-btn">↩ Re-Login</button>
+        <button onclick="uninstallApp()" class="s-danger-btn" style="opacity:0.55;">🗑️ Uninstall App</button>
+      </div>
+
+      <div class="s-section-title">About</div>
+      <div class="s-card" style="gap:7px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:12px;font-weight:800;">RaceControl Desktop</span>
+          <span id="app-version" style="font-size:9px;font-weight:700;letter-spacing:1px;color:var(--muted);background:var(--bg);padding:2px 7px;border-radius:10px;border:1px solid var(--border);"></span>
+        </div>
+        <div style="font-size:9px;color:var(--muted);">Developed by Sandrik · #109 ES-109</div>
+        <div style="height:1px;background:var(--border);"></div>
+        <div style="font-size:9px;color:var(--muted);">Guild <span style="color:var(--text);font-family:monospace;">1464788232263700687</span></div>
+        <div style="font-size:9px;color:var(--muted);">Bot <span style="color:var(--text);font-family:monospace;">1467595519718195473</span></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:6px;padding-top:6px;border-top:1px solid var(--border);margin-top:4px;flex-shrink:0;">
+      <button class="save-btn" onclick="saveSettings()" style="flex:2;">✓ Save Settings</button>
+      <button class="save-btn" onclick="goBack()" style="flex:1;background:rgba(255,255,255,0.03);border-color:var(--border);color:var(--muted);">← Back</button>
+    </div>
+
   </div>
 </div>
 
@@ -1108,14 +1217,11 @@ function setTheme(theme) {
 }
 
 function updateThemeBtns() {
-  const isLight       = document.documentElement.classList.contains("light-mode");
-  const isTransparent = document.documentElement.classList.contains("transparent-mode");
-  const darkBtn        = document.getElementById("theme-dark-btn");
-  const lightBtn       = document.getElementById("theme-light-btn");
-  const transparentBtn = document.getElementById("theme-transparent-btn");
-  if (darkBtn)        darkBtn.style.borderColor        = (!isLight && !isTransparent) ? "var(--blue)" : "transparent";
-  if (lightBtn)       lightBtn.style.borderColor       = isLight       ? "var(--blue)" : "transparent";
-  if (transparentBtn) transparentBtn.style.borderColor = isTransparent ? "var(--blue)" : "transparent";
+  const isLight       = document.documentElement.classList.contains('light-mode');
+  const isTransparent = document.documentElement.classList.contains('transparent-mode');
+  document.getElementById('theme-dark-btn')       ?.classList.toggle('active', !isLight && !isTransparent);
+  document.getElementById('theme-light-btn')      ?.classList.toggle('active', isLight);
+  document.getElementById('theme-transparent-btn')?.classList.toggle('active', isTransparent);
 }
 
 function loadThemePrefs() {
@@ -1877,6 +1983,7 @@ const saved = sessionStorage.getItem("rc_user") || localStorage.getItem("rc_user
   loadFlagSounds();
   loadToolboxPrefs();
   loadKeybindSounds();
+  loadFontSizePrefs();
   loadThemePrefs();
   loadVolumePrefs();
 
@@ -2332,6 +2439,7 @@ function switchPanel(panel) {
     if (slider) slider.value = volPct;
     if (label)  label.textContent = volPct + "%";
     updateThemeBtns();
+    openSettingsTab('appearance');
     showScreen("screen-settings");
   }
 }
@@ -2388,6 +2496,30 @@ const actSection2 = document.getElementById("d-actions-section2");
   }
 }
 
+function openSettingsTab(tab) {
+  document.querySelectorAll('.stab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.stab-panel').forEach(p => p.classList.toggle('active', p.id === 'stab-' + tab));
+}
+
+function onFontSizeSlider(val) {
+  const px = parseInt(val, 10);
+  document.documentElement.style.fontSize = px + 'px';
+  document.getElementById('font-size-label').textContent = px + 'px';
+  localStorage.setItem('rc_font_size', px);
+}
+
+function loadFontSizePrefs() {
+  const saved = localStorage.getItem('rc_font_size');
+  if (saved !== null) {
+    const px = parseInt(saved, 10);
+    document.documentElement.style.fontSize = px + 'px';
+    const slider = document.getElementById('font-size-slider');
+    const label  = document.getElementById('font-size-label');
+    if (slider) slider.value = px;
+    if (label)  label.textContent = px + 'px';
+  }
+}
+  
 function launchMarshalPanel(startPoll=true) {
   showScreen("screen-marshal"); currentPanel="marshal";
   document.getElementById("shutdown-banner-marshal") && (document.getElementById("shutdown-banner-marshal").style.display = "");
