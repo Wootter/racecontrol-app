@@ -1704,12 +1704,31 @@
             Marshal</button>
         </div>
         <div style="display:flex;gap:6px;margin-top:4px;">
+          <button class="dev-btn" onclick="devTogglePanel('watchmarshal',true)"
+            style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Enable
+            WatchMarshal</button>
+          <button class="dev-btn" onclick="devTogglePanel('watchmarshal',false)" style="font-size:9px;">Disable
+            WatchMarshal</button>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:4px;">
           <button class="dev-btn" onclick="devTogglePanel('both',true)"
             style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Enable
             All</button>
           <button class="dev-btn" onclick="devTogglePanel('both',false)" style="font-size:9px;">Disable All</button>
         </div>
         <div id="dev-panel-status" style="font-size:9px;color:var(--muted);margin-top:4px;"></div>
+      </div>
+
+      <div class="dev-card" id="dev-watchmarshal">
+        <div class="dev-title">WatchMarshal</div>
+        <div style="font-size:9px;color:var(--muted);margin-bottom:8px;">Use this section to show or hide the WatchMarshal controls from the toolbox.</div>
+        <div style="display:flex;gap:6px;margin-top:4px;">
+          <button class="dev-btn" onclick="devTogglePanel('watchmarshal',true)"
+            style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Enable
+            WatchMarshal</button>
+          <button class="dev-btn" onclick="devTogglePanel('watchmarshal',false)" style="font-size:9px;">Disable
+            WatchMarshal</button>
+        </div>
       </div>
 
       <div class="dev-card">
@@ -4047,6 +4066,7 @@ ${drivers.map(d => `
         { id: "dev-engineers", label: "Engineering Assignments" },
         { id: "dev-toggle-driver-tab", label: "Tab Visibility" },
         { id: "dev-drivers-card", label: "Driver Database" },
+        { id: "dev-watchmarshal", label: "WatchMarshal Toggle" },
         { id: "action-log-toggle-btn", label: "Action Logging" },
       ];
       let _toolboxVisible = {};
