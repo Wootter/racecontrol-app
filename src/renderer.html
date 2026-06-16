@@ -257,6 +257,14 @@
     .bf-sub{font-size:9px;color:rgba(255,255,255,0.5);margin-top:2px;}
     .bf-dismiss{background:rgba(41,121,255,0.15);border:1px solid rgba(41,121,255,0.3);color:var(--blue);font-family:'Oxanium',sans-serif;font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px;cursor:pointer;}
 
+    .wm-notif{background:rgba(255,23,68,0.12);border:1.5px solid rgba(255,23,68,0.75);border-radius:6px;padding:9px 11px;display:flex;align-items:center;justify-content:space-between;gap:8px;animation:wmPulse 1s ease-in-out infinite;}
+    @keyframes wmPulse{0%,100%{box-shadow:0 0 6px rgba(255,23,68,0.35);}50%{box-shadow:0 0 18px rgba(255,23,68,0.8);}}
+    .wm-title{font-size:11px;font-weight:800;color:var(--red);letter-spacing:0.3px;}
+    .wm-sub{font-size:9px;color:rgba(255,255,255,0.6);margin-top:2px;}
+    .wm-btns{display:flex;gap:4px;flex-shrink:0;}
+    .wm-dismiss{background:rgba(255,255,255,0.08);border:1px solid var(--border);color:var(--muted);font-family:'Oxanium',sans-serif;font-size:9px;font-weight:700;padding:4px 9px;border-radius:4px;cursor:pointer;}
+    .wm-action{background:rgba(255,23,68,0.3);border:1px solid var(--red);color:#fff;font-family:'Oxanium',sans-serif;font-size:9px;font-weight:800;padding:4px 9px;border-radius:4px;cursor:pointer;}
+
     .status-row{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--surface);border:1px solid var(--border);border-radius:5px;}
     .status-dot{width:6px;height:6px;border-radius:50%;background:var(--muted);}
     .status-dot.live{background:var(--green);box-shadow:0 0 5px var(--green);}
@@ -438,6 +446,7 @@
       </div>
       <div id="m-race-pill" style="font-size:10px;color:var(--muted);">● Waiting</div>
     </div>
+    <div id="m-wm-container" style="display:flex;flex-direction:column;gap:4px;"></div>
     <div id="m-bf-container" style="display:flex;flex-direction:column;gap:4px;"></div>
 <div id="m-leaderboard-section">
   <div class="sec-label" style="display:flex;align-items:center;justify-content:space-between;">
@@ -1141,6 +1150,8 @@ let _lastPlayedTime   = 0;
 let listeningKey  = null;
 let bfKnownIds    = new Set();
 let bfAlertInterval = null;
+let wmKnownIds      = new Set();
+let wmAlertInterval = null;
 let _lastFlagTimestamp = null;
 let _lastRaceState     = null;
 let _lastBlueFlagDriver = null;
@@ -2590,12 +2601,13 @@ if (DIRECTOR_ROLES.some(r => user?.roles?.includes(r)) || user?.isAdmin)
 if (startPoll) {
   if (_marshalPollInterval) clearInterval(_marshalPollInterval);
   pollBlueFlagRequests();
+  pollWatchMarshalAlerts();
   pollMarshalState();
   _marshalPollInterval = setInterval(() => {
     pollBlueFlagRequests();
+    pollWatchMarshalAlerts();
     pollMarshalState();
   }, 3000);
-}
 }
 
 async function pollDriverState() {
@@ -2899,6 +2911,7 @@ function renderLeaderboard(data) {
         <div style="flex:1;min-width:0;overflow:hidden;">
           <div style="display:flex;align-items:center;gap:5px;">
             <span style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.name}</span>
+            ${d.watchMarshal ? `<span title="WatchMarshal flagged" style="font-size:11px;flex-shrink:0;">⚠️</span>` : ''}
             ${isMe  ? `<span style="font-size:7px;font-weight:900;padding:1px 4px;border-radius:3px;background:rgba(41,121,255,0.2);border:1px solid rgba(41,121,255,0.4);color:var(--blue);flex-shrink:0;">YOU</span>` : ''}
             ${isMe2 ? `<span style="font-size:7px;font-weight:900;padding:1px 4px;border-radius:3px;background:rgba(0,230,118,0.2);border:1px solid rgba(0,230,118,0.4);color:var(--green);flex-shrink:0;">D2</span>` : ''}
           </div>
@@ -3253,7 +3266,7 @@ async function pollMarshalState() {
         <div class="lb-pos ${pc}">${pos}</div>
         <div class="lb-num" style="${tc?`background:${tc}22;border-color:${tc}66;color:${tc};`:""}">#${d.number}</div>
         <div class="lb-info">
-          <div class="lb-name">${d.name}</div>
+          <div class="lb-name">${d.name}${d.watchMarshal ? ' <span title="WatchMarshal flagged" style="font-size:10px;">⚠️</span>' : ''}</div>
           <div class="lb-call">${d.callsign}</div>
         </div>
         <div class="lb-lap" style="text-align:right;">
@@ -3309,6 +3322,52 @@ async function dismissBf(id){
   try{await fetch(`${apiUrl}/driver/blue-flags/dismiss`,{method:"POST",headers:{"Content-Type":"application/json","x-discord-id":user.id,"x-discord-token":user.token},body:JSON.stringify({id})});}catch{}
   await pollBlueFlagRequests();
   if(!document.querySelectorAll('[id^="bf-"]').length) stopBfAlert();
+}
+
+async function pollWatchMarshalAlerts() {
+  if (!user?.token || currentPanel !== "marshal") return;
+  try {
+    const res = await fetch(`${apiUrl}/driver/watch-marshal`, { headers: { "x-discord-id": user.id, "x-discord-token": user.token } });
+    const data = await res.json();
+    const container = document.getElementById("m-wm-container");
+    const alerts = data.alerts || [];
+    let hasNew = false;
+    alerts.forEach(a => { if (!wmKnownIds.has(a.id)) { hasNew = true; wmKnownIds.add(a.id); } });
+    if (hasNew) startWmAlert();
+    if (!alerts.length) { stopWmAlert(); container.innerHTML = ""; return; }
+    container.innerHTML = alerts.map(a => `
+      <div class="wm-notif" id="wm-${a.id}">
+        <div>
+          <div class="wm-title">⚠️ WatchMarshal — Suspicious Lap</div>
+          <div class="wm-sub">${a.driver} #${a.number} logged 2 laps in ${a.gapSeconds}s</div>
+        </div>
+        <div class="wm-btns">
+          <button class="wm-dismiss" onclick="dismissWm(${a.id})">Dismiss</button>
+          <button class="wm-action" onclick="actionWm(${a.id})">Remove Lap</button>
+        </div>
+      </div>`).join("");
+  } catch {}
+}
+function startWmAlert(){if(wmAlertInterval)return;playWmBeep();wmAlertInterval=setInterval(playWmBeep,1200);}
+function stopWmAlert(){if(wmAlertInterval){clearInterval(wmAlertInterval);wmAlertInterval=null;}}
+function playWmBeep(){
+  try{const ctx=new AudioContext(),osc=ctx.createOscillator(),gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.frequency.setValueAtTime(880,ctx.currentTime);osc.frequency.setValueAtTime(660,ctx.currentTime+0.12);osc.frequency.setValueAtTime(880,ctx.currentTime+0.24);gain.gain.setValueAtTime(0,ctx.currentTime);gain.gain.linearRampToValueAtTime(0.9,ctx.currentTime+0.02);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.55);osc.start();osc.stop(ctx.currentTime+0.6);}catch{}
+}
+async function dismissWm(id){
+  wmKnownIds.delete(id);
+  try{await fetch(`${apiUrl}/driver/watch-marshal/dismiss`,{method:"POST",headers:{"Content-Type":"application/json","x-discord-id":user.id,"x-discord-token":user.token},body:JSON.stringify({id})});}catch{}
+  await pollWatchMarshalAlerts();
+  if(!document.querySelectorAll('[id^="wm-"]').length) stopWmAlert();
+}
+async function actionWm(id){
+  wmKnownIds.delete(id);
+  try{
+    const res = await fetch(`${apiUrl}/driver/watch-marshal/action`,{method:"POST",headers:{"Content-Type":"application/json","x-discord-id":user.id,"x-discord-token":user.token},body:JSON.stringify({id})});
+    const data = await res.json();
+    if (res.ok) showToast(`⚠️ Lap removed — ${data.driver}`,"err");
+  }catch{}
+  await pollWatchMarshalAlerts();
+  if(!document.querySelectorAll('[id^="wm-"]').length) stopWmAlert();
 }
 
 async function devPushDriverDB() {
