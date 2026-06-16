@@ -22,6 +22,21 @@
     .tb-btn{width:26px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:3px;cursor:pointer;border:none;background:none;color:var(--muted);transition:background 0.15s,color 0.15s;}
     .tb-btn:hover{background:var(--border);color:var(--text);}
     .tb-btn.close-btn:hover{background:var(--red);color:#fff;}
+.lb-name  { font-size: calc(11px * var(--font-scale, 1)); }
+.lb-call  { font-size: calc(8px  * var(--font-scale, 1)); }
+.lb-lap   { font-size: calc(9px  * var(--font-scale, 1)); }
+.lb-pos   { font-size: calc(11px * var(--font-scale, 1)); }
+.a-name   { font-size: calc(9px  * var(--font-scale, 1)); }
+.a-icon   { font-size: calc(17px * var(--font-scale, 1)); }
+.fc-title { font-size: calc(13px * var(--font-scale, 1)); }
+.fc-sub   { font-size: calc(9px  * var(--font-scale, 1)); }
+.flag-btn .fn { font-size: calc(9px * var(--font-scale, 1)); }
+.flag-btn .fi { font-size: calc(18px * var(--font-scale, 1)); }
+.status-label { font-size: calc(10px * var(--font-scale, 1)); }
+.sec-label    { font-size: calc(9px  * var(--font-scale, 1)); }
+.dev-title    { font-size: calc(11px * var(--font-scale, 1)); }
+.dev-stat     { font-size: calc(9px  * var(--font-scale, 1)); }
+.setup-label  { font-size: calc(11px * var(--font-scale, 1)); }
 
     .sector-btn{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:7px;cursor:pointer;color:var(--text);font-family:'Oxanium',sans-serif;transition:border-color 0.15s,background 0.15s;width:100%;}
     .sector-btn:hover{border-color:var(--yellow);background:rgba(255,214,0,0.07);}
@@ -2113,14 +2128,39 @@ function showChangeUrlPrompt() {
 }
 
 async function resetApiUrl() {
-  const url = prompt("Enter new API URL:", apiUrl);
-  if (!url?.trim()) return;
-  apiUrl = url.trim(); config.apiUrl = apiUrl;
-  await window.api.saveConfig({ apiUrl });
-  const apiDisplay = document.getElementById("api-url-display");
-  if (apiDisplay) apiDisplay.textContent = apiUrl;
-  document.getElementById("login-error").textContent = "✓ URL updated — try logging in again.";
-  document.getElementById("login-error").style.color = "var(--green)";
+  const modal = document.createElement("div");
+  modal.style.cssText = "position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;";
+  modal.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;width:300px;display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:12px;font-weight:800;color:var(--text);">Override API URL</div>
+      <input type="url" id="url-override-input" value="${apiUrl}" placeholder="https://xxx.trycloudflare.com"
+        style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Oxanium',sans-serif;font-size:11px;padding:8px 10px;border-radius:var(--radius);outline:none;"/>
+      <div style="display:flex;gap:8px;">
+        <button onclick="this.closest('[style*=fixed]').remove()"
+          style="flex:1;padding:8px;background:var(--bg);border:1px solid var(--border);color:var(--muted);font-family:'Oxanium',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--radius);cursor:pointer;">
+          Cancel
+        </button>
+        <button id="url-override-confirm"
+          style="flex:1;padding:8px;background:rgba(41,121,255,0.15);border:1px solid rgba(41,121,255,0.4);color:var(--blue);font-family:'Oxanium',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--radius);cursor:pointer;">
+          Save
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  const input = modal.querySelector("#url-override-input");
+  setTimeout(() => input.focus(), 50);
+  modal.querySelector("#url-override-confirm").onclick = async () => {
+    const url = input.value.trim();
+    if (!url) return;
+    apiUrl = url; config.apiUrl = url;
+    await window.api.saveConfig({ apiUrl: url });
+    const apiDisplay = document.getElementById("api-url-display");
+    if (apiDisplay) apiDisplay.textContent = url;
+    const connDisplay = document.getElementById("conn-api-url-display");
+    if (connDisplay) connDisplay.textContent = url;
+    modal.remove();
+    showToast("✓ API URL updated", "ok");
+  };
 }
 
 async function afterLogin() {
@@ -2503,21 +2543,20 @@ function openSettingsTab(tab) {
 
 function onFontSizeSlider(val) {
   const px = parseInt(val, 10);
-  document.documentElement.style.fontSize = px + 'px';
+  document.documentElement.style.setProperty('--font-scale', px / 12);
   document.getElementById('font-size-label').textContent = px + 'px';
   localStorage.setItem('rc_font_size', px);
 }
 
 function loadFontSizePrefs() {
   const saved = localStorage.getItem('rc_font_size');
-  if (saved !== null) {
-    const px = parseInt(saved, 10);
-    document.documentElement.style.fontSize = px + 'px';
-    const slider = document.getElementById('font-size-slider');
-    const label  = document.getElementById('font-size-label');
-    if (slider) slider.value = px;
-    if (label)  label.textContent = px + 'px';
-  }
+  const px = saved !== null ? parseInt(saved, 10) : 12;
+  document.documentElement.style.setProperty('--font-scale', px / 12);
+  const slider = document.getElementById('font-size-slider');
+  const label  = document.getElementById('font-size-label');
+  if (slider) slider.value = px;
+  if (label)  label.textContent = px + 'px';
+}
 }
   
 function launchMarshalPanel(startPoll=true) {
