@@ -1252,49 +1252,61 @@
     }
 
     .dev-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 10px 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+      border: 1px solid rgba(90,95,105,0.12);
+      border-radius: 10px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 10px;
+      box-shadow: 0 6px 18px rgba(8,12,20,0.18);
     }
 
     .dev-title {
-      font-size: 11px;
-      font-weight: 700;
+      font-size: 12px;
+      font-weight: 800;
       color: var(--text);
+      letter-spacing: 0.6px;
+    }
+
+    .dev-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 4px;
     }
 
     .dev-btn {
-      padding: 7px 10px;
-      background: rgba(255, 23, 68, 0.1);
-      border: 1px solid rgba(255, 23, 68, 0.3);
-      color: var(--red);
-      font-family: 'Oxanium', sans-serif;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      border-radius: 4px;
+      padding: 8px 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+      border: 1px solid rgba(120,130,150,0.12);
+      color: var(--text);
+      font-family: 'Oxanium',sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      text-transform: none;
+      border-radius: 8px;
       cursor: pointer;
-      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform .12s ease, box-shadow .12s ease;
     }
 
+    .dev-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(8,12,20,0.12); }
+
     .dev-stat {
-      font-size: 9px;
+      font-size: 10px;
       color: var(--muted);
       display: flex;
       justify-content: space-between;
-      padding: 3px 0;
-      border-bottom: 1px solid var(--border);
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(90,95,105,0.06);
     }
 
-    .dev-stat span {
-      color: var(--text);
-      font-weight: 700;
-    }
+    .dev-stat span { color: var(--text); font-weight: 800; }
 
     #cooldown-bar {
       display: none;
@@ -1689,46 +1701,21 @@
 
       <div class="dev-card">
         <div class="dev-title">Panel Controls</div>
-        <div style="display:flex;gap:6px;margin-top:4px;">
-          <button class="dev-btn" onclick="devTogglePanel('driver',true)"
-            style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Enable
-            Driver</button>
-          <button class="dev-btn" onclick="devTogglePanel('driver',false)" style="font-size:9px;">Disable
-            Driver</button>
+        <div class="dev-grid">
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <button class="dev-btn" onclick="devTogglePanel('driver',true)">Enable Driver</button>
+            <button class="dev-btn" onclick="devTogglePanel('driver',false)">Disable Driver</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <button class="dev-btn" onclick="devTogglePanel('marshal',true)">Enable Marshal</button>
+            <button class="dev-btn" onclick="devTogglePanel('marshal',false)">Disable Marshal</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <button class="dev-btn" onclick="devTogglePanel('both',true)">Enable All</button>
+            <button class="dev-btn" onclick="devTogglePanel('both',false)">Disable All</button>
+          </div>
         </div>
-        <div style="display:flex;gap:6px;margin-top:4px;">
-          <button class="dev-btn" onclick="devTogglePanel('marshal',true)"
-            style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Enable
-            Marshal</button>
-          <button class="dev-btn" onclick="devTogglePanel('marshal',false)" style="font-size:9px;">Disable
-            Marshal</button>
-        </div>
-        <div style="display:flex;gap:6px;margin-top:4px;">
-          <button class="dev-btn" onclick="devTogglePanel('watchmarshal',true)"
-            style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Enable
-            WatchMarshal</button>
-          <button class="dev-btn" onclick="devTogglePanel('watchmarshal',false)" style="font-size:9px;">Disable
-            WatchMarshal</button>
-        </div>
-        <div style="display:flex;gap:6px;margin-top:4px;">
-          <button class="dev-btn" onclick="devTogglePanel('both',true)"
-            style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Enable
-            All</button>
-          <button class="dev-btn" onclick="devTogglePanel('both',false)" style="font-size:9px;">Disable All</button>
-        </div>
-        <div id="dev-panel-status" style="font-size:9px;color:var(--muted);margin-top:4px;"></div>
-      </div>
-
-      <div class="dev-card" id="dev-watchmarshal">
-        <div class="dev-title">WatchMarshal</div>
-        <div style="font-size:9px;color:var(--muted);margin-bottom:8px;">Use this section to show or hide the WatchMarshal controls from the toolbox.</div>
-        <div style="display:flex;gap:6px;margin-top:4px;">
-          <button class="dev-btn" onclick="devTogglePanel('watchmarshal',true)"
-            style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Enable
-            WatchMarshal</button>
-          <button class="dev-btn" onclick="devTogglePanel('watchmarshal',false)" style="font-size:9px;">Disable
-            WatchMarshal</button>
-        </div>
+        <div id="dev-panel-status" style="font-size:10px;color:var(--muted);margin-top:6px;"></div>
       </div>
 
       <div class="dev-card">
