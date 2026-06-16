@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>RaceLeague Control</title>
@@ -3893,6 +3894,72 @@ ${drivers.map(d => `
       if (currentPanel === "dev") { badge.textContent = "Dev"; badge.className = "tl-badge dev"; badge.style.display = ""; }
     }
 
+    async function pollDriverState() {
+      if (!apiUrl) return;
+      try {
+        await fetchAttendanceFromServer();
+        const res = await fetch(`${apiUrl}/driver/state`, { headers: { "x-discord-id": user?.id || "" } });
+        if (res.status === 403) {
+          const data = await res.json().catch(() => ({}));
+          if (data.blacklisted) showBlacklistedScreen();
+          else showDisabledScreen();
+          return;
+        }
+        const data = await res.json();
+        _lastRaceState = data;
+        if (data.gaps) updateDeltas(data.gaps);
+        const filteredDrivers = data.drivers?.filter(d => _attendance[d.name] !== false) || [];
+        renderLeaderboard({ ...data, drivers: filteredDrivers });
+
+        if (config.driver) {
+          const myDriver = data.drivers?.find(d => d.name === config.driver);
+          if (myDriver) updatePitBtn(myDriver.inPits);
+        }
+        if (config.driver2) {
+          const myDriver2 = data.drivers?.find(d => d.name === config.driver2);
+          if (myDriver2) updatePitBtn2(myDriver2.inPits);
+        }
+        const panelOn = data.webPanelEnabled !== false, raceOn = data.raceStarted;
+        if (!panelOn) {
+          if (hasDev) {
+            showShutdownBanner("driver");
+            if (_devBypassShutdown.driver) showDisabledScreen();
+            else hideDisabledScreen();
+          } else {
+            hideShutdownBanner("driver");
+            showDisabledScreen();
+          }
+        } else {
+          hideShutdownBanner("driver");
+          hideDisabledScreen();
+          if (isEngineer) {
+            setDriverBtnsEnabled(raceOn);
+            if (config.driver2) setDriverBtnsEnabled2(raceOn);
+          } else {
+            const notice = document.getElementById("d-action-notice");
+            if (notice) {
+              if (!raceOn) { notice.style.display = "block"; notice.textContent = "⏳ Waiting for race to start..."; }
+              else { notice.style.display = "none"; notice.textContent = ""; }
+            }
+          }
+        }
+        if (data.currentFlag) {
+          if (_lastFlagTimestamp === null) { _lastFlagTimestamp = data.currentFlag.timestamp; }
+          else if (data.currentFlag.timestamp !== _lastFlagTimestamp) {
+            _lastFlagTimestamp = data.currentFlag.timestamp;
+            onFlagEvent(data.currentFlag.flag, data.currentFlag);
+          }
+        }
+        document.getElementById("d-status-dot").classList.add("live");
+        document.getElementById("d-status-label").textContent = "Connected";
+        document.getElementById("d-status-label").classList.add("live");
+      } catch {
+        document.getElementById("d-status-dot").classList.remove("live");
+        document.getElementById("d-status-label").textContent = "Offline";
+        document.getElementById("d-status-label").classList.remove("live");
+      }
+    }
+
     function launchDriverPanel(startPoll = true) {
       showScreen("screen-driver"); currentPanel = "driver";
       document.getElementById("shutdown-banner-driver") && (document.getElementById("shutdown-banner-driver").style.display = "");
@@ -3964,71 +4031,7 @@ ${drivers.map(d => `
         }, 3000);
       }
 
-      async function pollDriverState() {
-        if (!apiUrl) return;
-        try {
-          await fetchAttendanceFromServer();
-          const res = await fetch(`${apiUrl}/driver/state`, { headers: { "x-discord-id": user?.id || "" } });
-          if (res.status === 403) {
-            const data = await res.json().catch(() => ({}));
-            if (data.blacklisted) showBlacklistedScreen();
-            else showDisabledScreen();
-            return;
-          }
-          const data = await res.json();
-          _lastRaceState = data;
-          if (data.gaps) updateDeltas(data.gaps);
-          const filteredDrivers = data.drivers?.filter(d => _attendance[d.name] !== false) || [];
-          renderLeaderboard({ ...data, drivers: filteredDrivers });
-
-          if (config.driver) {
-            const myDriver = data.drivers?.find(d => d.name === config.driver);
-            if (myDriver) updatePitBtn(myDriver.inPits);
-          }
-          if (config.driver2) {
-            const myDriver2 = data.drivers?.find(d => d.name === config.driver2);
-            if (myDriver2) updatePitBtn2(myDriver2.inPits);
-          }
-          const panelOn = data.webPanelEnabled !== false, raceOn = data.raceStarted;
-          if (!panelOn) {
-            if (hasDev) {
-              showShutdownBanner("driver");
-              if (_devBypassShutdown.driver) showDisabledScreen();
-              else hideDisabledScreen();
-            } else {
-              hideShutdownBanner("driver");
-              showDisabledScreen();
-            }
-          } else {
-            hideShutdownBanner("driver");
-            hideDisabledScreen();
-            if (isEngineer) {
-              setDriverBtnsEnabled(raceOn);
-              if (config.driver2) setDriverBtnsEnabled2(raceOn);
-            } else {
-              const notice = document.getElementById("d-action-notice");
-              if (notice) {
-                if (!raceOn) { notice.style.display = "block"; notice.textContent = "⏳ Waiting for race to start..."; }
-                else { notice.style.display = "none"; notice.textContent = ""; }
-              }
-            }
-          }
-          if (data.currentFlag) {
-            if (_lastFlagTimestamp === null) { _lastFlagTimestamp = data.currentFlag.timestamp; }
-            else if (data.currentFlag.timestamp !== _lastFlagTimestamp) {
-              _lastFlagTimestamp = data.currentFlag.timestamp;
-              onFlagEvent(data.currentFlag.flag, data.currentFlag);
-            }
-          }
-          document.getElementById("d-status-dot").classList.add("live");
-          document.getElementById("d-status-label").textContent = "Connected";
-          document.getElementById("d-status-label").classList.add("live");
-        } catch {
-          document.getElementById("d-status-dot").classList.remove("live");
-          document.getElementById("d-status-label").textContent = "Offline";
-          document.getElementById("d-status-label").classList.remove("live");
-        }
-      }
+      
     }
 
       const TOOLBOX_SECTIONS = [
@@ -5315,6 +5318,7 @@ ${drivers.map(d => `
         const isMarshal = !config.driver || config.driver === "__dev__";
         const name = isMarshal ? (user?.username || "Marshal") : config.driver;
         const info = isMarshal ? { number: "–", callsign: "Marshal" } : (DRIVER_INFO[config.driver] || {});
+
         try {
           await fetch(`${apiUrl}/audio-check/${audioCheckId}/vote`, {
             method: "POST",
@@ -5322,6 +5326,7 @@ ${drivers.map(d => `
             body: JSON.stringify({ vote, name, number: info.number || "??", callsign: info.callsign || "???" }),
           });
         } catch { }
+
         const confirmHtml = (v) => `
     <div style="background:${v === "yes" ? "rgba(0,230,118,0.08)" : "rgba(255,23,68,0.08)"};
       border:1.5px solid ${v === "yes" ? "rgba(0,230,118,0.4)" : "rgba(255,23,68,0.4)"};
@@ -5331,6 +5336,7 @@ ${drivers.map(d => `
         Response sent — ${v === "yes" ? "Audio OK" : "Cannot hear"}
       </div>
     </div>`;
+
         ["flag-notif-driver", "flag-notif-marshal"].forEach(id => {
           const el = document.getElementById(id);
           if (el) {
@@ -5338,8 +5344,10 @@ ${drivers.map(d => `
             setTimeout(() => { el.innerHTML = ""; }, 4000);
           }
         });
+
         showToast(vote === "yes" ? "✅ Voted Yes" : "❌ Voted No", vote === "yes" ? "ok" : "err");
       }
   </script>
 </body>
+
 </html>
