@@ -1704,13 +1704,6 @@
             Marshal</button>
         </div>
         <div style="display:flex;gap:6px;margin-top:4px;">
-          <button class="dev-btn" onclick="devTogglePanel('watchmarshal',true)"
-            style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Enable
-            WatchMarshal</button>
-          <button class="dev-btn" onclick="devTogglePanel('watchmarshal',false)" style="font-size:9px;">Disable
-            WatchMarshal</button>
-        </div>
-        <div style="display:flex;gap:6px;margin-top:4px;">
           <button class="dev-btn" onclick="devTogglePanel('both',true)"
             style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Enable
             All</button>
@@ -1722,13 +1715,14 @@
       <div class="dev-card" id="dev-watchmarshal">
         <div class="dev-title">WatchMarshal</div>
         <div style="font-size:9px;color:var(--muted);margin-bottom:8px;">Use this section to show or hide the WatchMarshal controls from the toolbox.</div>
-        <div style="display:flex;gap:6px;margin-top:4px;">
-          <button class="dev-btn" onclick="devTogglePanel('watchmarshal',true)"
-            style="background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);font-size:9px;">Enable
-            WatchMarshal</button>
-          <button class="dev-btn" onclick="devTogglePanel('watchmarshal',false)" style="font-size:9px;">Disable
-            WatchMarshal</button>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;
+    background:var(--bg);border:1px solid var(--border);border-radius:4px;">
+          <span style="font-size:11px;">👁️ WatchMarshal monitoring</span>
+          <button id="watchmarshal-toggle-btn" onclick="toggleWatchMarshal()" style="font-size:9px;font-weight:800;padding:3px 10px;border-radius:4px;border:1px solid;
+        cursor:pointer;font-family:'Oxanium',sans-serif;">
+          </button>
         </div>
+        <div id="watchmarshal-status" style="font-size:9px;color:var(--muted);margin-top:4px;"></div>
       </div>
 
       <div class="dev-card">
@@ -2516,6 +2510,7 @@
     let toastTimer;
     let _currentFlagAudio = null;
     let _actionLoggingEnabled = false;
+    let _watchMarshalEnabled = true;
     let _lastPlayedSound = null;
     let _attendance = {};
     let _lastPlayedTime = 0;
@@ -3115,7 +3110,7 @@ ${drivers.map(d => `
       if (st) st.textContent = on ? "✓ Logging is active" : "Logging is off";
     }
 
-    async function toggleActionLogging() {
+async function toggleActionLogging() {
       if (!user?.token) return showToast("✗ Not authenticated", "err");
       _actionLoggingEnabled = !_actionLoggingEnabled;
       updateActionLogBtn();
@@ -3136,6 +3131,50 @@ ${drivers.map(d => `
       } catch {
         _actionLoggingEnabled = !_actionLoggingEnabled;
         updateActionLogBtn();
+        showToast("✗ Bot unreachable", "err");
+      }
+    }
+
+    async function loadWatchMarshalState() {
+      if (!apiUrl) return;
+      try {
+        const res = await fetch(`${apiUrl}/panel-status`);
+        const data = await res.json();
+        _watchMarshalEnabled = data.watchmarshal !== false;
+        updateWatchMarshalBtn();
+      } catch { }
+    }
+
+    function updateWatchMarshalBtn() {
+      const btn = document.getElementById("watchmarshal-toggle-btn");
+      const st = document.getElementById("watchmarshal-status");
+      if (!btn) return;
+      const on = _watchMarshalEnabled;
+      btn.textContent = on ? "ON" : "OFF";
+      btn.style.background = on ? "rgba(0,230,118,0.15)" : "rgba(255,23,68,0.15)";
+      btn.style.borderColor = on ? "var(--green)" : "var(--red)";
+      btn.style.color = on ? "var(--green)" : "var(--red)";
+      if (st) st.textContent = on ? "✓ WatchMarshal is active" : "WatchMarshal is off";
+    }
+
+    async function toggleWatchMarshal() {
+      if (!user?.token) { const ok = await devAutoAuth(); if (!ok) return showToast("❌ Dev auth failed", "err"); }
+      _watchMarshalEnabled = !_watchMarshalEnabled;
+      updateWatchMarshalBtn();
+      try {
+        let res = await fetch(`${apiUrl}/panel-status`, { method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token }, body: JSON.stringify({ target: "watchmarshal", enable: _watchMarshalEnabled }) });
+        if (res.status === 404) res = await fetch(`${apiUrl}/admin/panel-status`, { method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token }, body: JSON.stringify({ target: "watchmarshal", enable: _watchMarshalEnabled }) });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(_watchMarshalEnabled ? "✓ WatchMarshal ON" : "✓ WatchMarshal OFF", "ok");
+        } else {
+          _watchMarshalEnabled = !_watchMarshalEnabled;
+          updateWatchMarshalBtn();
+          showToast(`✗ ${data.error || "Failed"}`, "err");
+        }
+      } catch {
+        _watchMarshalEnabled = !_watchMarshalEnabled;
+        updateWatchMarshalBtn();
         showToast("✗ Bot unreachable", "err");
       }
     }
@@ -4833,6 +4872,7 @@ ${drivers.map(d => `
         if (!user?.token) { const ok = await devAutoAuth(); if (!ok) { showToast("❌ Dev auth failed", "err"); return; } }
         try {
           await loadActionLoggingState();
+          await loadWatchMarshalState();
           const headers = { "x-discord-id": user.id, "x-discord-token": user.token };
           const [ai, si, li, dl] = await Promise.all([
             fetch(`${apiUrl}/admin/info`, { headers }).then(r => r.json()),
