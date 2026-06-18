@@ -1969,19 +1969,21 @@
           </button>
         </div>
 
-        <div class="s-section-title">Font Size</div>
-        <div class="s-card" style="gap:10px;margin-bottom:0;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span style="font-size:10px;color:var(--muted);font-weight:700;flex-shrink:0;">A</span>
-            <input type="range" id="font-size-slider" class="vol-slider" min="10" max="16" step="1" value="12"
-              oninput="onFontSizeSlider(this.value)" />
-            <span style="font-size:15px;color:var(--muted);font-weight:700;flex-shrink:0;">A</span>
-            <span id="font-size-label"
-              style="font-size:11px;font-weight:700;color:var(--blue);width:32px;text-align:right;flex-shrink:0;">12px</span>
-          </div>
-          <div style="font-size:9px;color:var(--muted);">Controls all text sizes throughout the app.</div>
-        </div>
-      </div>
+<div class="s-section-title" style="display:flex;align-items:center;gap:8px;">
+  <span>Font Size</span>
+  <span style="font-size:8px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:1px 6px;border-radius:8px;background:rgba(255,23,68,0.12);border:1px solid rgba(255,23,68,0.35);color:var(--red);">Unavailable</span>
+</div>
+<div class="s-card" style="gap:10px;margin-bottom:0;opacity:0.5;">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span style="font-size:10px;color:var(--muted);font-weight:700;flex-shrink:0;">A</span>
+    <input type="range" id="font-size-slider" class="vol-slider" min="10" max="16" step="1" value="12"
+      oninput="onFontSizeSlider(this.value)" disabled style="cursor:not-allowed;" />
+    <span style="font-size:15px;color:var(--muted);font-weight:700;flex-shrink:0;">A</span>
+    <span id="font-size-label"
+      style="font-size:11px;font-weight:700;color:var(--muted);width:32px;text-align:right;flex-shrink:0;">12px</span>
+  </div>
+  <div style="font-size:9px;color:var(--muted);">This setting is temporarily unavailable.</div>
+</div>
 
       <div class="stab-panel" id="stab-audio">
         <div class="s-section-title">Flag Alert Volume</div>
