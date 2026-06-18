@@ -1,7 +1,7 @@
 const { app, BrowserWindow, globalShortcut, ipcMain, Tray, Menu, nativeImage, shell } = require("electron");
 const path = require("path");
 const fs   = require("fs");
-const { exec } = require('child_process');
+const { exec, execFile } = require('child_process');
 const { autoUpdater } = require("electron-updater");
 
 const CONFIG_FILE = path.join(app.getPath("userData"), "config.json");
@@ -368,10 +368,9 @@ ipcMain.handle("toggle-pitting2", () => {
 });
 ipcMain.handle("resume-hotkeys",    () => { registerHotkeys(config.keybinds); return true; });
 ipcMain.handle("open-releases", () => shell.openExternal("https://github.com/AleEjx/racecontrol-app/releases/latest"));
-const { execFile } = require("child_process");
 function getUninstallStringFromRegistry() {
   return new Promise((resolve) => {
-    const appName = app.getName(); 
+    const appName = "RaceLeague Driver";
     const hives = [
       "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
       "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
@@ -442,7 +441,6 @@ ipcMain.handle("uninstall", async () => {
         return true;
       }
     }
- 
     console.warn("[Uninstall] Could not resolve uninstaller path from registry.");
     mainWindow?.webContents.send("toast", {
       msg: "✗ Couldn't find uninstaller — opening Windows settings",
