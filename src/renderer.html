@@ -2646,9 +2646,11 @@
       const evtSource = new EventSource(`${apiUrl}/events?type=app`);
       _sseSource = evtSource;
 
-      evtSource.addEventListener("flag", e => {
-        try { const d = JSON.parse(e.data); onFlagEvent(d.flag, d); } catch { }
-      });
+evtSource.addEventListener("flag", e => {
+  console.log("[SSE] Received flag event:", e.data);
+  try { const d = JSON.parse(e.data); onFlagEvent(d.flag, d); }
+  catch (err) { console.error("[SSE] Failed to parse flag event:", err, e.data); }
+});
 
       evtSource.onerror = () => {
         console.warn("[SSE] Connection lost — reconnecting in 5s...");
