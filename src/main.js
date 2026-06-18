@@ -368,10 +368,96 @@ ipcMain.handle("toggle-pitting2", () => {
 });
 ipcMain.handle("resume-hotkeys",    () => { registerHotkeys(config.keybinds); return true; });
 ipcMain.handle("open-releases", () => shell.openExternal("https://github.com/AleEjx/racecontrol-app/releases/latest"));
-ipcMain.handle("uninstall", () => {
-  const uninstallerPath = path.join(process.env.LOCALAPPDATA, 'RaceLeague Control', 'Update.exe');
-  exec(`"${uninstallerPath}" --uninstall`);
-  setTimeout(() => { globalShortcut.unregisterAll(); app.quit(); }, 1000);
+const { execFile } = require("child_process");
+function getUninstallStringFromRegistry() {
+  return new Promise((resolve) => {
+    const appName = app.getName(); 
+    const hives = [
+      "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
+      "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
+      "HKLM\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
+    ];
+ 
+    let remaining = hives.length;
+    let found = null;
+ 
+    hives.forEach((hive) => {
+      execFile(
+        "reg",
+        ["query", hive, "/s", "/f", appName, "/k"],
+        (err, stdout) => {
+          remaining--;
+          if (!found && !err && stdout) {
+            const match = stdout
+              .split(/\r?\n/)
+              .find((line) => line.trim().startsWith("HKEY"));
+            if (match) found = match.trim();
+          }
+          if (remaining === 0) resolve(found);
+        }
+      );
+    });
+  });
+}
+ 
+function getUninstallCommand(subkeyPath) {
+  return new Promise((resolve) => {
+    execFile(
+      "reg",
+      ["query", subkeyPath, "/v", "UninstallString"],
+      (err, stdout) => {
+        if (err || !stdout) return resolve(null);
+        const line = stdout
+          .split(/\r?\n/)
+          .find((l) => l.includes("UninstallString"));
+        if (!line) return resolve(null);
+        const parts = line.trim().split(/\s+/);
+        const value = line.slice(line.indexOf("REG_SZ") + 6).trim();
+        resolve(value || null);
+      }
+    );
+  });
+}
+ 
+ipcMain.handle("uninstall", async () => {
+  try {
+    const subkey = await getUninstallStringFromRegistry();
+ 
+    if (subkey) {
+      const uninstallString = await getUninstallCommand(subkey);
+      if (uninstallString) {
+        console.log("[Uninstall] Found via registry:", uninstallString);
+        exec(uninstallString, (err) => {
+          if (err) {
+            console.error("[Uninstall] Failed to launch uninstaller:", err.message);
+            mainWindow?.webContents.send("toast", {
+              msg: "✗ Couldn't launch uninstaller automatically",
+              type: "err",
+            });
+            shell.openExternal("ms-settings:appsfeatures");
+            return;
+          }
+        });
+        setTimeout(() => { globalShortcut.unregisterAll(); app.quit(); }, 1000);
+        return true;
+      }
+    }
+ 
+    console.warn("[Uninstall] Could not resolve uninstaller path from registry.");
+    mainWindow?.webContents.send("toast", {
+      msg: "✗ Couldn't find uninstaller — opening Windows settings",
+      type: "err",
+    });
+    shell.openExternal("ms-settings:appsfeatures");
+    return false;
+  } catch (err) {
+    console.error("[Uninstall] Unexpected error:", err.message);
+    mainWindow?.webContents.send("toast", {
+      msg: "✗ Uninstall failed — see logs",
+      type: "err",
+    });
+    return false;
+  }
 });
 
 app.on("will-quit", () => globalShortcut.unregisterAll());
