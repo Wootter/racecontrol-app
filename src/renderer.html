@@ -2530,6 +2530,7 @@
     let _cooldownActive2 = false;
     let _prevPositions = {};
     let _deltaSeconds = {};
+    let _driverDbVersion = null;
 
     function updateDeltas(gaps) {
       if (!gaps) return;
@@ -3333,7 +3334,7 @@ async function toggleActionLogging() {
 
     window.addEventListener("DOMContentLoaded", async () => {
 
-      setInterval(async () => {
+setInterval(async () => {
         const freshUrl = await fetchApiUrlFromGist();
         if (freshUrl && freshUrl !== apiUrl) {
           console.log("[Gist] URL changed — reconnecting SSE");
@@ -3344,6 +3345,8 @@ async function toggleActionLogging() {
           startSSE();
         }
       }, 60_000);
+
+      setInterval(checkDriverDbVersion, 15_000);
 
       loadDriverDB();
       config = await window.api.getConfig();
@@ -4353,27 +4356,45 @@ async function toggleActionLogging() {
         }).join('');
       }
 
-      async function onFlagEvent(flag, customData) {
-        if (flag === "__driver_db_update__") {
-          console.log("[SSE] __driver_db_update__ hit — showing banner");
-
-          const banner = document.createElement("div");
-          banner.id = "db-update-banner";
-          banner.style.cssText = "position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;";
-          banner.innerHTML = `
+    function showDbUpdateBanner() {
+  if (document.getElementById("db-update-banner")) return;
+  const banner = document.createElement("div");
+  banner.id = "db-update-banner";
+  banner.style.cssText = "position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;";
+  banner.innerHTML = `
       <div style="background:var(--surface);border:1px solid rgba(41,121,255,0.4);border-radius:12px;padding:24px 32px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;">
         <div style="font-size:22px;">🔄</div>
         <div style="font-size:13px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:1px;">Restarting</div>
         <div style="font-size:10px;color:var(--muted);">Driver list updated — applying changes...</div>
       </div>`;
-          document.body.appendChild(banner);
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              setTimeout(() => location.reload(), 1200);
-            });
-          });
-          return;
-        }
+  document.body.appendChild(banner);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      setTimeout(() => location.reload(), 1200);
+    });
+  });
+}
+
+async function checkDriverDbVersion() {
+  if (!apiUrl) return;
+  try {
+    const res = await fetch(`${apiUrl}/driver-db-version`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (_driverDbVersion === null) { _driverDbVersion = data.version; return; }
+    if (data.version !== _driverDbVersion) {
+      _driverDbVersion = data.version;
+      showDbUpdateBanner();
+    }
+  } catch (e) { console.warn("[DriverDB] Version check failed:", e.message); }
+}
+    
+      async function onFlagEvent(flag, customData) {
+if (flag === "__driver_db_update__") {
+      console.log("[SSE] __driver_db_update__ hit — showing banner");
+      showDbUpdateBanner();
+      return;
+    }
 
         if (flag === "__custom__" && customData) {
           if (customData.audioCheckId) {
