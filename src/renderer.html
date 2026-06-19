@@ -568,10 +568,9 @@
 <div class="s-card" style="gap:10px;margin-bottom:0;opacity:0.5;">
   <div style="display:flex;align-items:center;gap:10px;">
     <span style="font-size:10px;color:var(--muted);font-weight:700;flex-shrink:0;">A</span>
-    <input type="range" id="font-size-slider" class="vol-slider" min="10" max="16" step="1" value="12"
-      oninput="onFontSizeSlider(this.value)"/>
+    <input type="range" id="fontSizeSlider" class="vol-slider" min="10" max="16" step="1" value="12"/>
     <span style="font-size:15px;color:var(--blue);font-weight:700;flex-shrink:0;">A</span>
-    <span id="font-size-label"
+    <span id="sizeDisplay"
       style="font-size:11px;font-weight:700;color:var(--muted);width:32px;text-align:right;flex-shrink:0;">12px</span>
   </div>
 </div>
@@ -2650,21 +2649,17 @@ setInterval(async () => {
       document.querySelectorAll('.stab-panel').forEach(p => p.classList.toggle('active', p.id === 'stab-' + tab));
     }
 
-    function onFontSizeSlider(val) {
-      const px = parseInt(val, 10);
-      document.documentElement.style.setProperty('--font-scale', px / 12);
-      document.getElementById('font-size-label').textContent = px + 'px';
-      localStorage.setItem('rc_font_size', px);
-    }
-
-    function loadFontSizePrefs() {
-      const saved = localStorage.getItem('rc_font_size');
-      const px = saved !== null ? parseInt(saved, 10) : 12;
-      document.documentElement.style.setProperty('--font-scale', px / 12);
-      const slider = document.getElementById('font-size-slider');
-      const label = document.getElementById('font-size-label');
-      if (slider) slider.value = px;
-      if (label) label.textContent = px + 'px';
+    const slider = document.getElementById('fontSizeSlider');
+    const sizeDisplay = document.getElementById('sizeDisplay');
+    
+    if (slider && sizeDisplay) {
+        slider.addEventListener('input', function() {
+            const newSize = this.value;
+            document.querySelectorAll('span').forEach(span => {
+                span.style.fontSize = newSize + 'px';
+            });
+            sizeDisplay.textContent = newSize + 'px';
+        });
     }
 
     function launchMarshalPanel(startPoll = true) {
