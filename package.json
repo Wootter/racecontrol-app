@@ -36,6 +36,10 @@
     "electron-builder": "^26.15.3"
   },
   "dependencies": {
-    "electron-updater": "^6.1.7"
+    "electron-updater": "^6.1.7",
+    "electron-winstaller": "^5.4.0"
+  },
+  "allowScripts": {
+    "electron-winstaller@5.4.0": true
   }
 }
