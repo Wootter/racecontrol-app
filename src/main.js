@@ -136,7 +136,7 @@ function createWindow() {
     title: "RaceLeague Control",
   });
 
-  mainWindow.loadFile(path.join(__dirname, "renderer.html"));
+  mainWindow.loadFile(path.join(__dirname, "index.html"));
   if (config.alwaysOnTop) mainWindow.setAlwaysOnTop(true, "screen-saver");
 
   mainWindow.on("close", () => {

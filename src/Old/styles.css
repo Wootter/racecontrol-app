@@ -1,0 +1,443 @@
+*,
+*:before,
+*:after{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/*Root variables*/
+:root {
+    --bg: #0f0a0e;
+    --surface: #111813;
+    --border: #1e1e2a;
+    --text: #e8e8f0;
+    --muted: #50506a;
+    --green: #00e676;
+    --red: #ff1744;
+    --blue: #2979ff;
+    --yellow: #ffd600;
+    --orange: #ff6d00;
+    --discord: #5865F2;
+    --radius: 6px;
+    
+    /* Badge colors */
+    --blue-light-bg: rgba(41, 121, 255, 0.15);
+    --blue-light-border: rgba(41, 121, 255, 0.3);
+    --yellow-light-bg: rgba(255, 214, 0, 0.12);
+    --yellow-light-border: rgba(255, 214, 0, 0.3);
+    --red-light-bg: rgba(255, 23, 68, 0.12);
+    --red-light-border: rgba(255, 23, 68, 0.3);
+
+    >.light-mode {
+        --bg: #f0f0f5;
+        --surface: #ffffff;
+        --border: #d0d0e0;
+        --text: #111118;
+        --muted: #7070a0;
+    }
+
+    >.transparent-mode {
+        --bg: rgba(0, 0, 0, 0);
+        --surface: rgba(10, 10, 15, 0.45);
+        --border: rgba(255, 255, 255, 0.08);
+        --text: #e8e8f0;
+        --muted: #7070a0;
+    }
+}
+
+#cooldown-bar {
+    display: none;
+    height: 3px;
+    background: var(--border);
+    flex-shrink: 0;
+}
+
+#cooldown-fill {
+    height: 100%;
+    background: var(--red);
+    width: 100%;
+}
+
+#toast {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%) translateY(30px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 7px 16px;
+    border-radius: 20px;
+    opacity: 0;
+    transition: transform 0.2s, opacity 0.2s;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 999;
+}
+
+#toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+#toast.ok {
+    border-color: var(--green);
+    color: var(--green);
+}
+
+#toast.err {
+    border-color: var(--red);
+    color: var(--red);
+}
+
+html,
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Oxanium', sans-serif;
+    height: 100%;
+    overflow: hidden;
+    user-select: none;
+}
+
+/*Text sizing*/
+nav_title {
+    font-size: 14px;
+}
+
+badge, icon {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+login_title {
+    font-size: 28px;
+    font-weight: 900;
+}
+
+dc-title {
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Oxanium', sans-serif;
+}
+
+h1 {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+h2 {
+    font-size: 12px;
+    font-weight: 400;
+}
+
+h3 {
+    font-size: 10px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: 'Oxanium', sans-serif;
+    color: var(--muted);
+}
+
+h4 {
+    font-size: 9px;
+    text-transform: uppercase;
+}
+
+/*
+h1 {
+    font-size: 28px;
+}
+h2 {
+    font-size: 16px;
+    font-weight: 500;
+}
+h3 {
+    font-size: 12px;
+    font-weight: 400;
+    font-family: 'Oxanium', sans-serif;
+}
+h4 {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: 'Oxanium', sans-serif;
+    color: var(--muted);
+}
+h5 {
+    font-size: 9px;
+    text-transform: uppercase;
+} */
+
+/*Title Bar*/
+.titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    height: 36px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    -webkit-app-region: drag;
+    flex-shrink: 0;
+
+    > .titlebar-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        > .tl-logo {
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #fff;
+
+            > nav_title {
+                font-weight: 900;
+
+                > span {
+                color: var(--red);}
+            }
+        }
+
+        >  #panel-switcher {
+            display: none;
+            align-items: center;
+            gap: 4px;
+            -webkit-app-region: no-drag;
+
+            > .switch-btn {
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                padding: 3px 8px;
+                border-radius: 4px;
+                cursor: pointer;
+                border: 1px solid var(--border);
+                background: none;
+                transition: all 0.15s;
+            }
+
+            > .switch-btn.active {
+                color: var(--text);
+                border-color: var(--blue);
+                background: rgba(41, 121, 255, 0.1);
+            }
+        }
+
+        > .tl-badge {
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 2px 7px;
+            border-radius: 10px;
+            
+            &.driver {
+                background: var(--blue-light-bg);
+                color: var(--blue);
+                border: 1px solid var(--blue-light-border);
+            }
+            
+            &.marshal {
+                background: var(--yellow-light-bg);
+                color: var(--yellow);
+                border: 1px solid var(--yellow-light-border);
+            }
+            
+            &.dev {
+                background: var(--red-light-bg);
+                color: var(--red);
+                border: 1px solid var(--red-light-border);
+            }
+        }
+    }
+    > .tb-btns {
+        display: flex;
+        gap: 2px;
+        -webkit-app-region: no-drag;
+
+        >.tb-btn {
+            width: 26px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: var(--muted);
+            transition: background 0.15s, color 0.15s;
+
+            &:hover {
+                background: var(--border);
+                color: var(--text);
+            }
+
+            &.close-btn:hover {
+                background: var(--red);
+                color: #fff;
+            }
+        }
+    }
+}
+
+/*Screens*/
+.screen {
+    display: none;
+    flex-direction: column;
+    height: calc(100vh - 36px);
+
+    &.active {
+        display: flex;
+    }
+
+    > .scroll-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    /* Login Screen */
+    &.screen-login {
+        align-items:center;
+        justify-content:center;
+        gap:14px;
+        padding:24px;
+    }
+    > .login-logo {
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #fff;
+
+        > login_title > span {
+            color: var(--red);
+        }
+    }
+
+    > .login-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 20px;
+        width: 100%;
+        max-width: 320px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        > .discord-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--discord);
+            color: #fff;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border: none;
+            padding: 11px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: opacity 0.15s;
+
+            &:hover {
+                background: #4752c4;
+            }
+        }
+
+        > .change-url-btn {
+            display:none;
+            background:none;
+            border:none;
+            color:var(--blue);
+            font-family:'Oxanium',sans-serif;
+            cursor:pointer;
+            text-decoration:underline;
+        }
+
+        >.login-error {
+            font-size: 10px;
+            color: var(--red);
+            text-align: center;
+            min-height: 14px;
+        }
+    }
+
+    /* Password Screen */
+    > .pw-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 20px;
+        width: 100%;
+        max-width: 320px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        >.user-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 6px 12px 6px 6px;
+
+            > img {
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+
+                &#pw-avatar {
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                }
+            }
+            > .uname {
+                font-size: 12px;
+                font-weight: 700;
+            }
+
+            > .vrfd {
+                font-size: 9px;
+                color: var(--green);
+            }
+        }
+
+        > .pw-btn {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 23, 68, 0.15);
+            border: 1px solid rgba(255, 23, 68, 0.4);
+            color: var(--red);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-radius: var(--radius);
+            cursor: pointer;
+
+            > h2 {
+                font-weight: 700;
+            }
+        }
+
+        > .pw-btn:hover {
+            background: rgba(255, 23, 68, 0.25);
+        }
+
+        > .pw-error {
+            color: var(--red);
+            text-align: center;
+            min-height: 14px;
+        }
+    }
+}

@@ -1,0 +1,3010 @@
+const DRIVER_ROLE = "1464790972679454903";
+const MARSHAL_ROLE = "1464788931823538430";
+const DIRECTOR_ROLES = ["1464788930296549572", "1510621069864603718"];
+const DEV_USER_ID = "790254318389166111";
+const GIST_ID = "746339b1b2924446563e6349ef89ce8a";
+
+const FLAG_DEFS = {
+    green: { emoji: "🟢", title: "Green Flag", sub: "Green flag — race on!", color: "green", sound: "GreenFlag.mp4" },
+    yellow: { emoji: "🟡", title: "Yellow Flag", sub: "Caution — no overtaking.", color: "yellow", sound: "YellowFlag.mp4" },
+    fcy: { emoji: "🟡", title: "Full Course Yellow", sub: "Full Course Yellow — slow down.", color: "yellow", sound: "FullCourseYellow.mp4" },
+    red: { emoji: "🔴", title: "Red Flag", sub: "Stop immediately, return to pits.", color: "red", sound: "RedFlag.mp4" },
+    blue: { emoji: "🔵", title: "Blue Flag", sub: "Let the leaders past.", color: "blue", sound: "Blue_Flag.mp4" },
+    safety_car: { emoji: "🟠", title: "Safety Car", sub: "Safety car deployed — hold position.", color: "orange", sound: "SCDeployed.mp4" },
+    sc_ending: { emoji: "🟠", title: "Safety Car Ending", sub: "Safety car coming in — prepare for restart.", color: "orange", sound: "SafetyCarEnding.mp4" },
+    sc_speedup: { emoji: "🟠", title: "Speed Up", sub: "Safety car speeding up — get ready.", color: "orange", sound: "SCSpeedup.mp4" },
+    sfl: { emoji: "🟠", title: "Single File", sub: "Form single file behind the safety car.", color: "orange", sound: "SFL.mp4" },
+    checkered: { emoji: "🏁", title: "Checkered Flag", sub: "Race over — cool down lap.", color: "white", sound: null },
+    yellow_s1: { emoji: "🟡", title: "Yellow Flag", sub: "🟡 Yellow flag — Sector 1", color: "yellow", sound: "YellowFlagSector1.mp4" },
+    yellow_s2: { emoji: "🟡", title: "Yellow Flag", sub: "🟡 Yellow flag — Sector 2", color: "yellow", sound: "YellowFlagSector2.mp4" },
+    yellow_s3: { emoji: "🟡", title: "Yellow Flag", sub: "🟡 Yellow flag — Sector 3", color: "yellow", sound: "YellowFlagSector3.mp4" },
+};
+
+let DRIVER_IDS = {
+    "884223249939050507": "ACHILLES",
+    "799844642984034314": "AUBRN",
+    "1487269583898284183": "BRYAN",
+    "749509586800869418": "CHASE",
+    "660419748894343169": "CODA",
+    "818561366948315198": "LAMAR",
+    "852652597315240028": "QUAH",
+    "763093725903585291": "SETH",
+    "1112809205771010150": "SHADOW",
+    "1127975831197724813": "SUPA",
+    "1036614995737321552": "SWEATER",
+    "756781169550295061": "VSCO",
+    "776108630415376385": "TON",
+    "1081740933021835354": "UNLIMITED",
+    "1211381460406116375": "COOLCAT",
+    "529122061411549185": "HIDDEN",
+    "1499876268332548271": "XPC",
+    "839270072391827506": "SOVO",
+    "1406554201861001239": "ARMIN",
+    "1228434328653140162": "CONTRAPTION",
+    "1060978901716844634": "MAUKIE",
+    "1316805535252746346": "GRUMPY",
+    "1122883570021695548": "KEBAB",
+    "751617471806570497": "CDNDOGE",
+    "918063828049203231": "AYAN",
+    "658022043224113201": "OMB",
+};
+
+
+
+let DRIVER_INFO = {
+    "ACHILLES": { number: "09", callsign: "MAR-09" },
+    "AUBRN": { number: "18", callsign: "CRG-18" },
+    "BRYAN": { number: "06", callsign: "LND-06" },
+    "CHASE": { number: "02", callsign: "MIS-27" },
+    "CODA": { number: "56", callsign: "LND-56" },
+    "OMB": { number: "36", callsign: "XYZ-36" },
+    "LAMAR": { number: "01", callsign: "MAR-01" },
+    "QUAH": { number: "28", callsign: "LOT-28" },
+    "SETH": { number: "03", callsign: "LOT-33" },
+    "SHADOW": { number: "18", callsign: "ST-18" },
+    "SUPA": { number: "05", callsign: "ST-05" },
+    "SWEATER": { number: "31", callsign: "MIS-31" },
+    "VSCO": { number: "51", callsign: "ST-51" },
+    "TON": { number: "50", callsign: "TNT-50" },
+    "UNLIMITED": { number: "12", callsign: "AWR-12" },
+    "COOLCAT": { number: "27", callsign: "MIS-27" },
+    "HIDDEN": { number: "22", callsign: "NCC-22" },
+    "XPC": { number: "99", callsign: "TNT-99" },
+    "SOVO": { number: "17", callsign: "SC-17" },
+    "ARMIN": { number: "29", callsign: "SC-29" },
+    "CONTRAPTION": { number: "21", callsign: "XYZ-21" },
+    "MAUKIE": { number: "44", callsign: "XYZ-44" },
+    "GRUMPY": { number: "38", callsign: "XYZ-38" },
+    "KEBAB": { number: "55", callsign: "TNT-55" },
+    "CDNDOGE": { number: "94", callsign: "AWR-94" },
+    "AYAN": { number: "52", callsign: "LOT-52" },
+};
+
+let config = {};
+let user = null;
+let apiUrl = "";
+let engineerPending = false;
+let currentPanel = "login";
+let prevPanel = "login";
+let hasDriver = false;
+let hasMarshal = false;
+let hasDev = false;
+let toastTimer;
+let _currentFlagAudio = null;
+let _actionLoggingEnabled = false;
+let _watchMarshalEnabled = true;
+let _lastPlayedSound = null;
+let _attendance = {};
+let _lastPlayedTime = 0;
+let listeningKey = null;
+let bfKnownIds = new Set();
+let bfAlertInterval = null;
+let wmKnownIds = new Set();
+let wmAlertInterval = null;
+let _lastFlagTimestamp = null;
+let _lastRaceState = null;
+let _lastBlueFlagDriver = null;
+let isEngineer = false;
+let _driverPollInterval = null;
+let _marshalPollInterval = null;
+let _holoMode = false;
+let _cooldownActive = false;
+let _cooldownActive2 = false;
+let _prevPositions = {};
+let _deltaSeconds = {};
+let _driverDbVersion = null;
+
+function updateDeltas(gaps) {
+    if (!gaps) return;
+    _deltaSeconds = { ..._deltaSeconds, ...gaps };
+}
+
+let _flagVolume = 1.0;
+let _actionLastFired = {};
+const ACTION_DEBOUNCE_MS = 1000;
+
+function _canFire(action) {
+    const now = Date.now();
+    if (now - (_actionLastFired[action] || 0) < ACTION_DEBOUNCE_MS) return false;
+    _actionLastFired[action] = now;
+    return true;
+}
+
+function onVolumeSlider(val) {
+    _flagVolume = parseInt(val, 10) / 100;
+    document.getElementById("vol-label").textContent = val + "%";
+    localStorage.setItem("rc_flag_volume", val);
+}
+
+function loadVolumePrefs() {
+    const saved = localStorage.getItem("rc_flag_volume");
+    if (saved !== null) {
+    const pct = parseInt(saved, 10);
+    _flagVolume = pct / 100;
+    const slider = document.getElementById("vol-slider");
+    const label = document.getElementById("vol-label");
+    if (slider) slider.value = pct;
+    if (label) label.textContent = pct + "%";
+    }
+}
+
+function setTheme(theme) {
+    const colors = { light: "#ffffff", dark: "#0a0a0f", transparent: "rgba(0,0,0,0.01)" };
+    const color = colors[theme] || "#0a0a0f";
+
+    const ripple = document.createElement("div");
+    ripple.style.cssText = `position:fixed;top:50%;left:50%;width:0;height:0;border-radius:50%;background:${color};transform:translate(-50%,-50%) scale(1);z-index:99999;pointer-events:none;transition:none;`;
+    document.body.appendChild(ripple);
+    const size = Math.max(window.innerWidth, window.innerHeight) * 3;
+    requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+        ripple.style.transition = "width 0.55s cubic-bezier(0.4,0,0.2,1), height 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.2s ease 0.4s";
+        ripple.style.width = size + "px"; ripple.style.height = size + "px";
+    });
+    });
+    setTimeout(() => {
+    document.documentElement.classList.remove("light-mode", "transparent-mode");
+    if (theme === "light") document.documentElement.classList.add("light-mode");
+    if (theme === "transparent") document.documentElement.classList.add("transparent-mode");
+    localStorage.setItem("rc_theme", theme);
+    updateThemeBtns();
+    }, 280);
+    setTimeout(() => { ripple.style.opacity = "0"; setTimeout(() => ripple.remove(), 250); }, 400);
+
+    const icons = { light: "☀️", dark: "🌙", transparent: "🪟" };
+    const icon = document.createElement("div");
+    icon.textContent = icons[theme] || "🌙";
+    icon.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0) rotate(-180deg);font-size:52px;z-index:100000;pointer-events:none;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease 0.45s;opacity:1;`;
+    document.body.appendChild(icon);
+    requestAnimationFrame(() => { requestAnimationFrame(() => { icon.style.transform = "translate(-50%,-50%) scale(1) rotate(0deg)"; }); });
+    setTimeout(() => { icon.style.opacity = "0"; setTimeout(() => icon.remove(), 300); }, 450);
+
+    const stars = ["✨", "⭐", "🌟", "💫"];
+    stars.forEach((s, i) => {
+    const star = document.createElement("div");
+    const angle = (i / stars.length) * 360;
+    const dist = 70 + Math.random() * 40;
+    const rx = Math.cos(angle * Math.PI / 180) * dist;
+    const ry = Math.sin(angle * Math.PI / 180) * dist;
+    star.textContent = s;
+    star.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) translate(0px,0px) scale(0);font-size:${16 + Math.random() * 14}px;z-index:100000;pointer-events:none;transition:transform 0.5s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.06}s, opacity 0.3s ease ${0.35 + i * 0.06}s;opacity:1;`;
+    document.body.appendChild(star);
+    requestAnimationFrame(() => { requestAnimationFrame(() => { star.style.transform = `translate(-50%,-50%) translate(${rx}px,${ry}px) scale(1)`; }); });
+    setTimeout(() => { star.style.opacity = "0"; setTimeout(() => star.remove(), 350); }, 350 + i * 60);
+    });
+}
+
+function updateThemeBtns() {
+    const isLight = document.documentElement.classList.contains('light-mode');
+    const isTransparent = document.documentElement.classList.contains('transparent-mode');
+    document.getElementById('theme-dark-btn')?.classList.toggle('active', !isLight && !isTransparent);
+    document.getElementById('theme-light-btn')?.classList.toggle('active', isLight);
+    document.getElementById('theme-transparent-btn')?.classList.toggle('active', isTransparent);
+}
+
+function loadThemePrefs() {
+    const saved = localStorage.getItem("rc_theme");
+    document.documentElement.classList.remove("light-mode", "transparent-mode");
+    if (saved === "light") document.documentElement.classList.add("light-mode");
+    if (saved === "transparent") document.documentElement.classList.add("transparent-mode");
+    updateThemeBtns();
+}
+
+function _suspendHotkeys() { window.api.suspendHotkeys(); }
+function _resumeHotkeys() { window.api.resumeHotkeys(); }
+
+let _sseStarted = false;
+let _sseSource = null;
+
+function startSSE() {
+    if (!apiUrl) return;
+    _sseStarted = true;
+    _connectSSE();
+}
+
+function _connectSSE() {
+    if (_sseSource) { try { _sseSource.close(); } catch { } _sseSource = null; }
+    if (!apiUrl) return;
+
+    const evtSource = new EventSource(`${apiUrl}/events?type=app`);
+    _sseSource = evtSource;
+
+evtSource.addEventListener("flag", e => {
+console.log("[SSE] Received flag event:", e.data);
+try { const d = JSON.parse(e.data); onFlagEvent(d.flag, d); }
+catch (err) { console.error("[SSE] Failed to parse flag event:", err, e.data); }
+});
+
+    evtSource.onerror = () => {
+    console.warn("[SSE] Connection lost — reconnecting in 5s...");
+    evtSource.close();
+    _sseSource = null;
+    setTimeout(_connectSSE, 5000);
+    };
+}
+
+function _registerHotkeys() {
+    if (config.keybinds) window.api.registerHotkeys(config.keybinds);
+}
+
+function _initHotkeyPauseObserver() {
+    const TYPING_SELECTOR =
+    'input, textarea, select, [contenteditable="true"]';
+
+    document.addEventListener('focusin', e => {
+    if (e.target.matches(TYPING_SELECTOR)) {
+        _suspendHotkeys();
+    }
+    });
+
+    document.addEventListener('focusout', e => {
+    if (e.target.matches(TYPING_SELECTOR)) {
+        _resumeHotkeys();
+    }
+    });
+}
+
+
+function filterMarshalLeaderboard(q) {
+    const rows = document.querySelectorAll("#m-leaderboard .lb-row");
+    const term = q.toLowerCase().trim();
+    rows.forEach(row => {
+    const name = row.querySelector(".lb-name")?.textContent?.toLowerCase() || "";
+    const callsign = row.querySelector(".lb-call")?.textContent?.toLowerCase() || "";
+    row.style.display = (!term || name.includes(term) || callsign.includes(term)) ? "" : "none";
+    });
+}
+
+function updatePreview() {
+    const hexInput = document.getElementById("dev-flag-hex");
+    const emojiInput = document.getElementById("dev-flag-emoji");
+    const textInput = document.getElementById("dev-flag-text");
+    const preview = document.getElementById("dev-flag-preview");
+    if (!preview) return;
+    const hex = hexInput?.value || "#ff00ff";
+    const emoji = emojiInput?.value || "🌈";
+    const text = textInput?.value || "Custom Flag";
+    if (_holoMode) {
+    preview.style.cssText = "";
+    preview.style.animation = "holo-border 4s linear infinite";
+    preview.style.border = "2px solid #ff0080";
+    preview.style.borderRadius = "var(--radius)";
+    preview.style.padding = "6px 10px";
+    preview.style.display = "flex";
+    preview.style.alignItems = "center";
+    preview.style.gap = "6px";
+    preview.style.fontSize = "11px";
+    preview.style.fontWeight = "700";
+    preview.innerHTML = `<span style="font-size:16px;">${emoji}</span><span style="animation:holo-text 4s linear infinite;">${text}</span>`;
+    } else {
+    preview.style.cssText = "";
+    preview.style.border = "1px solid " + hex;
+    preview.style.color = hex;
+    preview.style.background = _flagBgDataUrl ? `url(${_flagBgDataUrl}) center/cover` : hex + "22";
+    preview.style.borderRadius = "var(--radius)";
+    preview.style.padding = "6px 10px";
+    preview.style.display = "flex";
+    preview.style.alignItems = "center";
+    preview.style.gap = "6px";
+    preview.style.fontSize = "11px";
+    preview.style.fontWeight = "700";
+    preview.style.textShadow = _flagBgDataUrl ? "0 1px 3px rgba(0,0,0,0.8)" : "";
+    preview.innerHTML = `<span style="font-size:16px;">${emoji}</span> ${text}`;
+    }
+}
+
+let _devTabVisible = { driver: true, marshal: true };
+
+function devToggleTab(tab) {
+    _devTabVisible[tab] = !_devTabVisible[tab];
+    const visible = _devTabVisible[tab];
+    localStorage.setItem("rc_dev_tabs", JSON.stringify(_devTabVisible));
+    const swBtn = document.getElementById(`sw-${tab}`);
+    if (swBtn) swBtn.style.display = visible ? "" : "none";
+    updateDevTabBtns();
+    if (!visible && currentPanel === tab) {
+    if (tab === "driver" && hasMarshal) launchMarshalPanel(false);
+    else if (tab === "marshal" && hasDriver) launchDriverPanel(false);
+    }
+    if (visible && tab === "driver" && !config.driver) {
+    hasDriver = true;
+    showEngineerScreen();
+    }
+    showToast(`✓ ${tab} tab ${visible ? "shown" : "hidden"}`, "ok");
+}
+
+function clearLocalEngineers() {
+    localStorage.removeItem("rc_engineers");
+    const engEl = document.getElementById("dev-engineers");
+    if (engEl) engEl.innerHTML = '<div style="color:var(--muted);">No engineers active.</div>';
+    showToast("✓ Local engineers cleared", "ok");
+}
+
+function updateDevTabBtns() {
+    ["driver", "marshal"].forEach(tab => {
+    const btn = document.getElementById(`dev-toggle-${tab}-tab`);
+    if (!btn) return;
+    const visible = _devTabVisible[tab] !== false;
+    btn.textContent = visible ? "VISIBLE" : "HIDDEN";
+    btn.style.background = visible ? "rgba(0,230,118,0.15)" : "rgba(255,23,68,0.15)";
+    btn.style.borderColor = visible ? "var(--green)" : "var(--red)";
+    btn.style.color = visible ? "var(--green)" : "var(--red)";
+    });
+}
+
+function renderAttendance() {
+    const el = document.getElementById("m-attendance");
+    if (!el) return;
+    const drivers = Object.entries(DRIVER_INFO).sort((a, b) => parseInt(a[1].number) - parseInt(b[1].number));
+    el.innerHTML = drivers.map(([name, info]) => {
+    const present = _attendance[name] !== false;
+    return `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 9px;background:var(--surface);border:1px solid ${present ? "var(--border)" : "rgba(255,23,68,0.3)"};border-radius:5px;transition:border-color 0.15s;">
+    <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:24px;height:24px;border-radius:3px;background:rgba(255,255,255,0.05);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;">#${info.number}</div>
+        <div>
+        <div style="font-size:11px;font-weight:700;color:${present ? "var(--text)" : "var(--muted)"};">${name}</div>
+        <div style="font-size:8px;color:var(--muted);">${info.callsign}</div>
+        </div>
+    </div>
+    <button onclick="toggleAttendance('${name}')"
+        style="font-size:9px;font-weight:800;padding:3px 10px;border-radius:4px;border:1px solid;cursor:pointer;font-family:'Oxanium',sans-serif;
+        background:${present ? "rgba(0,230,118,0.15)" : "rgba(255,23,68,0.15)"};
+        border-color:${present ? "var(--green)" : "var(--red)"};
+        color:${present ? "var(--green)" : "var(--red)"};">
+        ${present ? "✓ HERE" : "✗ ABSENT"}
+    </button>
+    </div>`;
+    }).join("");
+}
+
+async function toggleAttendance(name) {
+    const present = _attendance[name] !== false;
+    _attendance[name] = !present;
+    localStorage.setItem("rc_attendance", JSON.stringify(_attendance));
+    renderAttendance();
+    syncAttendanceToLeaderboard();
+    await pushAttendanceToServer();
+}
+
+async function pushAttendanceToServer() {
+    if (!apiUrl || !user?.token) return;
+    try {
+    await fetch(`${apiUrl}/admin/attendance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+        body: JSON.stringify({ attendance: _attendance }),
+    });
+    } catch (e) { console.warn("[Attendance] Push failed:", e.message); }
+}
+
+function syncAttendanceToLeaderboard() {
+    if (!_lastRaceState?.drivers?.length) return;
+    const filtered = _lastRaceState.drivers.filter(d => _attendance[d.name] !== false);
+    renderLeaderboard({ ..._lastRaceState, drivers: filtered });
+}
+
+function loadDevTabPrefs() {
+    try {
+    const saved = localStorage.getItem("rc_dev_tabs");
+    if (saved) {
+        _devTabVisible = JSON.parse(saved);
+        ["driver", "marshal"].forEach(tab => {
+        if (_devTabVisible[tab] === false) {
+            const swBtn = document.getElementById(`sw-${tab}`);
+            if (swBtn) swBtn.style.display = "none";
+        }
+        });
+    }
+    } catch { }
+}
+
+// DD
+const DRIVER_DB_KEY = "rc_driver_db";
+
+function loadDriverDB() {
+    try {
+    const saved = localStorage.getItem(DRIVER_DB_KEY);
+    if (saved) {
+        const drivers = JSON.parse(saved);
+        DRIVER_IDS = {};
+        DRIVER_INFO = {};
+        drivers.forEach(d => {
+        DRIVER_IDS[d.discordId] = d.name;
+        DRIVER_INFO[d.name] = { number: d.number, callsign: d.callsign };
+        });
+        return drivers;
+    }
+    } catch (e) { console.warn("[DriverDB] Load failed:", e); }
+    return Object.entries(DRIVER_IDS).map(([discordId, name]) => ({
+    name, discordId,
+    number: DRIVER_INFO[name]?.number || "??",
+    callsign: DRIVER_INFO[name]?.callsign || name,
+    }));
+}
+
+async function saveDriverDB(drivers) {
+    localStorage.setItem(DRIVER_DB_KEY, JSON.stringify(drivers));
+    DRIVER_IDS = {};
+    DRIVER_INFO = {};
+    drivers.forEach(d => {
+    DRIVER_IDS[d.discordId] = d.name;
+    DRIVER_INFO[d.name] = { number: d.number, callsign: d.callsign };
+    });
+    if (apiUrl && user?.token) {
+    try {
+        const res = await fetch(`${apiUrl}/admin/driver-db`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+        body: JSON.stringify({ drivers }),
+        });
+        if (res.ok) console.log("[DriverDB] Synced to server");
+        else console.warn("[DriverDB] Server sync failed:", await res.text());
+    } catch (e) { console.warn("[DriverDB] Server sync error:", e.message); }
+    }
+}
+
+
+function getDriverDB() {
+    try {
+    const saved = localStorage.getItem(DRIVER_DB_KEY);
+    return saved ? JSON.parse(saved) : loadDriverDB();
+    } catch { return loadDriverDB(); }
+}
+
+function renderDriverDB() {
+    const q = (document.getElementById("dev-drivers-search")?.value || "").toLowerCase();
+    const drivers = getDriverDB();
+    const sorted = [...drivers].sort((a, b) => (parseInt(a.number) || 999) - (parseInt(b.number) || 999));
+    const filtered = sorted.filter(d =>
+    d.name.toLowerCase().includes(q) ||
+    d.number.toLowerCase().includes(q) ||
+    d.callsign.toLowerCase().includes(q) ||
+    d.discordId.includes(q)
+    );
+
+    const el = document.getElementById("dev-driver-list");
+    if (!el) return;
+
+    el.innerHTML = filtered.length ? filtered.map(d => `
+<div style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;">
+    <div style="width:26px;height:26px;border-radius:3px;background:rgba(255,255,255,0.05);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;flex-shrink:0;">#${d.number}</div>
+    <div style="flex:1;min-width:0;">
+    <div style="font-size:10px;font-weight:700;">${d.name}</div>
+    <div style="font-size:8px;color:var(--muted);">${d.callsign} · <span style="font-family:monospace;">${d.discordId}</span></div>
+    </div>
+    <button onclick="openDriverEdit('${d.name}')" style="font-size:9px;padding:2px 7px;border-radius:3px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;font-family:'Oxanium',sans-serif;">✏️</button>
+    <button onclick="deleteDriverEntry('${d.name}')" style="font-size:9px;padding:2px 7px;border-radius:3px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;font-family:'Oxanium',sans-serif;">✕</button>
+</div>`).join("")
+    : `<div style="font-size:10px;color:var(--muted);text-align:center;padding:10px;">No drivers found.</div>`;
+
+    const badge = document.getElementById("dev-drivers-badge");
+    if (badge) badge.textContent = `${drivers.length} driver${drivers.length !== 1 ? "s" : ""}`;
+}
+
+function openDriverModal() {
+    document.getElementById("dm-edit-id").value = "";
+    document.getElementById("dm-name").value = "";
+    document.getElementById("dm-number").value = "";
+    document.getElementById("dm-callsign").value = "";
+    document.getElementById("dm-discord").value = "";
+    document.getElementById("dm-error").textContent = "";
+    document.getElementById("driver-modal-title").textContent = "Add Driver";
+    document.getElementById("driver-modal").style.display = "flex";
+    setTimeout(() => document.getElementById("dm-name").focus(), 50);
+}
+
+function openDriverEdit(name) {
+    const drivers = getDriverDB();
+    const d = drivers.find(x => x.name === name);
+    if (!d) return;
+    document.getElementById("dm-edit-id").value = name;
+    document.getElementById("dm-name").value = d.name;
+    document.getElementById("dm-number").value = d.number;
+    document.getElementById("dm-callsign").value = d.callsign;
+    document.getElementById("dm-discord").value = d.discordId;
+    document.getElementById("dm-error").textContent = "";
+    document.getElementById("driver-modal-title").textContent = "Edit Driver";
+    document.getElementById("driver-modal").style.display = "flex";
+}
+
+function closeDriverModal() {
+    document.getElementById("driver-modal").style.display = "none";
+}
+
+function saveDriverEntry() {
+    const editId = document.getElementById("dm-edit-id").value;
+    const name = document.getElementById("dm-name").value.trim().toUpperCase();
+    const number = document.getElementById("dm-number").value.trim();
+    const callsign = document.getElementById("dm-callsign").value.trim().toUpperCase();
+    const discord = document.getElementById("dm-discord").value.trim();
+    const errEl = document.getElementById("dm-error");
+
+    if (!name) { errEl.textContent = "Name is required."; return; }
+    if (!number) { errEl.textContent = "Car number is required."; return; }
+    if (!callsign) { errEl.textContent = "Callsign is required."; return; }
+    if (!discord) { errEl.textContent = "Discord ID is required."; return; }
+    if (!/^\d{17,19}$/.test(discord)) { errEl.textContent = "Discord ID should be 17–19 digits."; return; }
+
+    const drivers = getDriverDB();
+    const dupName = drivers.find(d => d.name === name && d.name !== editId);
+    if (dupName) { errEl.textContent = "A driver with that name already exists."; return; }
+    const dupId = drivers.find(d => d.discordId === discord && d.name !== editId);
+    if (dupId) { errEl.textContent = `Discord ID already used by ${dupId.name}.`; return; }
+
+    if (editId) {
+    const idx = drivers.findIndex(d => d.name === editId);
+    if (idx >= 0) drivers[idx] = { name, number, callsign, discordId: discord };
+    } else {
+    drivers.push({ name, number, callsign, discordId: discord });
+    }
+
+    saveDriverDB(drivers);
+    closeDriverModal();
+    renderDriverDB();
+    showToast(`✓ Driver ${editId ? "updated" : "added"}: ${name}`, "ok");
+}
+
+function deleteDriverEntry(name) {
+    if (!confirm(`Remove ${name} from the driver database?`)) return;
+    const drivers = getDriverDB().filter(d => d.name !== name);
+    saveDriverDB(drivers);
+    renderDriverDB();
+    showToast(`✓ Removed ${name}`, "ok");
+}
+
+function devExportDriverCode() {
+    const drivers = getDriverDB();
+    const ids = drivers.map(d => `  "${d.discordId}":"${d.name}"`).join(",\n");
+    const info = drivers.map(d => `  "${d.name}":{ number:"${d.number}", callsign:"${d.callsign}" }`).join(",\n");
+    document.getElementById("driver-export-code").textContent =
+    `const DRIVER_IDS = {\n${ids},\n};\n\nconst DRIVER_INFO = {\n${info},\n};`;
+    document.getElementById("driver-export-modal").style.display = "flex";
+}
+
+function devCopyDriverExport() {
+    navigator.clipboard.writeText(document.getElementById("driver-export-code").textContent)
+    .then(() => showToast("✓ Copied to clipboard", "ok"));
+}
+
+function devResetDriverDB() {
+    if (!confirm("Reset driver database to the hardcoded defaults? This cannot be undone.")) return;
+    localStorage.removeItem(DRIVER_DB_KEY);
+    loadDriverDB();
+    renderDriverDB();
+    showToast("✓ Driver DB reset to defaults", "ok");
+}
+
+async function fetchAttendanceFromServer() {
+    if (!apiUrl) return;
+    try {
+    const res = await fetch(`${apiUrl}/attendance`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.attendance) {
+        _attendance = data.attendance;
+        localStorage.setItem("rc_attendance", JSON.stringify(_attendance));
+    }
+    } catch (e) { console.warn("[Attendance] Fetch failed:", e.message); }
+}
+
+function resetKeybindSound(action) {
+    delete _keybindSounds[action];
+    localStorage.setItem("rc_keybind_sounds", JSON.stringify(_keybindSounds));
+    updateSoundBtnLabels();
+    showToast(`✓ Sound reset for ${action}`, "ok");
+}
+
+const TEAM_COLORS = {
+    MAR: "#640000", LOT: "#b8a956", NCC: "#f00000", LND: "#d4843d",
+    ST: "#505050", AWR: "#2352fd", XYZ: "#c26a37", MIS: "#262e82",
+    SC: "#2a2a2a", TNT: "#c765ff",
+};
+
+function getTeamFromCallsign(callsign) {
+    if (!callsign) return null;
+    const match = callsign.match(/^([A-Z]+)-/);
+    return match ? match[1] : null;
+}
+
+function openBlueFlagModal() {
+    const list = document.getElementById("blueflag-driver-list");
+    const activePlayers = _lastRaceState?.drivers?.length
+    ? _lastRaceState.drivers
+    : Object.entries(DRIVER_INFO).sort((a, b) => parseInt(a[1].number) - parseInt(b[1].number))
+        .map(([name, info]) => ({ name, number: info.number, callsign: info.callsign }));
+
+    const groups = {};
+    activePlayers.forEach(d => {
+    const team = getTeamFromCallsign(d.callsign) || "OTHER";
+    if (!groups[team]) groups[team] = [];
+    groups[team].push(d);
+    });
+
+    list.innerHTML = Object.entries(groups).map(([team, drivers]) => {
+    const color = TEAM_COLORS[team] || "#444466";
+    return `
+    <div style="border:1px solid ${color};border-radius:7px;overflow:hidden;margin-bottom:4px;">
+    <div style="padding:3px 8px;background:${color}22;font-size:8px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:${color};">${team}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:${color}22;">
+${drivers.map(d => `
+<button onclick="triggerBlueFlagForDriver('${d.name}', '${d.number}', '${d.callsign}')"
+style="display:flex;flex-direction:column;gap:3px;padding:10px;background:var(--surface);border:none;cursor:pointer;color:var(--text);font-family:'Oxanium',sans-serif;width:100%;text-align:left;transition:background 0.12s;"
+onmouseover="this.style.background='${color}22'"
+onmouseout="this.style.background='var(--surface)'">
+<div style="display:flex;align-items:center;gap:7px;">
+    <div style="padding:2px 6px;border-radius:3px;background:${color}22;border:1px solid ${color}66;font-size:9px;font-weight:800;color:${color};flex-shrink:0;">#${d.number}</div>
+    <div style="font-size:12px;font-weight:700;">${d.name}</div>
+</div>
+</button>`).join("")}
+    </div>
+    </div>`;
+    }).join("");
+
+
+    const bfSearchEl = document.getElementById("bf-search");
+    if (bfSearchEl) { bfSearchEl.value = ""; filterBlueFlagList(""); }
+    document.getElementById("blueflag-modal").style.display = "flex";
+}
+
+function closeBlueFlagModal() {
+    document.getElementById("blueflag-modal").style.display = "none";
+}
+
+async function loadActionLoggingState() {
+    if (!apiUrl || !user?.token) return;
+    try {
+    const res = await fetch(`${apiUrl}/admin/action-logging`, {
+        headers: { "x-discord-id": user.id, "x-discord-token": user.token }
+    });
+    const data = await res.json();
+    _actionLoggingEnabled = data.enabled;
+    updateActionLogBtn();
+    } catch { }
+}
+
+function updateActionLogBtn() {
+    const btn = document.getElementById("action-log-toggle-btn");
+    const st = document.getElementById("action-log-status");
+    if (!btn) return;
+    const on = _actionLoggingEnabled;
+    btn.textContent = on ? "ON" : "OFF";
+    btn.style.background = on ? "rgba(0,230,118,0.15)" : "rgba(255,23,68,0.15)";
+    btn.style.borderColor = on ? "var(--green)" : "var(--red)";
+    btn.style.color = on ? "var(--green)" : "var(--red)";
+    if (st) st.textContent = on ? "✓ Logging is active" : "Logging is off";
+}
+
+async function toggleActionLogging() {
+    if (!user?.token) return showToast("✗ Not authenticated", "err");
+    _actionLoggingEnabled = !_actionLoggingEnabled;
+    updateActionLogBtn();
+    try {
+    const res = await fetch(`${apiUrl}/admin/action-logging`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+        body: JSON.stringify({ enabled: _actionLoggingEnabled }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+        showToast(_actionLoggingEnabled ? "✓ Action logging ON" : "✓ Action logging OFF", "ok");
+    } else {
+        _actionLoggingEnabled = !_actionLoggingEnabled;
+        updateActionLogBtn();
+        showToast(`✗ ${data.error}`, "err");
+    }
+    } catch {
+    _actionLoggingEnabled = !_actionLoggingEnabled;
+    updateActionLogBtn();
+    showToast("✗ Bot unreachable", "err");
+    }
+}
+
+async function loadWatchMarshalState() {
+    if (!apiUrl) return;
+    try {
+    const res = await fetch(`${apiUrl}/panel-status`);
+    const data = await res.json();
+    _watchMarshalEnabled = data.watchmarshal !== false;
+    updateWatchMarshalBtn();
+    } catch { }
+}
+
+function updateWatchMarshalBtn() {
+    const btn = document.getElementById("watchmarshal-toggle-btn");
+    const st = document.getElementById("watchmarshal-status");
+    if (!btn) return;
+    const on = _watchMarshalEnabled;
+    btn.textContent = on ? "ON" : "OFF";
+    btn.style.background = on ? "rgba(0,230,118,0.15)" : "rgba(255,23,68,0.15)";
+    btn.style.borderColor = on ? "var(--green)" : "var(--red)";
+    btn.style.color = on ? "var(--green)" : "var(--red)";
+    if (st) st.textContent = on ? "✓ WatchMarshal is active" : "WatchMarshal is off";
+}
+
+async function toggleWatchMarshal() {
+    if (!user?.token) { const ok = await devAutoAuth(); if (!ok) return showToast("❌ Dev auth failed", "err"); }
+    _watchMarshalEnabled = !_watchMarshalEnabled;
+    updateWatchMarshalBtn();
+    try {
+    let res = await fetch(`${apiUrl}/panel-status`, { method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token }, body: JSON.stringify({ target: "watchmarshal", enable: _watchMarshalEnabled }) });
+    if (res.status === 404) res = await fetch(`${apiUrl}/admin/panel-status`, { method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token }, body: JSON.stringify({ target: "watchmarshal", enable: _watchMarshalEnabled }) });
+    const data = await res.json();
+    if (res.ok) {
+        showToast(_watchMarshalEnabled ? "✓ WatchMarshal ON" : "✓ WatchMarshal OFF", "ok");
+    } else {
+        _watchMarshalEnabled = !_watchMarshalEnabled;
+        updateWatchMarshalBtn();
+        showToast(`✗ ${data.error || "Failed"}`, "err");
+    }
+    } catch {
+    _watchMarshalEnabled = !_watchMarshalEnabled;
+    updateWatchMarshalBtn();
+    showToast("✗ Bot unreachable", "err");
+    }
+}
+
+async function syncDriverDBFromServer() {
+    if (!apiUrl) return;
+    try {
+    const res = await fetch(`${apiUrl}/driver-db`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.drivers?.length) {
+        localStorage.setItem(DRIVER_DB_KEY, JSON.stringify(data.drivers));
+        loadDriverDB();
+        console.log(`[DriverDB] Synced ${data.drivers.length} drivers from server`);
+    }
+    } catch (e) { console.warn("[DriverDB] Sync failed:", e.message); }
+}
+
+async function triggerBlueFlagForDriver(name, number, callsign) {
+    closeBlueFlagModal();
+    if (!user?.token) return showToast("✗ Not authenticated as marshal", "err");
+    try {
+    const res = await fetch(`${apiUrl}/flag`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+        body: JSON.stringify({ flag: "blue", driver: name, number, callsign, username: user.username }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+        showToast(`✓ Blue Flag — ${name}`, "ok");
+        _lastBlueFlagDriver = { name, number, callsign };
+        const html = `<div class="flag-card blue">
+    <span class="fc-emoji">🔵</span>
+    <div>
+        <div class="fc-title">Blue Flag — ${name}</div>
+        <div class="fc-sub">#${number} · ${callsign} — let the leaders past.</div>
+    </div>
+    </div>`;
+        document.getElementById("flag-notif-driver").innerHTML = html;
+        document.getElementById("flag-notif-marshal").innerHTML = html;
+        playFlagAudio(`BlueFlag_${name}.mp4`);
+    } else {
+        showToast(`✗ ${data.error}`, "err");
+    }
+    } catch { showToast("✗ Bot unreachable", "err"); }
+}
+
+function resetFlagSound(flag) {
+    delete _flagSounds[flag];
+    localStorage.setItem("rc_flag_sounds", JSON.stringify(_flagSounds));
+    updateFlagSoundBtnLabels();
+    showToast(`✓ Sound reset for ${flag}`, "ok");
+}
+
+function openSectorModal() {
+    document.getElementById("sector-modal").style.display = "flex";
+}
+function closeSectorModal() {
+    document.getElementById("sector-modal").style.display = "none";
+}
+
+async function playFlagAudio(soundFile) {
+    if (!soundFile) return;
+
+    const now = Date.now();
+    if (soundFile === _lastPlayedSound && now - _lastPlayedTime < 2000) return;
+    _lastPlayedSound = soundFile;
+    _lastPlayedTime = now;
+
+    if (_currentFlagAudio) {
+    _currentFlagAudio.pause();
+    _currentFlagAudio = null;
+    }
+
+    const flagKey = Object.keys(FLAG_DEFS).find(k => FLAG_DEFS[k].sound === soundFile)
+    ?? (soundFile.startsWith("BlueFlag_") ? "blue" : null);
+    if (flagKey && _flagSounds[flagKey]) {
+
+    try {
+        const audio = new Audio(_flagSounds[flagKey]);
+        audio.volume = _flagVolume;
+        _currentFlagAudio = audio;
+        await audio.play();
+        audio.onended = () => { if (_currentFlagAudio === audio) _currentFlagAudio = null; };
+    } catch (e) { console.error("Local flag sound error:", e); }
+    return;
+    }
+
+    if (!apiUrl) return;
+    try {
+    const res = await fetch(`${apiUrl}/sounds/${soundFile}`);
+    if (!res.ok) {
+        if (soundFile.startsWith("BlueFlag_")) await playFlagAudio("Blue_Flag.mp4");
+        return;
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.volume = _flagVolume;
+    _currentFlagAudio = audio;
+    await audio.play();
+    audio.onended = () => {
+        URL.revokeObjectURL(url);
+        if (_currentFlagAudio === audio) _currentFlagAudio = null;
+    };
+    } catch (e) { console.error("Audio error:", e); }
+}
+
+async function triggerSectorFlag(flag) {
+    closeSectorModal();
+    if (!user?.token) return showToast("✗ Not authenticated as marshal", "err");
+    try {
+    const res = await fetch(`${apiUrl}/flag`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+        body: JSON.stringify({ flag, username: user.username }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+        const labels = { yellow_s1: "Sector 1", yellow_s2: "Sector 2", yellow_s3: "Sector 3" };
+        showToast(`✓ Yellow Flag — ${labels[flag]}`, "ok");
+        onFlagEvent(flag, null);
+    } else {
+        showToast(`✗ ${data.error}`, "err");
+    }
+    } catch { showToast("✗ Bot unreachable", "err"); }
+}
+
+function uninstallApp() {
+    const confirmed = confirm("Are you sure you want to uninstall RaceLeague Control?\n\nThis will remove the app and all its data.");
+    if (!confirmed) return;
+    window.api.uninstall();
+}
+
+function toggleHoloMode() {
+    _holoMode = !_holoMode;
+    const btn = document.getElementById("dev-holo-btn");
+    const hex = document.getElementById("dev-flag-hex");
+    if (_holoMode) {
+    btn.style.background = "linear-gradient(90deg,#ff0080,#ff8800,#ffff00,#00ff80,#00ffff,#8800ff)";
+    btn.style.borderColor = "#ff0080";
+    btn.style.color = "#fff";
+    hex.disabled = true;
+    hex.style.opacity = "0.3";
+    } else {
+    btn.style.background = "var(--bg)";
+    btn.style.borderColor = "var(--border)";
+    btn.style.color = "var(--muted)";
+    hex.disabled = false;
+    hex.style.opacity = "1";
+    }
+    updatePreview();
+}
+
+window.addEventListener("DOMContentLoaded", async () => {
+
+setInterval(async () => {
+    const freshUrl = await fetchApiUrlFromGist();
+    if (freshUrl && freshUrl !== apiUrl) {
+        console.log("[Gist] URL changed — reconnecting SSE");
+        apiUrl = freshUrl;
+        config.apiUrl = freshUrl;
+        await window.api.saveConfig({ apiUrl: freshUrl });
+        _sseStarted = false;
+        startSSE();
+    }
+    }, 60_000);
+
+    setInterval(checkDriverDbVersion, 15_000);
+
+    loadDriverDB();
+    config = await window.api.getConfig();
+    apiUrl = config.apiUrl || "";
+
+    document.getElementById("s-api").value = config.apiUrl || "";
+    document.getElementById("kb-blue_flag").value = config.keybinds?.blue_flag || "F1";
+    document.getElementById("kb-next_lap").value = config.keybinds?.next_lap || "F2";
+    document.getElementById("kb-pitting").value = config.keybinds?.pitting || "F3";
+    if (document.getElementById("kb-blue_flag2")) document.getElementById("kb-blue_flag2").value = config.keybinds?.blue_flag2 || "F4";
+    if (document.getElementById("kb-next_lap2")) document.getElementById("kb-next_lap2").value = config.keybinds?.next_lap2 || "F5";
+    if (document.getElementById("kb-pitting2")) document.getElementById("kb-pitting2").value = config.keybinds?.pitting2 || "F6";
+    if (document.getElementById("kb-dnf")) document.getElementById("kb-dnf").value = config.keybinds?.dnf || "F8";
+    document.getElementById("btn-discord-login")?.addEventListener("click", loginWithDiscord);
+
+    window.api.onToast(({ msg, type }) => showToast(msg, type));
+    window.api.onCooldownStart((s, slot) => startCooldown(s, slot));
+    window.api.onCooldownEnd((slot) => stopCooldown(slot));
+    window.api.onPitStateChanged(v => updatePitBtn(v));
+    window.api.onPitStateChanged2(v => updatePitBtn2(v));
+    window.api.onFlagEvent(d => onFlagEvent(d.flag, d));
+    window.api.onKeybindFired(action => {
+    if (action === 'dnf') {
+        if (document.getElementById("dnf-modal").style.display === "flex") {
+        closeDNFModal();
+        } else {
+        confirmDNF();
+        }
+        return;
+    }
+    if (!_canFire(action)) return;
+    playKeybindSound(action);
+    if (action === 'blue_flag2') doAction2('blue_flag');
+    else if (action === 'next_lap2') doAction2('next_lap');
+    else if (action === 'pitting2') doTogglePitting2();
+    });
+
+    window.api.onUpdateAvailable(v => {
+    document.getElementById("update-text").textContent = `🔄 Downloading v${v}...`;
+    const btn = document.getElementById("update-install-btn");
+    btn.disabled = true; btn.style.cursor = "not-allowed"; btn.style.opacity = "0.5"; btn.style.background = "var(--muted)";
+    document.getElementById("update-banner").style.display = "flex";
+    });
+
+    window.api.onUpdateDownloaded(v => {
+    document.getElementById("update-text").textContent = `✅ v${v} ready — click to install!`;
+    const btn = document.getElementById("update-install-btn");
+    btn.disabled = false; btn.style.cursor = "pointer"; btn.style.opacity = "1"; btn.style.background = "var(--green)";
+    document.getElementById("update-banner").style.display = "flex";
+    });
+
+    window.api.onUpdateError(() => {
+    document.getElementById("update-text").textContent = "⬆️ Update available on GitHub";
+    const btn = document.getElementById("update-install-btn");
+    btn.textContent = "Open Releases"; btn.disabled = false; btn.style.cursor = "pointer";
+    btn.style.opacity = "1"; btn.style.background = "var(--blue)";
+    btn.onclick = () => window.api.openReleases();
+    document.getElementById("update-banner").style.display = "flex";
+    });
+
+    if (config.keybinds) window.api.registerHotkeys(config.keybinds);
+
+    const apiDisplay = document.getElementById("api-url-display");
+    if (apiDisplay) apiDisplay.textContent = apiUrl || "No API URL set — click Login to set one";
+
+    const gistUrl = await fetchApiUrlFromGist();
+    if (gistUrl && gistUrl !== apiUrl) {
+    apiUrl = gistUrl; config.apiUrl = gistUrl;
+    await window.api.saveConfig({ apiUrl: gistUrl });
+    if (apiDisplay) apiDisplay.textContent = apiUrl;
+    }
+
+    const saved = sessionStorage.getItem("rc_user") || localStorage.getItem("rc_user");
+    if (saved && apiUrl) {
+    user = JSON.parse(saved);
+    delete user.isAdmin;
+    delete user.roles;
+    await afterLogin();
+    }
+
+    startSSE();
+
+    if (apiUrl && !_sseSource) _connectSSE();
+
+    window.api.checkVersion().then(v => {
+    const el = document.getElementById("app-version");
+    if (el) el.textContent = `v${v}`;
+    });
+
+    setTimeout(() => {
+    document.getElementById("dev-flag-hex")?.addEventListener("input", updatePreview);
+    document.getElementById("dev-flag-emoji")?.addEventListener("input", updatePreview);
+    document.getElementById("dev-flag-text")?.addEventListener("input", updatePreview);
+    updatePreview();
+    }, 600);
+
+    loadDevTabPrefs();
+    loadFlagSounds();
+    loadToolboxPrefs();
+    loadKeybindSounds();
+    loadFontSizePrefs();
+    loadThemePrefs();
+    loadVolumePrefs();
+
+
+    _initHotkeyPauseObserver();
+});
+
+async function loginWithDiscord() {
+    const errEl = document.getElementById("login-error");
+    if (!apiUrl) {
+    const url = prompt("Enter your API URL:\n(Check your Discord log channel)");
+    if (!url) { errEl.style.color = "var(--red)"; errEl.textContent = "❌ No API URL set."; return; }
+    apiUrl = url.trim(); config.apiUrl = apiUrl;
+    await window.api.saveConfig({ apiUrl });
+    const apiDisplay = document.getElementById("api-url-display");
+    if (apiDisplay) apiDisplay.textContent = apiUrl;
+    }
+    errEl.style.color = "var(--muted)"; errEl.textContent = "Opening Discord login...";
+    let code;
+    try { code = await window.api.openOAuth(); }
+    catch (e) { errEl.style.color = "var(--red)"; errEl.textContent = "❌ Could not open login window."; return; }
+    if (!code) { errEl.style.color = "var(--red)"; errEl.textContent = "❌ Login cancelled."; return; }
+    errEl.style.color = "var(--muted)"; errEl.textContent = "Verifying with server...";
+    try {
+    let dRes, dData;
+    try {
+        dRes = await fetch(`${apiUrl}/driver/auth`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, redirectUri: "http://localhost:7823" }) });
+        dData = await dRes.json();
+    } catch (fetchErr) { errEl.style.color = "var(--red)"; errEl.textContent = "❌ Can't reach API. Is the URL still valid?"; showChangeUrlPrompt(); return; }
+
+    if (dRes.ok) {
+        user = dData.user;
+    } else if (dRes.status === 403 && !dData.disabled) {
+        errEl.style.color = "var(--muted)"; errEl.textContent = "Trying marshal login...";
+        let mRes, mData;
+        try {
+        mRes = await fetch(`${apiUrl}/auth/session`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: dData.userId, sessionToken: dData.sessionToken }) });
+        mData = await mRes.json();
+        } catch (fetchErr) { errEl.style.color = "var(--red)"; errEl.textContent = "❌ Can't reach API. Is the URL still valid?"; showChangeUrlPrompt(); return; }
+        if (mRes.ok) {
+        user = mData.user; user.marshalToken = mData.user.token;
+        user.discordId = user.id;
+        const safeUser = {
+            id: user.id, discordId: user.id, username: user.username,
+            avatar: user.avatar, token: null, marshalToken: user.marshalToken,
+        };
+        sessionStorage.setItem("rc_user", JSON.stringify(safeUser));
+        localStorage.setItem("rc_user", JSON.stringify(safeUser));
+        user = { ...user, ...safeUser };
+        errEl.textContent = "";
+        hasDriver = !!mData.hasDriverRole || user.id === DEV_USER_ID;
+        hasDev = user.id === DEV_USER_ID;
+        updateSwitcher();
+        showPasswordScreen();
+        return;
+        } else {
+        if (dData.denied || !mRes.ok) {
+            errEl.style.color = "var(--red)";
+            errEl.textContent = "❌ You don't have a valid role to access this app.";
+            return;
+        }
+        user = {
+            id: dData.userId || mData?.user?.id || "unknown",
+            username: dData.username || mData?.user?.username || "Unknown",
+            avatar: dData.avatar || mData?.user?.avatar || null,
+            token: null,
+            marshalToken: null,
+        };
+        user.discordId = user.id;
+        const safeUser = { id: user.id, discordId: user.id, username: user.username, avatar: user.avatar, token: null, marshalToken: null };
+        sessionStorage.setItem("rc_user", JSON.stringify(safeUser));
+        localStorage.setItem("rc_user", JSON.stringify(safeUser));
+        user = { ...user, ...safeUser };
+        errEl.textContent = "";
+        hasDriver = false;
+        hasDev = user.id === DEV_USER_ID;
+        showEngineerScreen();
+        return;
+        }
+    } else {
+        errEl.style.color = "var(--red)"; errEl.textContent = "❌ " + (dData.error || "Access denied."); return;
+    }
+    user.discordId = user.id;
+    const safeUser = {
+        id: user.id,
+        discordId: user.id,
+        username: user.username,
+        avatar: user.avatar,
+        token: user.token || null,
+        marshalToken: user.marshalToken || user.token || null,
+    };
+    sessionStorage.setItem("rc_user", JSON.stringify(safeUser));
+    localStorage.setItem("rc_user", JSON.stringify(safeUser));
+    user = { ...user, ...safeUser };
+    errEl.textContent = "";
+    await afterLogin();
+    } catch (err) { errEl.style.color = "var(--red)"; errEl.textContent = "❌ Unexpected error: " + err.message; }
+}
+
+async function fetchApiUrlFromGist() {
+    try {
+    const res = await fetch(`https://api.github.com/gists/${GIST_ID}`);
+    const data = await res.json();
+    const file = data.files?.["racecontrol-api.json"];
+    if (!file) return null;
+    return JSON.parse(file.content).url || null;
+    } catch (e) { console.error("[Gist] Failed to fetch URL:", e); return null; }
+}
+
+function filterBlueFlagList(q) {
+    const term = q.toLowerCase().trim();
+    document.querySelectorAll("#blueflag-driver-list > div").forEach(group => {
+    let anyVisible = false;
+    group.querySelectorAll("button").forEach(btn => {
+        const text = btn.textContent.toLowerCase();
+        const show = !term || text.includes(term);
+        btn.style.display = show ? "" : "none";
+        if (show) anyVisible = true;
+    });
+    group.style.display = anyVisible ? "" : "none";
+    });
+}
+
+function showChangeUrlPrompt() {
+    const errEl = document.getElementById("login-error");
+    errEl.innerHTML = `❌ Can't reach API. <button onclick="resetApiUrl()" style="background:none;border:none;color:var(--blue);font-family:'Oxanium',sans-serif;font-size:9px;cursor:pointer;text-decoration:underline;padding:0;">Change URL</button>`;
+}
+
+async function resetApiUrl() {
+    const modal = document.createElement("div");
+    modal.style.cssText = "position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;";
+    modal.innerHTML = `
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;width:300px;display:flex;flex-direction:column;gap:10px;">
+    <div style="font-size:12px;font-weight:800;color:var(--text);">Override API URL</div>
+    <input type="url" id="url-override-input" value="${apiUrl}" placeholder="https://xxx.trycloudflare.com"
+    style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Oxanium',sans-serif;font-size:11px;padding:8px 10px;border-radius:var(--radius);outline:none;"/>
+    <div style="display:flex;gap:8px;">
+    <button onclick="this.closest('[style*=fixed]').remove()"
+        style="flex:1;padding:8px;background:var(--bg);border:1px solid var(--border);color:var(--muted);font-family:'Oxanium',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--radius);cursor:pointer;">
+        Cancel
+    </button>
+    <button id="url-override-confirm"
+        style="flex:1;padding:8px;background:rgba(41,121,255,0.15);border:1px solid rgba(41,121,255,0.4);color:var(--blue);font-family:'Oxanium',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:var(--radius);cursor:pointer;">
+        Save
+    </button>
+    </div>
+</div>`;
+    document.body.appendChild(modal);
+    const input = modal.querySelector("#url-override-input");
+    setTimeout(() => input.focus(), 50);
+    modal.querySelector("#url-override-confirm").onclick = async () => {
+    const url = input.value.trim();
+    if (!url) return;
+    apiUrl = url; config.apiUrl = url;
+    await window.api.saveConfig({ apiUrl: url });
+    const apiDisplay = document.getElementById("api-url-display");
+    if (apiDisplay) apiDisplay.textContent = url;
+    const connDisplay = document.getElementById("conn-api-url-display");
+    if (connDisplay) connDisplay.textContent = url;
+    modal.remove();
+    showToast("✓ API URL updated", "ok");
+    };
+}
+
+async function afterLogin() {
+    loadDriverDB();
+    await syncDriverDBFromServer();
+    if (apiUrl) { _sseStarted = true; _connectSSE(); }
+    const driverName = DRIVER_IDS[user.id];
+    hasDriver = true;
+    hasDev = user.id === DEV_USER_ID;
+    if (hasDev) {
+    document.getElementById("api-url-display").style.display = "block";
+    document.getElementById("change-url-btn").style.display = "block";
+    }
+    if (driverName) {
+    const info = DRIVER_INFO[driverName] || {};
+    config.username = user.username;
+    config.driver = driverName; config.number = info.number; config.callsign = info.callsign;
+    config.discordId = user.id; config.engineer = false; isEngineer = false;
+    window.api.saveConfig(config); updateSwitcher(); launchDriverPanel();
+    } else { showEngineerScreen(); }
+}
+
+function showEngineerScreen() {
+    config.driver = "";
+    engineerPending = true;
+    isEngineer = false;
+    const screen = document.getElementById("screen-login");
+    screen.innerHTML = `
+<div class="login-logo">Race<span>Control</span></div>
+<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Engineer Setup</div>
+<div class="login-card">
+    <div class="user-pill" style="margin-bottom:4px;">
+    <img src="${user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64` : `https://cdn.discordapp.com/embed/avatars/${parseInt(user.id) % 5}.png`}" style="width:28px;height:28px;border-radius:50%;"/>
+    <div><div class="uname">${user.username}</div><div class="vrfd" style="color:var(--muted);">🎧 Engineer</div></div>
+    </div>
+<div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Driver 1 (required)</div>
+    <select id="eng-driver-select" style="width:100%;">
+    <option value="">Select a driver...</option>
+    ${Object.entries(DRIVER_INFO).sort((a, b) => parseInt(a[1].number) - parseInt(b[1].number)).map(([name, info]) =>
+    `<option value="${name}">${name} #${info.number} (${info.callsign})</option>`
+    ).join("")}
+    </select>
+    <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:4px;">Driver 2 (optional)</div>
+    <select id="eng-driver2-select" style="width:100%;">
+    <option value="">None</option>
+    ${Object.entries(DRIVER_INFO).sort((a, b) => parseInt(a[1].number) - parseInt(b[1].number)).map(([name, info]) =>
+    `<option value="${name}">${name} #${info.number} (${info.callsign})</option>`
+    ).join("")}
+    </select>
+    <button class="pw-btn" onclick="confirmEngineer()">Continue →</button>
+    ${hasDev ? `<button onclick="skipEngineerScreen()" style="background:none;border:none;color:var(--muted);font-family:'Oxanium',sans-serif;font-size:9px;cursor:pointer;text-decoration:underline;margin-top:4px;">⚙️ Skip (dev only)</button>` : ""}
+    <div class="login-error" id="eng-error"></div>
+</div>`;
+    showScreen("screen-login");
+    updateSwitcher();
+}
+
+let _flagSounds = {};
+let _currentFlagPick = null;
+
+function loadFlagSounds() {
+    try {
+    const saved = localStorage.getItem("rc_flag_sounds");
+    if (saved) { _flagSounds = JSON.parse(saved); updateFlagSoundBtnLabels(); }
+    } catch { }
+}
+
+function updateFlagSoundBtnLabels() {
+    Object.keys(FLAG_DEFS).forEach(flag => {
+    const btn = document.getElementById(`fsnd-${flag}-btn`);
+    if (btn) btn.textContent = _flagSounds[flag] ? "✓ Custom" : "📁 Choose";
+    });
+}
+
+let _bugImageData = null;
+const _devLogs = [];
+const _origConsole = { log: console.log, warn: console.warn, error: console.error };
+
+(function captureLogs() {
+    ["log", "warn", "error"].forEach(level => {
+    console[level] = (...args) => {
+        _origConsole[level](...args);
+        _devLogs.unshift({ level, msg: args.map(a => typeof a === "object" ? JSON.stringify(a) : String(a)).join(" "), t: new Date().toISOString() });
+        if (_devLogs.length > 100) _devLogs.pop();
+    };
+    });
+})();
+
+function skipEngineerScreen() {
+    engineerPending = false;
+    config.driver = "__dev__";
+    config.engineer = false;
+    isEngineer = false;
+    hasDriver = true;
+    updateSwitcher();
+    launchDriverPanel();
+}
+
+function openBugReport() {
+    document.getElementById("bug-modal").style.display = "flex";
+    const panelSelect = document.getElementById("bug-panel");
+    if (panelSelect && currentPanel) panelSelect.value = currentPanel;
+}
+
+function closeBugReport() {
+    document.getElementById("bug-modal").style.display = "none";
+    document.getElementById("bug-status").textContent = "";
+}
+
+function loadBugImage(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+    _bugImageData = e.target.result;
+    document.getElementById("bug-img-thumb").src = _bugImageData;
+    document.getElementById("bug-img-preview").style.display = "block";
+    document.getElementById("bug-img-drop").textContent = "✓ Image attached";
+    document.getElementById("bug-img-drop").style.borderColor = "var(--green)";
+    document.getElementById("bug-img-drop").style.color = "var(--green)";
+    };
+    reader.readAsDataURL(file);
+}
+
+function clearBugImage() {
+    _bugImageData = null;
+    document.getElementById("bug-img-preview").style.display = "none";
+    document.getElementById("bug-img-drop").textContent = "🖼️ Click or drop image here";
+    document.getElementById("bug-img-drop").style.borderColor = "var(--border)";
+    document.getElementById("bug-img-drop").style.color = "var(--muted)";
+    document.getElementById("bug-img-input").value = "";
+}
+
+async function submitBugReport() {
+    const what = document.getElementById("bug-what").value.trim();
+    const steps = document.getElementById("bug-steps").value.trim();
+    const expected = document.getElementById("bug-expected").value.trim();
+    const actual = document.getElementById("bug-actual").value.trim();
+    const frequency = document.getElementById("bug-frequency").value;
+    const panel = document.getElementById("bug-panel").value;
+    const inclLogs = document.getElementById("bug-include-logs").checked;
+    const statusEl = document.getElementById("bug-status");
+    const submitBtn = document.getElementById("bug-submit-btn");
+
+    if (!what) { statusEl.style.color = "var(--red)"; statusEl.textContent = "❌ Please describe what happened."; return; }
+    statusEl.style.color = "var(--muted)"; statusEl.textContent = "Sending report...";
+    submitBtn.disabled = true;
+
+    const version = document.getElementById("app-version")?.textContent || "unknown";
+    const logs = inclLogs ? _devLogs.slice(0, 30).map(e => `[${(e.level || 'log').toUpperCase()}] ${e.t} — ${e.msg}`) : [];
+    const report = { what, steps, expected, actual, frequency, panel, reporter: user?.username || "Unknown", discordId: user?.id || "unknown", version, apiUrl, timestamp: new Date().toISOString(), logs, hasImage: !!_bugImageData };
+
+    try {
+    const res = await fetch(`${apiUrl}/bug-report`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ report, image: _bugImageData || null }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+        statusEl.style.color = "var(--green)"; statusEl.textContent = "✅ Report sent! Thank you.";
+        setTimeout(() => {
+        closeBugReport();
+        ["bug-what", "bug-steps", "bug-expected", "bug-actual"].forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
+        clearBugImage(); submitBtn.disabled = false;
+        }, 2000);
+    } else {
+        statusEl.style.color = "var(--red)"; statusEl.textContent = "❌ " + (data.error || "Failed to send.");
+        submitBtn.disabled = false;
+    }
+    } catch {
+    statusEl.style.color = "var(--red)"; statusEl.textContent = "❌ Can't reach API.";
+    submitBtn.disabled = false;
+    }
+}
+
+setTimeout(() => {
+    const drop = document.getElementById("bug-img-drop");
+    if (!drop) return;
+    drop.addEventListener("dragover", e => { e.preventDefault(); drop.style.borderColor = "var(--blue)"; });
+    drop.addEventListener("dragleave", () => { drop.style.borderColor = _bugImageData ? "var(--green)" : "var(--border)"; });
+    drop.addEventListener("drop", e => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image/")) loadBugImage(file);
+    });
+}, 500);
+
+function pickFlagSound(flag) {
+    _currentFlagPick = flag;
+    document.getElementById("flag-sound-picker").click();
+}
+
+document.getElementById("flag-sound-picker")?.addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file || !_currentFlagPick) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+    _flagSounds[_currentFlagPick] = e.target.result;
+    localStorage.setItem("rc_flag_sounds", JSON.stringify(_flagSounds));
+    updateFlagSoundBtnLabels();
+    showToast(`✓ Sound set for ${_currentFlagPick}`, "ok");
+    };
+    reader.readAsDataURL(file);
+    this.value = "";
+});
+
+function reLogin() {
+    sessionStorage.removeItem("rc_user"); localStorage.removeItem("rc_user");
+    user = null; hasDriver = false; hasMarshal = false; hasDev = false; isEngineer = false; engineerPending = false;
+    document.getElementById("panel-switcher").style.display = "none";
+    document.getElementById("mode-badge").style.display = "none";
+    location.reload();
+}
+
+async function confirmEngineer() {
+    const name = document.getElementById("eng-driver-select")?.value;
+    if (!name) { document.getElementById("eng-error").textContent = "Please select a driver."; return; }
+    const name2 = document.getElementById("eng-driver2-select")?.value || "";
+    if (name2 && name2 === name) { document.getElementById("eng-error").textContent = "Driver 2 must be different from Driver 1."; return; }
+    const info = DRIVER_INFO[name];
+    const info2 = name2 ? DRIVER_INFO[name2] : null;
+    config.driver = name; config.number = info.number; config.callsign = info.callsign;
+    config.driver2 = name2; config.number2 = info2?.number || ""; config.callsign2 = info2?.callsign || "";
+    config.discordId = user.id; config.engineer = true; isEngineer = true;
+    engineerPending = false;
+    window.api.saveConfig(config);
+
+    const engineers = JSON.parse(localStorage.getItem("rc_engineers") || "[]");
+    const existing = engineers.findIndex(e => e.discordId === user.id);
+    const entry = { discordId: user.id, username: user.username, avatar: user.avatar, engineer: true, engineerFor: name, timestamp: Date.now() };
+    if (existing >= 0) engineers[existing] = entry;
+    else engineers.push(entry);
+    localStorage.setItem("rc_engineers", JSON.stringify(engineers));
+
+    updateSwitcher();
+    launchDriverPanel();
+}
+
+function showPasswordScreen() {
+    document.getElementById("pw-avatar").src = user.avatar
+    ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=64`
+    : `https://cdn.discordapp.com/embed/avatars/${(parseInt(user.id) || 0) % 5}.png`;
+    document.getElementById("pw-username").textContent = user.username;
+    showScreen("screen-password");
+}
+
+async function submitPassword() {
+    const pw = document.getElementById("pw-input").value.trim();
+    if (!pw) return;
+    document.getElementById("pw-error").textContent = "Verifying...";
+    try {
+    if (!user.marshalToken) {
+        document.getElementById("pw-error").textContent = "Getting marshal session...";
+        const code = await window.api.openOAuth();
+        if (!code) { document.getElementById("pw-error").textContent = "❌ Login cancelled."; return; }
+        const authRes = await fetch(`${apiUrl}/auth`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, redirectUri: "http://localhost:7823" }) });
+        const authData = await authRes.json();
+        if (!authRes.ok) { document.getElementById("pw-error").textContent = "❌ " + (authData.error || "Auth failed"); return; }
+        const authToken = authData.user?.token || authData.token;
+        if (!authToken) { document.getElementById("pw-error").textContent = "❌ Auth failed — no token returned"; return; }
+        user.marshalToken = authToken;
+        const saved = JSON.parse(sessionStorage.getItem("rc_user") || "{}");
+        saved.marshalToken = authToken;
+        sessionStorage.setItem("rc_user", JSON.stringify(saved));
+    }
+    const res = await fetch(`${apiUrl}/verify-password`, {
+        method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.marshalToken },
+        body: JSON.stringify({ password: pw }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+        const err = data.error || "Wrong password";
+        if (err.toLowerCase().includes("marshal")) document.getElementById("pw-error").textContent = "❌ You need the Marshal role to access this.";
+        else if (err.toLowerCase().includes("director")) document.getElementById("pw-error").textContent = "❌ You need the Director role to access this.";
+        else if (err.toLowerCase().includes("role") || err.toLowerCase().includes("permi")) document.getElementById("pw-error").textContent = `❌ Missing required role. ${err}`;
+        else document.getElementById("pw-error").textContent = "❌ " + err;
+        return;
+    }
+    user.isAdmin = data.isAdmin; user.roles = data.roles || []; user.token = user.marshalToken;
+    hasMarshal = true;
+    hasDev = user.id === DEV_USER_ID;
+    engineerPending = false;
+    const safeUser = { id: user.id, discordId: user.id, username: user.username, avatar: user.avatar, token: user.token, marshalToken: user.marshalToken, isAdmin: user.isAdmin, roles: user.roles };
+    sessionStorage.setItem("rc_user", JSON.stringify(safeUser));
+    localStorage.setItem("rc_user", JSON.stringify(safeUser));
+    updateSwitcher();
+    if (hasDriver && !config.driver) { engineerPending = true; updateSwitcher(); }
+    startSSE();
+    launchMarshalPanel();
+    } catch (err) { document.getElementById("pw-error").textContent = "❌ " + err.message; }
+}
+
+function switchPanel(panel) {
+    if (panel === "driver" && engineerPending && !config.driver) {
+    showScreen("screen-login"); currentPanel = "login"; updateSwitcher(); return;
+    }
+    if (panel === "driver") launchDriverPanel(false);
+    else if (panel === "marshal") hasMarshal ? launchMarshalPanel(false) : showPasswordScreen();
+    else if (panel === "dev") {
+    document.getElementById("shutdown-banner-driver") && (document.getElementById("shutdown-banner-driver").style.display = "none");
+    document.getElementById("shutdown-banner-marshal") && (document.getElementById("shutdown-banner-marshal").style.display = "none");
+    showScreen("screen-dev"); currentPanel = "dev"; updateSwitcher(); loadDevInfo(); updateDevTabBtns();
+    }
+    else if (panel === "settings") {
+    document.getElementById("shutdown-banner-driver") && (document.getElementById("shutdown-banner-driver").style.display = "none");
+    document.getElementById("shutdown-banner-marshal") && (document.getElementById("shutdown-banner-marshal").style.display = "none");
+    prevPanel = (currentPanel && currentPanel !== "settings") ? currentPanel : (hasDriver ? "driver" : hasMarshal ? "marshal" : "login");
+    document.getElementById("s-api").value = config.apiUrl || "";
+    document.getElementById("kb-blue_flag").value = config.keybinds?.blue_flag || "F1";
+    document.getElementById("kb-next_lap").value = config.keybinds?.next_lap || "F2";
+    document.getElementById("kb-pitting").value = config.keybinds?.pitting || "F3";
+    if (document.getElementById("kb-dnf")) document.getElementById("kb-dnf").value = config.keybinds?.dnf || "F8";
+    document.getElementById("s-api-card").style.display = hasDev ? "flex" : "none";
+    const volPct = Math.round(_flagVolume * 100);
+    const slider = document.getElementById("vol-slider");
+    const label = document.getElementById("vol-label");
+    if (slider) slider.value = volPct;
+    if (label) label.textContent = volPct + "%";
+    updateThemeBtns();
+    openSettingsTab('appearance');
+    showScreen("screen-settings");
+    }
+}
+
+function goBack() {
+    const v = ["driver", "marshal", "dev"];
+    if (prevPanel && v.includes(prevPanel)) switchPanel(prevPanel);
+    else if (hasDriver) switchPanel("driver");
+    else if (hasMarshal) switchPanel("marshal");
+    else showScreen("screen-login");
+}
+
+function updateSwitcher() {
+    const show = hasDriver || hasMarshal || hasDev;
+    document.getElementById("panel-switcher").style.display = show ? "flex" : "none";
+    const driverTabAllowed = hasDriver && (config.driver || engineerPending || hasMarshal);
+    document.getElementById("sw-driver").style.display = (driverTabAllowed && _devTabVisible.driver !== false) ? "" : "none";
+    document.getElementById("sw-marshal").style.display = _devTabVisible.marshal !== false ? "" : "none";
+    document.getElementById("sw-dev").style.display = hasDev ? "" : "none";
+    document.querySelectorAll(".switch-btn").forEach(b => b.classList.remove("active"));
+    const aId = currentPanel === "driver" ? "sw-driver" : currentPanel === "marshal" ? "sw-marshal" : "sw-dev";
+    document.getElementById(aId)?.classList.add("active");
+    const badge = document.getElementById("mode-badge");
+    if (currentPanel === "driver") { badge.textContent = "Driver"; badge.className = "tl-badge driver"; badge.style.display = ""; }
+    if (currentPanel === "marshal") { badge.textContent = "Marshal"; badge.className = "tl-badge marshal"; badge.style.display = ""; }
+    if (currentPanel === "dev") { badge.textContent = "Dev"; badge.className = "tl-badge dev"; badge.style.display = ""; }
+}
+
+async function pollDriverState() {
+    if (!apiUrl) return;
+    try {
+    await fetchAttendanceFromServer();
+    const res = await fetch(`${apiUrl}/driver/state`, { headers: { "x-discord-id": user?.id || "" } });
+    if (res.status === 403) {
+        const data = await res.json().catch(() => ({}));
+        if (data.blacklisted) showBlacklistedScreen();
+        else showDisabledScreen();
+        return;
+    }
+    const data = await res.json();
+    _lastRaceState = data;
+    if (data.gaps) updateDeltas(data.gaps);
+    const filteredDrivers = data.drivers?.filter(d => _attendance[d.name] !== false) || [];
+    renderLeaderboard({ ...data, drivers: filteredDrivers });
+
+    if (config.driver) {
+        const myDriver = data.drivers?.find(d => d.name === config.driver);
+        if (myDriver) updatePitBtn(myDriver.inPits);
+    }
+    if (config.driver2) {
+        const myDriver2 = data.drivers?.find(d => d.name === config.driver2);
+        if (myDriver2) updatePitBtn2(myDriver2.inPits);
+    }
+    const panelOn = data.webPanelEnabled !== false, raceOn = data.raceStarted;
+    if (!panelOn) {
+        if (hasDev) {
+        showShutdownBanner("driver");
+        if (_devBypassShutdown.driver) showDisabledScreen();
+        else hideDisabledScreen();
+        } else {
+        hideShutdownBanner("driver");
+        showDisabledScreen();
+        }
+    } else {
+        hideShutdownBanner("driver");
+        hideDisabledScreen();
+        if (isEngineer) {
+        setDriverBtnsEnabled(raceOn);
+        if (config.driver2) setDriverBtnsEnabled2(raceOn);
+        } else {
+        const notice = document.getElementById("d-action-notice");
+        if (notice) {
+            if (!raceOn) { notice.style.display = "block"; notice.textContent = "⏳ Waiting for race to start..."; }
+            else { notice.style.display = "none"; notice.textContent = ""; }
+        }
+        }
+    }
+    if (data.currentFlag) {
+        if (_lastFlagTimestamp === null) { _lastFlagTimestamp = data.currentFlag.timestamp; }
+        else if (data.currentFlag.timestamp !== _lastFlagTimestamp) {
+        _lastFlagTimestamp = data.currentFlag.timestamp;
+        onFlagEvent(data.currentFlag.flag, data.currentFlag);
+        }
+    }
+    document.getElementById("d-status-dot").classList.add("live");
+    document.getElementById("d-status-label").textContent = "Connected";
+    document.getElementById("d-status-label").classList.add("live");
+    } catch {
+    document.getElementById("d-status-dot").classList.remove("live");
+    document.getElementById("d-status-label").textContent = "Offline";
+    document.getElementById("d-status-label").classList.remove("live");
+    }
+}
+
+function launchDriverPanel(startPoll = true) {
+    showScreen("screen-driver"); currentPanel = "driver";
+    document.getElementById("shutdown-banner-driver") && (document.getElementById("shutdown-banner-driver").style.display = "");
+    document.getElementById("shutdown-banner-marshal") && (document.getElementById("shutdown-banner-marshal").style.display = "none");
+    updateSwitcher(); updateKeybindLabels();
+    const actSection = document.getElementById("d-actions-section");
+    const kbSection = document.getElementById("d-keybind-info");
+    const actSection2 = document.getElementById("d-actions-section2");
+    const labelEl2 = document.getElementById("d-driver2-label");
+    if (isEngineer) {
+    actSection.style.display = "block";
+    kbSection.style.display = "none";
+    if (actSection2) {
+        actSection2.style.display = config.driver2 ? "block" : "none";
+        if (config.driver2 && labelEl2) labelEl2.textContent = `${config.driver2} — Quick Actions`;
+    }
+    } else {
+    actSection.style.display = "none";
+    kbSection.style.display = "block";
+    if (actSection2) actSection2.style.display = "none";
+    }
+    if (startPoll) {
+    if (_driverPollInterval) clearInterval(_driverPollInterval);
+    pollDriverState();
+    _driverPollInterval = setInterval(pollDriverState, 3000);
+    }
+}
+
+function openSettingsTab(tab) {
+    document.querySelectorAll('.stab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    document.querySelectorAll('.stab-panel').forEach(p => p.classList.toggle('active', p.id === 'stab-' + tab));
+}
+
+const slider = document.getElementById('fontSizeSlider');
+const sizeDisplay = document.getElementById('sizeDisplay');
+
+if (slider && sizeDisplay) {
+    slider.addEventListener('input', function() {
+        const newSize = this.value;
+        document.querySelectorAll('span').forEach(span => {
+            span.style.fontSize = newSize + 'px';
+        });
+        sizeDisplay.textContent = newSize + 'px';
+    });
+}
+
+function launchMarshalPanel(startPoll = true) {
+    showScreen("screen-marshal"); currentPanel = "marshal";
+    document.getElementById("shutdown-banner-marshal") && (document.getElementById("shutdown-banner-marshal").style.display = "");
+    document.getElementById("shutdown-banner-driver") && (document.getElementById("shutdown-banner-driver").style.display = "none");
+    document.getElementById("sw-marshal").textContent = "🏁 Marshal";
+    updateSwitcher();
+    if (DIRECTOR_ROLES.some(r => user?.roles?.includes(r)) || user?.isAdmin)
+    document.getElementById("m-race-setup").style.display = "block";
+    renderAttendance();
+    if (startPoll) {
+    if (_marshalPollInterval) clearInterval(_marshalPollInterval);
+    pollBlueFlagRequests();
+    pollWatchMarshalAlerts();
+    pollMarshalState();
+    _marshalPollInterval = setInterval(() => {
+        pollBlueFlagRequests();
+        pollWatchMarshalAlerts();
+        pollMarshalState();
+    }, 3000);
+    }
+
+    
+}
+
+    const TOOLBOX_SECTIONS = [
+    { id: "dev-stats", label: "Status & Uptime" },
+    { id: "dev-vcs", label: "All Voice Channels" },
+    { id: "dev-blacklist", label: "Blacklisted Users" },
+    { id: "dev-sessions", label: "Active Sessions" },
+    { id: "dev-driver-logins", label: "Driver Panel Logins" },
+    { id: "dev-audit", label: "Audit Log" },
+    { id: "dev-audio-drop", label: "Custom Audio Player" },
+    { id: "dev-mock-lb", label: "Mock Leaderboard (dev)" },
+    { id: "dev-flag-text", label: "Custom Flag (dev)" },
+    { id: "dev-engineers", label: "Engineering Assignments" },
+    { id: "dev-toggle-driver-tab", label: "Tab Visibility" },
+    { id: "dev-drivers-card", label: "Driver Database" },
+    { id: "dev-watchmarshal", label: "WatchMarshal Toggle" },
+    { id: "action-log-toggle-btn", label: "Action Logging" },
+    ];
+    let _toolboxVisible = {};
+
+    function showDisabledScreen() {
+    if (document.getElementById("panel-disabled-overlay")) return;
+    const overlay = document.createElement("div");
+    overlay.id = "panel-disabled-overlay";
+    overlay.style.cssText = "position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:24px;text-align:center;";
+    overlay.innerHTML = `
+<div style="background:var(--surface);border:1px solid rgba(255,214,0,0.25);border-radius:16px;padding:32px 28px;max-width:280px;width:100%;display:flex;flex-direction:column;align-items:center;gap:16px;">
+    <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,214,0,0.1);border:1px solid rgba(255,214,0,0.3);display:flex;align-items:center;justify-content:center;font-size:26px;">🛠️</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+    <div style="font-size:13px;font-weight:800;color:var(--yellow);text-transform:uppercase;letter-spacing:1.5px;">Temporarily Shut Down</div>
+    <div style="width:32px;height:2px;background:rgba(255,214,0,0.4);margin:0 auto;border-radius:2px;"></div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);line-height:1.7;">This panel is currently offline for<br/>bug fixes or modifications.</div>
+    <a href="https://discord.gg/w6AHaqUJeq" target="_blank" style="display:flex;align-items:center;gap:6px;background:rgba(88,101,242,0.15);border:1px solid rgba(88,101,242,0.35);color:#5865F2;font-family:'Oxanium',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 14px;border-radius:6px;text-decoration:none;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+    Join our Discord
+    </a>
+    <div style="font-size:9px;color:var(--border);letter-spacing:1px;">CHECKING EVERY 3 SECONDS</div>
+</div>`;
+    document.body.appendChild(overlay);
+    }
+
+    function showBlacklistedScreen() {
+    if (document.getElementById("panel-disabled-overlay")) return;
+    const overlay = document.createElement("div");
+    overlay.id = "panel-disabled-overlay";
+    overlay.style.cssText = "position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:24px;text-align:center;";
+    overlay.innerHTML = `
+<div style="background:var(--surface);border:1px solid rgba(255,23,68,0.25);border-radius:16px;padding:32px 28px;max-width:280px;width:100%;display:flex;flex-direction:column;align-items:center;gap:16px;">
+    <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,23,68,0.1);border:1px solid rgba(255,23,68,0.3);display:flex;align-items:center;justify-content:center;font-size:26px;">🚫</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+    <div style="font-size:13px;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:1.5px;">Access Denied</div>
+    <div style="width:32px;height:2px;background:rgba(255,23,68,0.4);margin:0 auto;border-radius:2px;"></div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);line-height:1.7;">You have been banned from<br/>the Race Control panel.</div>
+    <a href="https://discord.gg/w6AHaqUJeq" target="_blank" style="display:flex;align-items:center;gap:6px;background:rgba(88,101,242,0.15);border:1px solid rgba(88,101,242,0.35);color:#5865F2;font-family:'Oxanium',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 14px;border-radius:6px;text-decoration:none;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+    Appeal on Discord
+    </a>
+</div>`;
+    document.body.appendChild(overlay);
+    }
+
+    function hideDisabledScreen() {
+    const overlay = document.getElementById("panel-disabled-overlay");
+    if (overlay) overlay.remove();
+    }
+
+    function openToolbox() {
+    const items = document.getElementById("toolbox-items");
+    items.innerHTML = TOOLBOX_SECTIONS.map(s => {
+        const visible = _toolboxVisible[s.id] !== false;
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;">
+    <span style="font-size:11px;">${s.label}</span>
+    <button onclick="toggleToolboxSection('${s.id}')" id="tb-btn-${s.id}" style="font-size:9px;font-weight:800;padding:3px 10px;border-radius:4px;border:1px solid;cursor:pointer;font-family:'Oxanium',sans-serif;background:${visible ? "rgba(0,230,118,0.15)" : "rgba(255,23,68,0.15)"};border-color:${visible ? "var(--green)" : "var(--red)"};color:${visible ? "var(--green)" : "var(--red)"};">
+    ${visible ? "VISIBLE" : "HIDDEN"}
+    </button></div>`;
+    }).join("");
+    document.getElementById("toolbox-modal").style.display = "flex";
+    }
+
+    function toggleToolboxSection(id) {
+    const visible = _toolboxVisible[id] !== false;
+    _toolboxVisible[id] = !visible;
+    const el = document.getElementById(id);
+    if (el) { const card = el.closest(".dev-card") || el; card.style.display = !visible ? "" : "none"; }
+    const btn = document.getElementById(`tb-btn-${id}`);
+    if (btn) {
+        const nv = !visible;
+        btn.textContent = nv ? "VISIBLE" : "HIDDEN";
+        btn.style.background = nv ? "rgba(0,230,118,0.15)" : "rgba(255,23,68,0.15)";
+        btn.style.borderColor = nv ? "var(--green)" : "var(--red)";
+        btn.style.color = nv ? "var(--green)" : "var(--red)";
+    }
+    localStorage.setItem("rc_toolbox", JSON.stringify(_toolboxVisible));
+    }
+
+    function closeToolbox() { document.getElementById("toolbox-modal").style.display = "none"; }
+
+    let _keybindSounds = {};
+    let _currentSoundPick = null;
+
+    function loadKeybindSounds() {
+    try {
+        const saved = localStorage.getItem("rc_keybind_sounds");
+        if (saved) { _keybindSounds = JSON.parse(saved); updateSoundBtnLabels(); }
+    } catch { }
+    }
+    function updateSoundBtnLabels() {
+    ["blue_flag", "next_lap", "pitting"].forEach(k => {
+        const btn = document.getElementById(`snd-${k}-btn`);
+        if (btn) btn.textContent = _keybindSounds[k] ? "✓ Custom" : "📁 Choose";
+    });
+    }
+    function pickKeybindSound(action) { _currentSoundPick = action; document.getElementById("sound-picker").click(); }
+
+    document.getElementById("sound-picker")?.addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file || !_currentSoundPick) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        _keybindSounds[_currentSoundPick] = e.target.result;
+        localStorage.setItem("rc_keybind_sounds", JSON.stringify(_keybindSounds));
+        updateSoundBtnLabels(); showToast(`✓ Sound set for ${_currentSoundPick}`, "ok");
+    };
+    reader.readAsDataURL(file); this.value = "";
+    });
+
+    function playKeybindSound(action) {
+    const src = _keybindSounds[action]; if (!src) return;
+    try { const a = new Audio(src); a.volume = 1.0; a.play(); } catch (e) { console.error("Keybind sound error:", e); }
+    }
+
+    function loadToolboxPrefs() {
+    try {
+        const saved = localStorage.getItem("rc_toolbox");
+        if (saved) {
+        _toolboxVisible = JSON.parse(saved);
+        TOOLBOX_SECTIONS.forEach(s => {
+            if (_toolboxVisible[s.id] === false) {
+            const el = document.getElementById(s.id);
+            if (el) { const card = el.closest(".dev-card") || el; card.style.display = "none"; }
+            }
+        });
+        }
+    } catch { }
+    }
+
+    function renderLeaderboard(data) {
+    const lb = document.getElementById("d-leaderboard");
+    if (!data.drivers?.length) {
+        lb.innerHTML = '<div style="font-size:11px;color:var(--muted);text-align:center;padding:16px 12px;">Waiting for race...</div>';
+        _prevPositions = {};
+        return;
+    }
+
+    const positionChanges = {};
+    data.drivers.forEach((d, i) => {
+        const pos = i + 1;
+        const prev = _prevPositions[d.name];
+        if (prev === undefined) positionChanges[d.name] = 'new';
+        else if (pos < prev) positionChanges[d.name] = 'up';
+        else if (pos > prev) positionChanges[d.name] = 'down';
+        else positionChanges[d.name] = 'same';
+    });
+
+    const newPositions = {};
+    data.drivers.forEach((d, i) => { newPositions[d.name] = i + 1; });
+    _prevPositions = newPositions;
+
+    lb.innerHTML = data.drivers.map((d, i) => {
+        const pos = i + 1;
+        const isMe = d.name === config.driver;
+        const isMe2 = d.name === config.driver2;
+        const change = positionChanges[d.name];
+        const team = getTeamFromCallsign(d.callsign);
+        const tc = (team && TEAM_COLORS[team]) ? TEAM_COLORS[team] : null;
+        const posColor = pos === 1 ? '#ffd600' : pos === 2 ? '#c0c0c0' : pos === 3 ? '#cd7f32' : 'var(--muted)';
+
+        const arrowHtml = change === 'up'
+        ? `<span style="font-size:9px;font-weight:900;color:#00e676;line-height:1;animation:arrowPop 0.4s cubic-bezier(0.34,1.56,0.64,1);">▲</span>`
+        : change === 'down'
+            ? `<span style="font-size:9px;font-weight:900;color:#ff1744;line-height:1;animation:arrowPop 0.4s cubic-bezier(0.34,1.56,0.64,1);">▼</span>`
+            : `<span style="font-size:9px;line-height:1;opacity:0;">▲</span>`;
+
+        let gapHtml = '';
+        if (!d.dnf && !d.finished) {
+        if (i === 0) {
+            gapHtml = `<span style="font-size:8px;font-weight:800;color:var(--yellow);letter-spacing:0.5px;">LEADER</span>`;
+        } else {
+            const delta = _deltaSeconds[d.name];
+            if (typeof delta === 'number') {
+            const abs = Math.abs(delta);
+            const mins = Math.floor(abs / 60);
+            const secs = (abs % 60).toFixed(3);
+            const str = mins > 0 ? `${mins}:${secs.padStart(6, '0')}` : `${secs}s`;
+            gapHtml = `<span style="font-size:9px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;">+${str}</span>`;
+            } else {
+            const lapDiff = (data.drivers[0]?.lap || 1) - (d.lap || 1);
+            if (lapDiff > 0)
+                gapHtml = `<span style="font-size:8px;color:var(--muted);">+${lapDiff} LAP${lapDiff > 1 ? 'S' : ''}</span>`;
+            else if (d.gap && d.gap !== 'Leader')
+                gapHtml = `<span style="font-size:8px;color:var(--muted);">${d.gap}</span>`;
+            }
+        }
+        }
+
+        const pitsBadge = (d.inPits && !d.dnf && !d.finished)
+        ? `<span style="font-size:7px;font-weight:800;letter-spacing:0.5px;padding:1px 5px;border-radius:3px;background:rgba(255,214,0,0.12);border:1px solid rgba(255,214,0,0.35);color:var(--yellow);">PIT STOP</span>`
+        : '';
+
+        let rowExtra = '';
+        if (isMe) rowExtra = 'border-color:rgba(41,121,255,0.5);background:rgba(41,121,255,0.07);';
+        if (isMe2) rowExtra = 'border-color:rgba(0,230,118,0.5);background:rgba(0,230,118,0.07);';
+        if (d.dnf) rowExtra += 'opacity:0.38;filter:grayscale(0.6);';
+
+        return `
+    <div class="lb-row"
+    style="border-left:3px solid ${tc || 'var(--border)'};
+            padding:8px 10px 8px 10px;gap:8px;
+            transition:border-color 0.2s,background 0.2s;
+            ${rowExtra}">
+
+    <div style="display:flex;flex-direction:column;align-items:center;width:18px;flex-shrink:0;gap:1px;">
+        <div style="font-size:13px;font-weight:900;color:${posColor};line-height:1;letter-spacing:-1px;">${pos}</div>
+        <div style="height:10px;display:flex;align-items:center;justify-content:center;">${arrowHtml}</div>
+    </div>
+
+    <div style="width:30px;height:30px;border-radius:4px;flex-shrink:0;
+            background:${tc ? tc + '1a' : 'rgba(255,255,255,0.04)'};
+            border:1px solid ${tc ? tc + '55' : 'var(--border)'};
+            display:flex;align-items:center;justify-content:center;flex-direction:column;">
+        <span style="font-size:10px;font-weight:900;color:${tc || 'var(--muted)'};line-height:1;">${d.number}</span>
+    </div>
+
+    <div style="flex:1;min-width:0;overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:5px;">
+        <span style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.name}</span>
+        ${d.watchMarshal ? `<span title="WatchMarshal flagged" style="font-size:11px;flex-shrink:0;">⚠️</span>` : ''}
+        ${isMe ? `<span style="font-size:7px;font-weight:900;padding:1px 4px;border-radius:3px;background:rgba(41,121,255,0.2);border:1px solid rgba(41,121,255,0.4);color:var(--blue);flex-shrink:0;">YOU</span>` : ''}
+        ${isMe2 ? `<span style="font-size:7px;font-weight:900;padding:1px 4px;border-radius:3px;background:rgba(0,230,118,0.2);border:1px solid rgba(0,230,118,0.4);color:var(--green);flex-shrink:0;">D2</span>` : ''}
+        </div>
+        <div style="font-size:8px;color:var(--muted);margin-top:1px;">${d.callsign}</div>
+    </div>
+
+    <div style="text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
+        ${d.dnf
+            ? `<span style="font-size:9px;font-weight:900;color:var(--red);letter-spacing:1px;padding:2px 6px;border-radius:3px;background:rgba(255,23,68,0.12);border:1px solid rgba(255,23,68,0.3);">DNF</span>`
+            : d.finished
+            ? `<span style="font-size:9px;font-weight:800;color:var(--green);">FINISHED 🏁</span>`
+            : `<span style="font-size:10px;font-weight:800;font-variant-numeric:tabular-nums;">Lap ${d.lap || 1}${data.totalLaps ? `<span style="font-size:9px;color:var(--muted);font-weight:400;">/${data.totalLaps}</span>` : ''}</span>`
+        }
+        <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end;">
+        ${pitsBadge}
+        ${gapHtml}
+        </div>
+    </div>
+    </div>`;
+    }).join('');
+    }
+
+function showDbUpdateBanner() {
+if (document.getElementById("db-update-banner")) return;
+const banner = document.createElement("div");
+banner.id = "db-update-banner";
+banner.style.cssText = "position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;";
+banner.innerHTML = `
+    <div style="background:var(--surface);border:1px solid rgba(41,121,255,0.4);border-radius:12px;padding:24px 32px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;">
+    <div style="font-size:22px;">🔄</div>
+    <div style="font-size:13px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:1px;">Restarting</div>
+    <div style="font-size:10px;color:var(--muted);">Driver list updated — applying changes...</div>
+    </div>`;
+document.body.appendChild(banner);
+requestAnimationFrame(() => {
+requestAnimationFrame(() => {
+    setTimeout(() => location.reload(), 1200);
+});
+});
+}
+
+async function checkDriverDbVersion() {
+if (!apiUrl) return;
+try {
+const res = await fetch(`${apiUrl}/driver-db-version`);
+if (!res.ok) return;
+const data = await res.json();
+if (_driverDbVersion === null) { _driverDbVersion = data.version; return; }
+if (data.version !== _driverDbVersion) {
+    _driverDbVersion = data.version;
+    showDbUpdateBanner();
+}
+} catch (e) { console.warn("[DriverDB] Version check failed:", e.message); }
+}
+
+    async function onFlagEvent(flag, customData) {
+if (flag === "__driver_db_update__") {
+    console.log("[SSE] __driver_db_update__ hit — showing banner");
+    showDbUpdateBanner();
+    return;
+}
+
+    if (flag === "__custom__" && customData) {
+        if (customData.audioCheckId) {
+        showAudioCheckPrompt(customData.audioCheckId, customData.text || "Radio Check, Radio Check");
+        return;
+        }
+        let html;
+        const isHolo = customData.color === "holographic" || customData.color === "rainbow";
+        if (customData.html) {
+        html = customData.html;
+        } else if (isHolo) {
+        html = `<div class="flag-card-holo"><span class="fc-emoji">${customData.emoji || "🌈"}</span><div><div class="fc-title">${customData.text || customData.label || "Custom Flag"}</div></div></div>`;
+        } else {
+        const isHex = customData.color?.startsWith("#");
+        const colorMap = { green: "green", yellow: "yellow", red: "red", blue: "blue", orange: "orange", white: "white" };
+        const color = colorMap[customData.color] || "white";
+        const bgStyle = customData.bgImage
+            ? `background:url(${customData.bgImage}) center/cover;border-color:${isHex ? customData.color : "rgba(255,255,255,0.3)"};color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.9);`
+            : isHex ? `background:${customData.color}22;border-color:${customData.color};color:${customData.color};` : "";
+        const bgClass = (!customData.bgImage && !isHex) ? color : "";
+        html = `<div class="flag-card ${bgClass}" style="${bgStyle}"><span class="fc-emoji">${customData.emoji || "🏴"}</span><div><div class="fc-title">${customData.text || customData.label || "Custom Flag"}</div></div></div>`;
+        }
+        document.getElementById("flag-notif-driver").innerHTML = html;
+        document.getElementById("flag-notif-marshal").innerHTML = html;
+        document.getElementById("flag-notif-marshal").style.display = "block";
+        return;
+    }
+
+    const def = FLAG_DEFS[flag]; if (!def) return;
+
+    if (flag === "blue") {
+        if (customData?.driver) {
+        _lastBlueFlagDriver = { name: customData.driver, number: customData.number, callsign: customData.callsign };
+        }
+        const d = _lastBlueFlagDriver;
+        if (d) {
+        const html = `<div class="flag-card blue"><span class="fc-emoji">🔵</span><div><div class="fc-title">Blue Flag — ${d.name}</div><div class="fc-sub">#${d.number} · ${d.callsign} — let the leaders past.</div></div></div>`;
+        document.getElementById("flag-notif-driver").innerHTML = html;
+        document.getElementById("flag-notif-marshal").innerHTML = html;
+        document.getElementById("flag-notif-marshal").style.display = "block";
+        playFlagAudio(`BlueFlag_${d.name}.mp4`);
+        return;
+        }
+    }
+
+    if (flag !== "blue") _lastBlueFlagDriver = null;
+
+    const html = `<div class="flag-card ${def.color}"><span class="fc-emoji">${def.emoji}</span><div><div class="fc-title">${def.title}</div><div class="fc-sub">${def.sub}</div></div></div>`;
+    document.getElementById("flag-notif-driver").innerHTML = html;
+    document.getElementById("flag-notif-marshal").innerHTML = html;
+    document.getElementById("flag-notif-marshal").style.display = "block";
+    if (def.sound) playFlagAudio(def.sound);
+    const colors = { green: "var(--green)", yellow: "var(--yellow)", red: "var(--red)", orange: "var(--orange)", blue: "var(--blue)", white: "#fff" };
+    ["d-race-pill", "m-race-pill"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.style.color = colors[def.color] || "#fff"; el.textContent = `${def.emoji} ${def.title}`; }
+    });
+    }
+
+    function setDriverBtnsEnabled(on) {
+    const myDriver = _lastRaceState?.drivers?.find(d => d.name === config.driver);
+    const finished = myDriver?.finished || false;
+    const dnfd = myDriver?.dnf || false;["blue_flag", "next_lap", "pitting", "dnf"].forEach(a => { const b = document.getElementById(`btn-${a}`); if (b) b.disabled = !on || finished || dnfd; });
+    const notice = document.getElementById("d-action-notice");
+    if (notice) { notice.style.display = on && !finished ? "none" : "block"; notice.textContent = on && !finished ? "" : finished ? "🏁 Race finished" : "⏳ Waiting for race to start..."; }
+    }
+
+    function showMarshalDisabledScreen() {
+    if (document.getElementById("marshal-disabled-overlay")) return;
+    const overlay = document.createElement("div");
+    overlay.id = "marshal-disabled-overlay";
+    overlay.style.cssText = "position:fixed;inset:0;z-index:500;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:24px;text-align:center;";
+    overlay.innerHTML = `
+<div style="background:var(--surface);border:1px solid rgba(255,214,0,0.25);border-radius:16px;padding:32px 28px;max-width:280px;width:100%;display:flex;flex-direction:column;align-items:center;gap:16px;">
+    <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,214,0,0.1);border:1px solid rgba(255,214,0,0.3);display:flex;align-items:center;justify-content:center;font-size:26px;">🛠️</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+    <div style="font-size:13px;font-weight:800;color:var(--yellow);text-transform:uppercase;letter-spacing:1.5px;">Temporarily Shut Down</div>
+    <div style="width:32px;height:2px;background:rgba(255,214,0,0.4);margin:0 auto;border-radius:2px;"></div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);line-height:1.7;">This panel is currently offline for<br/>bug fixes or modifications.</div>
+    <a href="https://discord.gg/w6AHaqUJeq" target="_blank" style="display:flex;align-items:center;gap:6px;background:rgba(88,101,242,0.15);border:1px solid rgba(88,101,242,0.35);color:#5865F2;font-family:'Oxanium',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:8px 14px;border-radius:6px;text-decoration:none;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+    Join our Discord
+    </a>
+    <div style="font-size:9px;color:var(--border);letter-spacing:1px;">CHECKING EVERY 3 SECONDS</div>
+</div>`;
+    document.body.appendChild(overlay);
+    }
+
+    function hideMarshalDisabledScreen() {
+    const overlay = document.getElementById("marshal-disabled-overlay");
+    if (overlay) overlay.remove();
+    }
+
+    let _devBypassShutdown = { driver: false, marshal: false };
+
+    function showShutdownBanner(panel) {
+    const existingId = `shutdown-banner-${panel}`;
+    if (document.getElementById(existingId)) return;
+    const notif = document.createElement("div");
+    notif.id = existingId;
+    notif.style.cssText = "position:fixed;top:36px;left:0;right:0;z-index:600;padding:6px 10px;";
+    notif.innerHTML = `
+<div class="flag-card yellow" style="justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:10px;">
+    <span class="fc-emoji">🛠️</span>
+    <div>
+        <div class="fc-title">Panel Shutdown</div>
+        <div class="fc-sub">This panel is currently shut down for everyone else.</div>
+    </div>
+    </div>
+    <button onclick="toggleDevBypass('${panel}')" id="bypass-btn-${panel}"
+    style="font-size:9px;font-weight:800;padding:3px 8px;border-radius:4px;border:1px solid;cursor:pointer;font-family:'Oxanium',sans-serif;background:rgba(255,214,0,0.15);border-color:var(--yellow);color:var(--yellow);white-space:nowrap;">
+    👁 VIEWING
+    </button>
+</div>`;
+    document.body.appendChild(notif);
+    }
+
+    function hideShutdownBanner(panel) {
+    document.getElementById(`shutdown-banner-${panel}`)?.remove();
+    }
+
+    function toggleDevBypass(panel) {
+    _devBypassShutdown[panel] = !_devBypassShutdown[panel];
+    const btn = document.getElementById(`bypass-btn-${panel}`);
+    if (_devBypassShutdown[panel]) {
+        if (btn) { btn.textContent = "🚫 SEE SHUTDOWN"; btn.style.background = "rgba(255,23,68,0.15)"; btn.style.borderColor = "var(--red)"; btn.style.color = "var(--red)"; }
+        if (panel === "driver") showDisabledScreen();
+        if (panel === "marshal") showMarshalDisabledScreen();
+        document.querySelector(".titlebar").style.zIndex = "600";
+    } else {
+        if (btn) { btn.textContent = "👁 VIEWING"; btn.style.background = "rgba(255,214,0,0.15)"; btn.style.borderColor = "var(--yellow)"; btn.style.color = "var(--yellow)"; }
+        if (panel === "driver") hideDisabledScreen();
+        if (panel === "marshal") hideMarshalDisabledScreen();
+        document.querySelector(".titlebar").style.zIndex = "";
+    }
+    }
+
+    function doAction(action) {
+    if (_cooldownActive || !_canFire(action)) return;
+    playKeybindSound(action);
+    const btn = document.getElementById(`btn-${action}`);
+    if (!btn || btn.disabled) return;
+    btn.classList.add("fired"); setTimeout(() => btn.classList.remove("fired"), 300);
+    window.api.sendAction(action);
+    }
+    function doTogglePitting() {
+    if (_cooldownActive || !_canFire('pitting')) return;
+    playKeybindSound("pitting");
+    window.api.togglePitting().then(v => updatePitBtn(v));
+    }
+    function updatePitBtn(v) {
+    document.getElementById("pit-icon").textContent = "🔧";
+    document.getElementById("pit-label").textContent = v ? "In Pits" : "Pitting";
+    document.getElementById("btn-pitting")?.classList.toggle("pit-active", v);
+    }
+
+    function doAction2(action) {
+    if (_cooldownActive2 || !_canFire(action + '_2')) return;
+    playKeybindSound(action + "2");
+    const btn = document.getElementById(`btn2-${action}`);
+    if (!btn || btn.disabled) return;
+    btn.classList.add("fired"); setTimeout(() => btn.classList.remove("fired"), 300);
+    window.api.sendAction2(action);
+    }
+    function doTogglePitting2() {
+    if (_cooldownActive2 || !_canFire('pitting_2')) return;
+    playKeybindSound("pitting2");
+    window.api.togglePitting2().then(v => updatePitBtn2(v));
+    }
+
+    let _dnfSlot = 1;
+    let _dnfTimer = null;
+    let _dnfCountdown = null;
+
+    function confirmDNF() { _dnfSlot = 1; showDNFModal(config.driver); }
+    function confirmDNF2() { _dnfSlot = 2; showDNFModal(config.driver2); }
+
+    function showDNFModal(name) {
+    document.getElementById("dnf-modal-text").textContent = `Are you sure you want to DNF ${name}?`;
+    document.getElementById("dnf-modal").style.display = "flex";
+    _startDNFTimer();
+    }
+
+    function closeDNFModal() {
+    document.getElementById("dnf-modal").style.display = "none";
+    _clearDNFTimer();
+    }
+
+    function _startDNFTimer() {
+    _clearDNFTimer();
+    let secs = 15;
+    const timerEl = document.getElementById("dnf-timer");
+    if (timerEl) timerEl.textContent = `Closes in ${secs}s`;
+    _dnfCountdown = setInterval(() => {
+        secs--;
+        if (timerEl) timerEl.textContent = `Closes in ${secs}s`;
+        if (secs <= 0) closeDNFModal();
+    }, 1000);
+    }
+
+    function _clearDNFTimer() {
+    if (_dnfCountdown) { clearInterval(_dnfCountdown); _dnfCountdown = null; }
+    }
+
+    async function submitDNF() {
+    closeDNFModal();
+    const driver = _dnfSlot === 1 ? config.driver : config.driver2;
+    const number = _dnfSlot === 1 ? config.number : config.number2;
+    const callsign = _dnfSlot === 1 ? config.callsign : config.callsign2;
+    try {
+        const res = await fetch(`${apiUrl}/driver/action`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            action: "dnf", driver, number, callsign,
+            discordId: config.discordId, username: config.username || driver,
+            engineer: config.engineer || false,
+        }),
+        });
+        if (res.ok) {
+        showToast(`🚫 ${driver} DNF`, "err");
+        const btns = _dnfSlot === 1
+            ? ["btn-blue_flag", "btn-next_lap", "btn-pitting", "btn-dnf"]
+            : ["btn2-blue_flag", "btn2-next_lap", "btn2-pitting", "btn2-dnf"];
+        btns.forEach(id => { const b = document.getElementById(id); if (b) b.disabled = true; });
+        } else {
+        showToast("✗ DNF failed", "err");
+        }
+    } catch { showToast("✗ Bot unreachable", "err"); }
+    }
+
+    function updatePitBtn2(v) {
+    document.getElementById("pit2-icon").textContent = "🔧";
+    document.getElementById("pit2-label").textContent = v ? "In Pits" : "Pitting";
+    document.getElementById("btn2-pitting")?.classList.toggle("pit-active", v);
+    }
+    function setDriverBtnsEnabled2(on) {
+    const myDriver2 = _lastRaceState?.drivers?.find(d => d.name === config.driver2);
+    const finished = myDriver2?.finished || false;
+    const dnfd2 = myDriver2?.dnf || false;
+    ["blue_flag", "next_lap", "pitting", "dnf"].forEach(a => {
+        const b2 = document.getElementById(`btn2-${a}`); if (b2) b2.disabled = !on || finished || dnfd2;
+    });
+    const notice = document.getElementById("d-action-notice2");
+    if (notice) { notice.style.display = on ? "none" : "block"; notice.textContent = on ? "" : "⏳ Waiting for race to start..."; }
+    }
+
+    async function triggerFlag(flag) {
+    if (!user?.token) return;
+    try {
+        const res = await fetch(`${apiUrl}/flag`, {
+        method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+        body: JSON.stringify({ flag, username: user.username }),
+        });
+        const data = await res.json();
+        if (res.ok) { showToast(`✓ ${FLAG_DEFS[flag]?.title || flag}`, "ok"); onFlagEvent(flag, null); }
+        else { showToast(`✗ ${data.error}`, "err"); }
+    } catch { showToast("✗ Bot unreachable", "err"); }
+    }
+
+    async function marshalStartRace() {
+    const laps = parseInt(document.getElementById("m-laps").value) || 10;
+    const pits = parseInt(document.getElementById("m-pits").value) || 0;
+    const intv = parseInt(document.getElementById("m-interval").value) || 0;
+    try {
+        const res = await fetch(`${apiUrl}/driver/setup`, { method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token }, body: JSON.stringify({ totalLaps: laps, mandatoryPits: pits, lapIntervalSeconds: intv }) });
+        const data = await res.json();
+        if (res.ok) { document.getElementById("m-race-status").textContent = `✓ Race live — ${laps} laps`; document.getElementById("m-race-status").style.color = "var(--green)"; showToast("✓ Race started!", "ok"); }
+        else showToast(`✗ ${data.error}`, "err");
+    } catch { showToast("✗ Bot unreachable", "err"); }
+    }
+
+    async function marshalResetRace() {
+    try {
+        const res = await fetch(`${apiUrl}/driver/reset`, { method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token }, body: JSON.stringify({}) });
+        if (res.ok) { document.getElementById("m-race-status").textContent = "Race reset"; document.getElementById("m-race-status").style.color = "var(--muted)"; showToast("✓ Race reset", "ok"); }
+    } catch { showToast("✗ Bot unreachable", "err"); }
+    }
+
+    async function pollMarshalState() {
+    if (!apiUrl) return;
+    try {
+        await fetchAttendanceFromServer();
+        renderAttendance();
+        const res = await fetch(`${apiUrl}/driver/state`, { headers: { "x-discord-id": user?.id || "" } });
+        if (!res.ok) return;
+        const data = await res.json();
+        _lastRaceState = data;
+        const lb = document.getElementById("m-leaderboard");
+        const lapEl = document.getElementById("m-lap-counter");
+        if (!lb) return;
+        if (!data.drivers?.length) {
+        lb.innerHTML = '<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">Waiting for race...</div>';
+        if (lapEl) lapEl.textContent = "";
+        return;
+        }
+        if (lapEl && data.totalLaps) {
+        const maxLap = Math.max(...data.drivers.map(d => d.lap || 1));
+        lapEl.textContent = `Lap ${maxLap} / ${data.totalLaps}`;
+        } else if (lapEl) { lapEl.textContent = ""; }
+        const filtered = data.drivers.filter(d => _attendance[d.name] !== false);
+        lb.innerHTML = filtered.map((d, i) => {
+        const pos = i + 1, pc = pos === 1 ? "p1" : pos === 2 ? "p2" : pos === 3 ? "p3" : "";
+        const team = getTeamFromCallsign(d.callsign);
+        const tc = (team && TEAM_COLORS[team]) ? TEAM_COLORS[team] : null;
+        return `<div class="lb-row ${d.inPits ? "in-pits" : ""}" style="border-left:3px solid ${tc || "var(--border)"};padding-left:8px;${d.dnf ? "opacity:0.35;filter:grayscale(1);" : ""}">
+    <div class="lb-pos ${pc}">${pos}</div>
+    <div class="lb-num" style="${tc ? `background:${tc}22;border-color:${tc}66;color:${tc};` : ""}">#${d.number}</div>
+    <div class="lb-info">
+        <div class="lb-name">${d.name}${d.watchMarshal ? ' <span title="WatchMarshal flagged" style="font-size:10px;">⚠️</span>' : ''}</div>
+        <div class="lb-call">${d.callsign}</div>
+    </div>
+    <div class="lb-lap" style="text-align:right;">
+        <div>${d.dnf ? "Out " : d.finished ? "Finished 🏁" : `Lap ${d.lap || 1}${data.totalLaps ? `<span style="color:var(--muted);">/${data.totalLaps}</span>` : ""}`}</div>
+        ${d.inPits ? '<div style="font-size:8px;color:var(--yellow);">🔧 IN PITS</div>' : (d.gap && d.gap !== "Leader" ? `<div style="font-size:8px;color:var(--muted);">${d.gap}</div>` : "")}
+    </div>
+    </div>`;
+        }).join("");
+    } catch (e) { console.warn("[Marshal LB]", e.message); }
+    }
+
+    async function pollBlueFlagRequests() {
+    if (!user?.token || currentPanel !== "marshal") return;
+    try {
+        const statusRes = await fetch(`${apiUrl}/panel-status`);
+        const statusData = await statusRes.json();
+        if (!statusData.marshal) {
+        if (hasDev) {
+            showShutdownBanner("marshal");
+            if (_devBypassShutdown.marshal) { showMarshalDisabledScreen(); return; }
+            hideMarshalDisabledScreen();
+        } else {
+            hideShutdownBanner("marshal");
+            showMarshalDisabledScreen();
+            return;
+        }
+        } else {
+        hideShutdownBanner("marshal");
+        hideMarshalDisabledScreen();
+        }
+
+        const res = await fetch(`${apiUrl}/driver/blue-flags`, { headers: { "x-discord-id": user.id, "x-discord-token": user.token } });
+        const data = await res.json();
+        const container = document.getElementById("m-bf-container"), requests = data.requests || [];
+        let hasNew = false;
+        requests.forEach(r => { if (!bfKnownIds.has(r.id)) { hasNew = true; bfKnownIds.add(r.id); } });
+        if (hasNew) startBfAlert();
+        if (!requests.length) { stopBfAlert(); container.innerHTML = ""; return; }
+        container.innerHTML = requests.map(r => `
+    <div class="bf-notif" id="bf-${r.id}">
+    <div><div class="bf-title">🔵 Blue Flag Request</div><div class="bf-sub">${r.driver} #${r.number} requested a blue flag</div></div>
+    <button class="bf-dismiss" onclick="dismissBf(${r.id})">Dismiss</button>
+    </div>`).join("");
+    } catch { }
+    }
+    function startBfAlert() { if (bfAlertInterval) return; playBfBeep(); bfAlertInterval = setInterval(playBfBeep, 1500); }
+    function stopBfAlert() { if (bfAlertInterval) { clearInterval(bfAlertInterval); bfAlertInterval = null; } }
+    function playBfBeep() {
+    try { const ctx = new AudioContext(), osc = ctx.createOscillator(), gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.frequency.setValueAtTime(1047, ctx.currentTime); osc.frequency.setValueAtTime(784, ctx.currentTime + 0.15); gain.gain.setValueAtTime(0, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.8, ctx.currentTime + 0.02); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35); osc.start(); osc.stop(ctx.currentTime + 0.4); } catch { }
+    }
+    async function dismissBf(id) {
+    bfKnownIds.delete(id);
+    try { await fetch(`${apiUrl}/driver/blue-flags/dismiss`, { method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token }, body: JSON.stringify({ id }) }); } catch { }
+    await pollBlueFlagRequests();
+    if (!document.querySelectorAll('[id^="bf-"]').length) stopBfAlert();
+    }
+
+    async function pollWatchMarshalAlerts() {
+    if (!user?.token || currentPanel !== "marshal") return;
+    try {
+        const res = await fetch(`${apiUrl}/driver/watch-marshal`, { headers: { "x-discord-id": user.id, "x-discord-token": user.token } });
+        const data = await res.json();
+        const container = document.getElementById("m-wm-container");
+        const alerts = data.alerts || [];
+        let hasNew = false;
+        alerts.forEach(a => { if (!wmKnownIds.has(a.id)) { hasNew = true; wmKnownIds.add(a.id); } });
+        if (hasNew) startWmAlert();
+        if (!alerts.length) { stopWmAlert(); container.innerHTML = ""; return; }
+        container.innerHTML = alerts.map(a => `
+    <div class="wm-notif" id="wm-${a.id}">
+    <div>
+        <div class="wm-title">⚠️ WatchMarshal — Suspicious Lap</div>
+        <div class="wm-sub">${a.driver} #${a.number} logged 2 laps in ${a.gapSeconds}s</div>
+    </div>
+    <div class="wm-btns">
+        <button class="wm-dismiss" onclick="dismissWm(${a.id})">Dismiss</button>
+        <button class="wm-action" onclick="actionWm(${a.id})">Remove Lap</button>
+    </div>
+    </div>`).join("");
+    } catch { }
+    }
+    function startWmAlert() { if (wmAlertInterval) return; playWmBeep(); wmAlertInterval = setInterval(playWmBeep, 1200); }
+    function stopWmAlert() { if (wmAlertInterval) { clearInterval(wmAlertInterval); wmAlertInterval = null; } }
+    function playWmBeep() {
+    try { const ctx = new AudioContext(), osc = ctx.createOscillator(), gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.frequency.setValueAtTime(880, ctx.currentTime); osc.frequency.setValueAtTime(660, ctx.currentTime + 0.12); osc.frequency.setValueAtTime(880, ctx.currentTime + 0.24); gain.gain.setValueAtTime(0, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.9, ctx.currentTime + 0.02); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.55); osc.start(); osc.stop(ctx.currentTime + 0.6); } catch { }
+    }
+    async function dismissWm(id) {
+    wmKnownIds.delete(id);
+    try { await fetch(`${apiUrl}/driver/watch-marshal/dismiss`, { method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token }, body: JSON.stringify({ id }) }); } catch { }
+    await pollWatchMarshalAlerts();
+    if (!document.querySelectorAll('[id^="wm-"]').length) stopWmAlert();
+    }
+    async function actionWm(id) {
+    wmKnownIds.delete(id);
+    try {
+        const res = await fetch(`${apiUrl}/driver/watch-marshal/action`, { method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token }, body: JSON.stringify({ id }) });
+        const data = await res.json();
+        if (res.ok) showToast(`⚠️ Lap removed — ${data.driver}`, "err");
+    } catch { }
+    await pollWatchMarshalAlerts();
+    if (!document.querySelectorAll('[id^="wm-"]').length) stopWmAlert();
+    }
+
+    async function devPushDriverDB() {
+    const drivers = getDriverDB();
+    if (!drivers.length) return showToast("❌ No drivers to push", "err");
+    const statusEl = document.getElementById("dev-drivers-status");
+    statusEl.style.color = "var(--muted)";
+    statusEl.textContent = "Pushing...";
+    try {
+        if (!user?.token) {
+        const ok = await devAutoAuth();
+        if (!ok) { statusEl.style.color = "var(--red)"; statusEl.textContent = "✗ Auth failed"; return; }
+        }
+        const res = await fetch(`${apiUrl}/admin/driver-db`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "x-discord-id": user.id,
+            "x-discord-token": user.token
+        },
+        body: JSON.stringify({ drivers }),
+        });
+        if (!res.ok) {
+        const data = await res.json();
+        showToast(`✗ ${data.error}`, "err");
+        statusEl.style.color = "var(--red)";
+        statusEl.textContent = "✗ Push failed";
+        return;
+        }
+        localStorage.setItem("rc_driver_db", JSON.stringify(drivers));
+        DRIVER_IDS = {};
+        DRIVER_INFO = {};
+        drivers.forEach(d => {
+        DRIVER_IDS[d.discordId] = d.name;
+        DRIVER_INFO[d.name] = { number: d.number, callsign: d.callsign };
+        });
+        statusEl.style.color = "var(--green)";
+        statusEl.textContent = `✓ Pushed ${drivers.length} drivers — broadcasting to all clients`;
+        showToast(`✓ Driver DB pushed — ${drivers.length} drivers`, "ok");
+        console.log("[SSE] source state:", _sseSource?.readyState);
+
+        const banner = document.createElement("div");
+        banner.id = "db-update-banner";
+        banner.style.cssText = "position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;";
+        banner.innerHTML = `
+<div style="background:var(--surface);border:1px solid rgba(41,121,255,0.4);border-radius:12px;padding:24px 32px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;">
+<div style="font-size:22px;">🔄</div>
+<div style="font-size:13px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:1px;">Restarting</div>
+<div style="font-size:10px;color:var(--muted);">Driver list updated — applying changes...</div>
+</div>`;
+        document.body.appendChild(banner);
+
+        requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            setTimeout(() => location.reload(), 1200);
+        });
+        });
+    } catch (e) {
+        statusEl.style.color = "var(--red)";
+        statusEl.textContent = "✗ Push failed";
+        showToast("✗ Push failed", "err");
+    }
+    }
+
+    async function devAutoAuth() {
+    if (user?.token) return true;
+    if (user?.marshalToken) { user.token = user.marshalToken; sessionStorage.setItem("rc_user", JSON.stringify(user)); localStorage.setItem("rc_user", JSON.stringify(user)); return true; }
+    try {
+        const code = await window.api.openOAuth(); if (!code) return false;
+        const authRes = await fetch(`${apiUrl}/auth`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, redirectUri: "http://localhost:7823" }) });
+        const authData = await authRes.json(); if (!authRes.ok) return false;
+        const pw = await window.api.devAuthPassword();
+        if (!pw) { showToast("❌ Dev password not configured", "err"); return false; }
+        const pwRes = await fetch(`${apiUrl}/verify-password`, { method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": authData.user.token }, body: JSON.stringify({ password: pw }) });
+        const pwData = await pwRes.json(); if (!pwRes.ok) return false;
+        user.token = authData.user.token; user.marshalToken = authData.user.token; user.isAdmin = true;
+        sessionStorage.setItem("rc_user", JSON.stringify(user)); localStorage.setItem("rc_user", JSON.stringify(user));
+        return true;
+    } catch (e) { console.error("[DevAuth]", e); return false; }
+    }
+
+    async function loadDevInfo() {
+    if (!apiUrl) return;
+    if (!user?.token && !user?.marshalToken) { showToast("❌ Marshal login required for Dev panel", "err"); return; }
+    if (!user?.token) { const ok = await devAutoAuth(); if (!ok) { showToast("❌ Dev auth failed", "err"); return; } }
+    try {
+        await loadActionLoggingState();
+        await loadWatchMarshalState();
+        const headers = { "x-discord-id": user.id, "x-discord-token": user.token };
+        const [ai, si, li, dl] = await Promise.all([
+        fetch(`${apiUrl}/admin/info`, { headers }).then(r => r.json()),
+        fetch(`${apiUrl}/admin/sessions`, { headers }).then(r => r.json()),
+        fetch(`${apiUrl}/admin/audit`, { headers }).then(r => r.json()),
+        fetch(`${apiUrl}/admin/driver-logins`, { headers }).then(r => r.json()),
+        ]);
+        const u = Math.floor(ai.uptime || 0);
+        const driverState = await fetch(`${apiUrl}/driver/state`).then(r => r.json()).catch(() => ({ drivers: [] }));
+        const driversOnline = (driverState.drivers || []).length;
+
+        document.getElementById("dev-stats").innerHTML = `
+    <div class="dev-stat">Uptime <span>${Math.floor(u / 3600)}h ${Math.floor((u % 3600) / 60)}m</span></div>
+    <div class="dev-stat">Connected VCs <span>${(ai.connectedVCs || []).length}</span></div>
+    <div class="dev-stat">SSE — App <span>${ai.sseAppClients || 0}</span></div>
+    <div class="dev-stat">SSE — Web <span>${ai.sseWebClients || 0}</span></div>
+    <div class="dev-stat">Driver Panel <span style="color:${ai.driverEnabled ? "var(--green)" : "var(--red)"}">${ai.driverEnabled ? "On" : "Off"}</span></div>
+    <div class="dev-stat">Marshal Panel <span style="color:${ai.marshalEnabled ? "var(--green)" : "var(--red)"}">${ai.marshalEnabled ? "On" : "Off"}</span></div>
+    <div class="dev-stat">Drivers in Race <span>${driversOnline}</span></div>
+    <div class="dev-stat">SSE Clients (app+web) <span>${ai.sseClients || 0}</span></div>
+    <div class="dev-stat">Active Sessions <span>${(ai.sessions || si.sessions || []).filter(s => s.verified).length}</span></div>
+    <div class="dev-stat">Blacklisted <span>${(ai.blacklist || []).length}</span></div>`;
+        const vcsEl = document.getElementById("dev-vcs"), vcs = ai.voiceChannels || [];
+        vcsEl.innerHTML = !vcs.length ? '<div style="font-size:10px;color:var(--muted);">No voice channels found.</div>' : vcs.map(vc => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;">
+    <div><div style="font-size:10px;font-weight:700;">${vc.name}</div><div style="font-size:8px;color:var(--muted);">${vc.guild} · ${vc.memberCount} members</div></div>
+    ${vc.connected ? `<button class="dev-btn" onclick="devLeaveVc('${vc.id}')" style="width:auto;padding:3px 8px;font-size:9px;">Leave</button>` : `<button class="dev-btn" onclick="devJoinVc('${vc.id}')" style="width:auto;padding:3px 8px;font-size:9px;background:rgba(0,230,118,0.1);border-color:rgba(0,230,118,0.3);color:var(--green);">Join</button>`}
+    </div>`).join("");
+        const blEl = document.getElementById("dev-blacklist"), blList = ai.blacklistFull || [];
+        blEl.innerHTML = blList.length ? blList.map(e => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;">
+    <div><div style="font-size:10px;font-weight:700;">${e.username}</div><div style="font-size:8px;color:var(--muted);">${e.reason || "No reason"}</div></div>
+    <button class="dev-btn" onclick="devRemoveBlacklist('${e.id}')" style="width:auto;padding:3px 8px;font-size:9px;">Remove</button>
+    </div>`).join("") : '<div style="font-size:10px;color:var(--muted);">No blacklisted users.</div>';
+        const dlEl = document.getElementById("dev-driver-logins"), logins = dl.logins || [];
+        dlEl.innerHTML = logins.length ? logins.slice(0, 10).map(l => {
+        const ago = Math.floor((Date.now() - l.timestamp) / 1000);
+        return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid var(--border);">
+    ${l.avatar ? `<img src="https://cdn.discordapp.com/avatars/${l.id}/${l.avatar}.png?size=32" style="width:18px;height:18px;border-radius:50%;"/>` : '<div style="width:18px;height:18px;border-radius:50%;background:var(--border);"></div>'}
+    <div style="flex:1;"><div style="font-size:10px;font-weight:700;">${l.username}</div><div style="font-size:8px;color:var(--muted);">${l.ip || "unknown"}</div></div>
+    <div style="font-size:9px;color:var(--muted);">${ago < 60 ? ago + "s" : Math.floor(ago / 60) + "m"} ago</div>
+    </div>`;
+        }).join("") : '<div style="color:var(--muted);">No driver logins yet.</div>';
+        document.getElementById("dev-sessions").innerHTML = (si.sessions || []).filter(s => s.verified).map(s => {
+        const ago = s.lastActive ? Math.floor((Date.now() - s.lastActive) / 1000) : null;
+        return `<div style="font-size:10px;padding:3px 0;border-bottom:1px solid var(--border);">${s.username}${s.isAdmin ? " 👑" : ""}<span style="color:var(--muted);font-size:8px;"> · ${s.ip || "unknown"}</span> — <span style="color:var(--muted);">${ago !== null ? (ago < 60 ? ago + "s" : Math.floor(ago / 60) + "m") + " ago" : "just logged in"}</span></div>`;
+        }).join("") || '<div style="color:var(--muted);">No active sessions.</div>';
+        document.getElementById("dev-audit").innerHTML = (li.audit || []).slice(0, 20).map(a => {
+        const ago = Math.floor((Date.now() - a.timestamp) / 1000);
+        return `<div style="padding:3px 0;border-bottom:1px solid var(--border);">${a.action} — <span style="color:var(--muted);">${a.username} · ${ago < 60 ? ago + "s" : Math.floor(ago / 60) + "m"} ago</span></div>`;
+        }).join("") || '<div style="color:var(--muted);">No actions yet.</div>';
+
+        renderMockLb();
+        renderDriverDB();
+
+        const engEl = document.getElementById("dev-engineers");
+        const serverEngineers = (dl.logins || []).filter(l => l.engineer);
+        const localEngineers = JSON.parse(localStorage.getItem("rc_engineers") || "[]");
+        const allEngineers = [...serverEngineers];
+        localEngineers.forEach(le => {
+        if (!allEngineers.find(e => e.discordId === le.discordId)) allEngineers.push(le);
+        });
+        engEl.innerHTML = allEngineers.length ? allEngineers.map(l => `
+    <div style="padding:3px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;">
+    <span style="font-weight:700;">${l.username}</span>
+    <span style="color:var(--muted);">→ engineering for <span style="color:var(--text);font-weight:700;">${l.engineerFor || "?"}</span></span>
+    </div>`).join("") : '<div style="color:var(--muted);">No engineers active.</div>';
+    } catch (e) { console.error("[Dev]", e); showToast("❌ Failed to load dev info", "err"); }
+    }
+
+    async function devJoinVc(vcId) {
+    try { const res = await fetch(`${apiUrl}/admin/join-vc`, { method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token }, body: JSON.stringify({ vcId }) }); const data = await res.json(); if (res.ok) { showToast(`✓ Joined ${data.name}`, "ok"); loadDevInfo(); } else showToast(`✗ ${data.error}`, "err"); } catch { showToast("✗ Bot unreachable", "err"); }
+    }
+    async function devLeaveVc(vcId) {
+    try { const res = await fetch(`${apiUrl}/admin/leave-vc`, { method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token }, body: JSON.stringify({ vcId }) }); const data = await res.json(); if (res.ok) { showToast("✓ Left VC", "ok"); loadDevInfo(); } else showToast(`✗ ${data.error}`, "err"); } catch { showToast("✗ Bot unreachable", "err"); }
+    }
+    async function devAddBlacklist() {
+    const target = document.getElementById("dev-bl-input").value.trim(); if (!target) return;
+    try { const res = await fetch(`${apiUrl}/admin/blacklist`, { method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token }, body: JSON.stringify({ target, reason: "Added via desktop panel" }) }); const data = await res.json(); if (res.ok) { showToast(`✓ Blacklisted ${data.username}`, "ok"); document.getElementById("dev-bl-input").value = ""; loadDevInfo(); } else showToast(`✗ ${data.error}`, "err"); } catch { showToast("✗ Bot unreachable", "err"); }
+    }
+    async function devRemoveBlacklist(id) {
+    try { const res = await fetch(`${apiUrl}/admin/blacklist/remove`, { method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token }, body: JSON.stringify({ id }) }); const data = await res.json(); if (res.ok) { showToast(`✓ Removed ${data.username}`, "ok"); loadDevInfo(); } else showToast(`✗ ${data.error}`, "err"); } catch { showToast("✗ Bot unreachable", "err"); }
+    }
+    async function devPlayAudio(file) {
+    if (!file) return; const statusEl = document.getElementById("dev-audio-status"); statusEl.style.color = "var(--muted)"; statusEl.textContent = `Uploading ${file.name}...`;
+    try { const formData = new FormData(); formData.append("audio", file); const res = await fetch(`${apiUrl}/admin/play-audio`, { method: "POST", headers: { "x-discord-id": user.id, "x-discord-token": user.token }, body: formData }); const data = await res.json(); if (res.ok) { statusEl.style.color = "var(--green)"; statusEl.textContent = `✓ Playing ${file.name}`; } else { statusEl.style.color = "var(--red)"; statusEl.textContent = `✗ ${data.error}`; } } catch { statusEl.style.color = "var(--red)"; statusEl.textContent = "✗ Bot unreachable"; }
+    }
+    async function devStopAudio() {
+    try { const res = await fetch(`${apiUrl}/admin/stop-audio`, { method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token }, body: JSON.stringify({}) }); if (res.ok) { showToast("✓ Audio stopped", "ok"); document.getElementById("dev-audio-status").textContent = ""; } else showToast("✗ Failed to stop", "err"); } catch { showToast("✗ Bot unreachable", "err"); }
+    }
+
+    async function devSendCustomFlag() {
+    const text = document.getElementById("dev-flag-text").value.trim();
+    const emoji = document.getElementById("dev-flag-emoji").value.trim() || "🏴";
+    const color = _holoMode ? "holographic" : (document.getElementById("dev-flag-hex").value || "#ff00ff");
+    if (!text) { showToast("❌ Enter a flag name", "err"); return; }
+    const statusEl = document.getElementById("dev-flag-status");
+    try {
+        const res = await fetch(`${apiUrl}/flag`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+        body: JSON.stringify({ flag: "__custom__", text, color, emoji, bgImage: _flagBgDataUrl || null }),
+        });
+        const data = await res.json();
+        if (res.ok) { statusEl.style.color = "var(--green)"; statusEl.textContent = "✓ Flag sent!"; }
+        else { statusEl.style.color = "var(--red)"; statusEl.textContent = `✗ ${data.error}`; }
+    } catch { statusEl.style.color = "var(--red)"; statusEl.textContent = "✗ Bot unreachable"; }
+    }
+
+    let _flagBgDataUrl = null;
+
+    function loadFlagBgImage(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        _flagBgDataUrl = e.target.result;
+        document.getElementById("dev-flag-bg-img").src = _flagBgDataUrl;
+        document.getElementById("dev-flag-bg-preview").style.display = "block";
+        document.getElementById("dev-flag-bg-drop").textContent = "✓ Background set";
+        document.getElementById("dev-flag-bg-drop").style.borderColor = "var(--green)";
+        document.getElementById("dev-flag-bg-drop").style.color = "var(--green)";
+        updatePreview();
+    };
+    reader.readAsDataURL(file);
+    }
+
+    function clearFlagBgImage() {
+    _flagBgDataUrl = null;
+    document.getElementById("dev-flag-bg-preview").style.display = "none";
+    document.getElementById("dev-flag-bg-drop").textContent = "🖼️ Drop or click to set background image (optional)";
+    document.getElementById("dev-flag-bg-drop").style.borderColor = "var(--border)";
+    document.getElementById("dev-flag-bg-drop").style.color = "var(--muted)";
+    document.getElementById("dev-flag-bg-input").value = "";
+    updatePreview();
+    }
+
+    let _mockDrivers = [];
+
+    function renderMockLb() {
+    const el = document.getElementById("dev-mock-lb");
+    if (!_mockDrivers.length) {
+        el.innerHTML = '<div style="font-size:10px;color:var(--muted);text-align:center;padding:8px;">No drivers. Click + Add Driver.</div>';
+        return;
+    }
+    el.innerHTML = _mockDrivers.map((d, i) => `
+<div style="display:flex;align-items:center;gap:4px;padding:5px 6px;background:var(--bg);border:1px solid var(--border);border-radius:4px;">
+    <div style="font-size:10px;font-weight:800;color:var(--muted);width:16px;text-align:center;flex-shrink:0;">${i + 1}</div>
+    <select onchange="mockDriverField(${i},'name',this.value)" style="flex:1;font-size:9px;padding:3px 4px;min-width:0;">
+    <option value="">-- Driver --</option>
+    ${Object.entries(DRIVER_INFO).sort((a, b) => parseInt(a[1].number) - parseInt(b[1].number)).map(([name, info]) =>
+        `<option value="${name}" ${d.name === name ? "selected" : ""}>${name} #${info.number}</option>`
+    ).join("")}
+    </select>
+    <input type="number" value="${d.lap || 1}" min="1" max="99" onchange="mockDriverField(${i},'lap',parseInt(this.value)||1)"
+    style="width:36px;font-size:9px;padding:3px 4px;text-align:center;" title="Lap"/>
+    <button onclick="mockTogglePit(${i})" title="Toggle pitting"
+    style="font-size:9px;padding:2px 5px;border-radius:3px;border:1px solid;cursor:pointer;font-family:'Oxanium',sans-serif;background:${d.inPits ? "rgba(255,214,0,0.15)" : "var(--bg)"};border-color:${d.inPits ? "var(--yellow)" : "var(--border)"};color:${d.inPits ? "var(--yellow)" : "var(--muted)"};">
+    🔧
+    </button>
+    <button onclick="mockMoveUp(${i})" style="font-size:9px;padding:2px 4px;border-radius:3px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;" ${i === 0 ? "disabled" : ""}>↑</button>
+    <button onclick="mockMoveDown(${i})" style="font-size:9px;padding:2px 4px;border-radius:3px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;" ${i === _mockDrivers.length - 1 ? "disabled" : ""}>↓</button>
+    <button onclick="mockRemoveDriver(${i})" style="font-size:9px;padding:2px 5px;border-radius:3px;border:1px solid rgba(255,23,68,0.3);background:rgba(255,23,68,0.08);color:var(--red);cursor:pointer;">✕</button>
+</div>`).join("");
+    }
+
+    function devAddMockDriver() {
+    const used = new Set(_mockDrivers.map(d => d.name));
+    const next = Object.keys(DRIVER_INFO).find(n => !used.has(n)) || "";
+    const info = DRIVER_INFO[next] || { number: "00", callsign: "???" };
+    _mockDrivers.push({ name: next, number: info.number, callsign: info.callsign, lap: 1, inPits: false, pitted: false, gap: "–", position: _mockDrivers.length + 1 });
+    renderMockLb();
+    }
+
+    function mockDriverField(i, field, value) {
+    if (field === "name") {
+        const info = DRIVER_INFO[value] || { number: "00", callsign: "???" };
+        _mockDrivers[i].name = value;
+        _mockDrivers[i].number = info.number;
+        _mockDrivers[i].callsign = info.callsign;
+    } else if (field !== "_reorder") {
+        _mockDrivers[i][field] = value;
+    }
+    _mockDrivers.forEach((d, idx) => {
+        d.position = idx + 1;
+        const lapDiff = (_mockDrivers[0].lap || 1) - (d.lap || 1);
+        d.gap = idx === 0 ? "Leader" : lapDiff > 0 ? `+${lapDiff} lap${lapDiff > 1 ? "s" : ""}` : "Same lap";
+    });
+    renderMockLb();
+    }
+
+    function mockTogglePit(i) { _mockDrivers[i].inPits = !_mockDrivers[i].inPits; renderMockLb(); }
+    function mockMoveUp(i) {
+    if (i === 0) return;
+    [_mockDrivers[i - 1], _mockDrivers[i]] = [_mockDrivers[i], _mockDrivers[i - 1]];
+    mockDriverField(0, "_reorder", null);
+    }
+    function mockMoveDown(i) {
+    if (i >= _mockDrivers.length - 1) return;
+    [_mockDrivers[i], _mockDrivers[i + 1]] = [_mockDrivers[i + 1], _mockDrivers[i]];
+    mockDriverField(0, "_reorder", null);
+    }
+    function mockRemoveDriver(i) { _mockDrivers.splice(i, 1); renderMockLb(); }
+
+    async function devPushMockLb() {
+    if (!_mockDrivers.length) { showToast("❌ No drivers to push", "err"); return; }
+    if (!user?.token) { showToast("❌ Not authenticated", "err"); return; }
+    _mockDrivers.forEach((d, i) => {
+        d.position = i + 1;
+        const lapDiff = (_mockDrivers[0].lap || 1) - (d.lap || 1);
+        d.gap = i === 0 ? "Leader" : lapDiff > 0 ? `+${lapDiff} lap${lapDiff > 1 ? "s" : ""}` : "Same lap";
+    });
+    try {
+        const res = await fetch(`${apiUrl}/driver/state`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+        body: JSON.stringify({ drivers: _mockDrivers }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+        showToast("✓ Mock leaderboard pushed", "ok");
+        document.getElementById("dev-mock-status").textContent = `✓ Pushed ${_mockDrivers.length} drivers`;
+        document.getElementById("dev-mock-status").style.color = "var(--green)";
+        } else { showToast(`✗ ${data.error || "Failed"}`, "err"); }
+    } catch { showToast("✗ Bot unreachable", "err"); }
+    }
+
+    async function devClearMockLb() {
+    _mockDrivers = [];
+    renderMockLb();
+    document.getElementById("dev-mock-status").textContent = "";
+    if (user?.token) {
+        try {
+        await fetch(`${apiUrl}/driver/state`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+            body: JSON.stringify({ drivers: [] }),
+        });
+        } catch { }
+    }
+    showToast("✓ Mock leaderboard cleared", "ok");
+    }
+
+    async function devTogglePanel(target, enable) {
+    if (!user?.token) { const ok = await devAutoAuth(); if (!ok) { showToast("❌ Dev auth failed", "err"); return; } }
+    try {
+        let res = await fetch(`${apiUrl}/panel-status`, { method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token }, body: JSON.stringify({ target, enable }) });
+        if (res.status === 404) res = await fetch(`${apiUrl}/admin/panel-status`, { method: "POST", headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token }, body: JSON.stringify({ target, enable }) });
+        const data = await res.json();
+        if (res.ok) { showToast(`✓ ${target} panel ${enable ? "enabled" : "disabled"}`, "ok"); const el = document.getElementById("dev-panel-status"); el.textContent = `${target} panel ${enable ? "enabled" : "disabled"}`; el.style.color = enable ? "var(--green)" : "var(--red)"; loadDevInfo(); }
+        else showToast(`✗ ${data.error || "Failed"}`, "err");
+    } catch { showToast("✗ Bot unreachable", "err"); }
+    }
+
+    function startCooldown(secs, slot = 1) {
+    if (slot === 1) {
+        const bar = document.getElementById("cooldown-bar"), fill = document.getElementById("cooldown-fill");
+        bar.style.display = "block"; fill.style.transition = "none"; fill.style.width = "100%";
+        void fill.offsetWidth; fill.style.transition = `width ${secs}s linear`; fill.style.width = "0%";
+        _cooldownActive = true;
+        ["blue_flag", "next_lap", "pitting"].forEach(a => {
+        const b = document.getElementById(`btn-${a}`);
+        if (b) { b.disabled = true; b.style.opacity = "0.35"; }
+        });
+        _suspendHotkeys();
+    } else {
+        _cooldownActive2 = true;
+        ["blue_flag", "next_lap", "pitting"].forEach(a => {
+        const b2 = document.getElementById(`btn2-${a}`);
+        if (b2) { b2.disabled = true; b2.style.opacity = "0.35"; }
+        });
+    }
+    }
+    function stopCooldown(slot = 1) {
+    if (slot === 1) {
+        document.getElementById("cooldown-bar").style.display = "none";
+        _cooldownActive = false;
+        if (_lastRaceState?.raceStarted !== false) {
+        ["blue_flag", "next_lap", "pitting"].forEach(a => {
+            const b = document.getElementById(`btn-${a}`);
+            if (b) { b.disabled = false; b.style.opacity = ""; }
+        });
+        }
+        _resumeHotkeys();
+    } else {
+        _cooldownActive2 = false;
+        if (_lastRaceState?.raceStarted !== false) {
+        ["blue_flag", "next_lap", "pitting"].forEach(a => {
+            const b2 = document.getElementById(`btn2-${a}`);
+            if (b2) { b2.disabled = false; b2.style.opacity = ""; }
+        });
+        }
+    }
+    }
+
+    async function saveSettings() {
+    const newApi = hasDev ? document.getElementById("s-api").value.trim() : (config.apiUrl || apiUrl);
+    apiUrl = newApi;
+    const keybinds = {
+        blue_flag: document.getElementById("kb-blue_flag").value || "F1",
+        next_lap: document.getElementById("kb-next_lap").value || "F2",
+        pitting: document.getElementById("kb-pitting").value || "F3",
+        blue_flag2: document.getElementById("kb-blue_flag2")?.value || "F4",
+        next_lap2: document.getElementById("kb-next_lap2")?.value || "F5",
+        pitting2: document.getElementById("kb-pitting2")?.value || "F6",
+        dnf: document.getElementById("kb-dnf")?.value || "F8",
+    };
+    const newConfig = { ...config, apiUrl: newApi, keybinds };
+    await window.api.saveConfig(newConfig); await window.api.registerHotkeys(keybinds);
+    localStorage.setItem("rc_flag_volume", Math.round(_flagVolume * 100));
+    config = newConfig; updateKeybindLabels(); showToast("✓ Settings saved", "ok"); goBack();
+    }
+
+    function updateKeybindLabels() {
+    const kb = config.keybinds || {};
+    const bf = document.getElementById("key-blue_flag"), nl = document.getElementById("key-next_lap"), pt = document.getElementById("key-pitting");
+    if (bf) bf.textContent = kb.blue_flag || "F1"; if (nl) nl.textContent = kb.next_lap || "F2"; if (pt) pt.textContent = kb.pitting || "F3";
+    const df = document.getElementById("key-dnf"); if (df) df.textContent = kb.dnf || "F8";
+    const df2 = document.getElementById("key2-dnf"); if (df2) df2.textContent = kb.dnf || "F8";
+    const d1 = document.getElementById("kb-display-blue_flag"), d2 = document.getElementById("kb-display-next_lap"), d3 = document.getElementById("kb-display-pitting");
+    if (d1) d1.textContent = kb.blue_flag || "F1"; if (d2) d2.textContent = kb.next_lap || "F2"; if (d3) d3.textContent = kb.pitting || "F3";
+    const b2 = document.getElementById("key2-blue_flag"), n2 = document.getElementById("key2-next_lap"), p2 = document.getElementById("key2-pitting");
+    if (b2) b2.textContent = kb.blue_flag2 || "F4"; if (n2) n2.textContent = kb.next_lap2 || "F5"; if (p2) p2.textContent = kb.pitting2 || "F6";
+    const dnfD = document.getElementById("kb-display-dnf");
+    if (dnfD) dnfD.textContent = kb.dnf || "F8";
+    const dnfI = document.getElementById("kb-dnf");
+    if (dnfI) dnfI.value = kb.dnf || "F8";
+    }
+
+    function listenKey(action) {
+    if (listeningKey) document.getElementById(`kb-${listeningKey}`)?.classList.remove("listening");
+    listeningKey = action; const el = document.getElementById(`kb-${action}`);
+    el.classList.add("listening"); el.value = "Press a key...";
+    }
+    document.addEventListener("keydown", e => {
+    if (!listeningKey) return; e.preventDefault();
+    const numpadMap = {
+        Numpad0: "Num0", Numpad1: "Num1", Numpad2: "Num2", Numpad3: "Num3",
+        Numpad4: "Num4", Numpad5: "Num5", Numpad6: "Num6", Numpad7: "Num7",
+        Numpad8: "Num8", Numpad9: "Num9", NumpadAdd: "Num+", NumpadSubtract: "Num-",
+        NumpadMultiply: "Num*", NumpadDivide: "Num/", NumpadDecimal: "Num.",
+        NumpadEnter: "NumEnter",
+    };
+    const key = e.code in numpadMap ? numpadMap[e.code]
+        : e.key === " " ? "Space"
+        : e.key.length === 1 ? e.key.toUpperCase()
+            : e.key;
+    document.getElementById(`kb-${listeningKey}`).value = key;
+    document.getElementById(`kb-${listeningKey}`).classList.remove("listening");
+    listeningKey = null;
+    });
+
+    function showScreen(id) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("active")); document.getElementById(id)?.classList.add("active"); }
+    async function toggleTop() {
+    const v = await window.api.toggleTop();
+    document.getElementById("top-btn").style.color = v ? "var(--blue)" : "var(--muted)";
+    showToast(v ? "📌 App pinned!" : "📌 Unpinned", v ? "ok" : "");
+    }
+    function installUpdate() { window.api.installUpdate(); }
+    function showToast(msg, type = "") {
+    const t = document.getElementById("toast"); t.textContent = msg; t.className = `show ${type}`;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.className = ""; }, 2500);
+    }
+
+    setTimeout(() => {
+    const flagBgDrop = document.getElementById("dev-flag-bg-drop");
+    if (flagBgDrop) {
+        flagBgDrop.addEventListener("dragover", e => { e.preventDefault(); flagBgDrop.style.borderColor = "var(--green)"; });
+        flagBgDrop.addEventListener("dragleave", () => { flagBgDrop.style.borderColor = _flagBgDataUrl ? "var(--green)" : "var(--border)"; });
+        flagBgDrop.addEventListener("drop", e => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith("image/")) loadFlagBgImage(file);
+        });
+    }
+    const drop = document.getElementById("dev-audio-drop"); if (!drop) return;
+    drop.addEventListener("dragover", e => { e.preventDefault(); drop.style.borderColor = "var(--green)"; });
+    drop.addEventListener("dragleave", () => { drop.style.borderColor = "var(--border)"; });
+    drop.addEventListener("drop", e => { e.preventDefault(); drop.style.borderColor = "var(--border)"; const file = e.dataTransfer.files[0]; if (file) devPlayAudio(file); });
+    }, 500);
+
+    let _acPollInterval = null;
+    let _acActiveId = null;
+    let _acDriverVoted = false;
+
+    async function sendAudioCheck() {
+    if (!user?.token) return showToast("✗ Not authenticated", "err");
+    const msg = "Radio Check, Radio Check";
+    const id = Date.now();
+    _acActiveId = id;
+    _acDriverVoted = false;
+
+    try {
+        const res = await fetch(`${apiUrl}/flag`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-discord-id": user.id, "x-discord-token": user.token },
+        body: JSON.stringify({ flag: "__custom__", text: msg, emoji: "🎙️", color: "#2979ff", audioCheckId: id }),
+        });
+        if (!res.ok) { const d = await res.json(); return showToast(`✗ ${d.error}`, "err"); }
+
+        showToast("✓ Audio check sent", "ok");
+        playFlagAudio("AudioCheck.mp4");
+        document.getElementById("ac-results").style.display = "flex";
+        document.getElementById("ac-yes-list").innerHTML = "";
+        document.getElementById("ac-no-list").innerHTML = "";
+        document.getElementById("ac-summary").textContent = "Waiting for responses...";
+
+        if (_acPollInterval) clearInterval(_acPollInterval);
+        _acPollInterval = setInterval(() => pollAudioCheckResults(id), 2000);
+    } catch { showToast("✗ Bot unreachable", "err"); }
+    }
+
+    async function pollAudioCheckResults(id) {
+    if (!user?.token) return;
+    try {
+        const res = await fetch(`${apiUrl}/audio-check/${id}`, { headers: { "x-discord-id": user.id, "x-discord-token": user.token } });
+        if (!res.ok) return;
+        const data = await res.json();
+        renderAudioCheckResults(data);
+    } catch { }
+    }
+
+    function renderAudioCheckResults(data) {
+    const yes = data.yes || [];
+    const no = data.no || [];
+    const makeRow = (name, number, callsign, type) => `
+<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--bg);
+    border:1px solid ${type === "yes" ? "rgba(0,230,118,0.3)" : "rgba(255,23,68,0.3)"};border-radius:4px;">
+    <div style="width:22px;height:22px;border-radius:3px;background:rgba(255,255,255,0.05);
+    border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+    font-size:8px;font-weight:800;flex-shrink:0;">${number === "–" ? "🏁" : "#" + number}</div>
+    <div style="flex:1;"><div style="font-size:10px;font-weight:700;">${name}</div>
+    <div style="font-size:8px;color:var(--muted);">${callsign}</div></div>
+    <span style="font-size:14px;">${type === "yes" ? "✅" : "❌"}</span>
+</div>`;
+    document.getElementById("ac-yes-list").innerHTML = yes.length ? yes.map(d => makeRow(d.name, d.number, d.callsign, "yes")).join("") : "";
+    document.getElementById("ac-no-list").innerHTML = no.length ? no.map(d => makeRow(d.name, d.number, d.callsign, "no")).join("") : "";
+    const total = yes.length + no.length;
+    document.getElementById("ac-summary").textContent = total ? `${yes.length} ✅  ${no.length} ❌  (${total} responded)` : "Waiting for responses...";
+    document.getElementById("ac-summary").style.color = no.length ? "var(--red)" : yes.length ? "var(--green)" : "var(--muted)";
+    }
+
+    async function clearAudioCheck() {
+    if (_acPollInterval) { clearInterval(_acPollInterval); _acPollInterval = null; }
+    _acActiveId = null;
+    _acDriverVoted = false;
+    document.getElementById("ac-results").style.display = "none";
+    document.getElementById("ac-yes-list").innerHTML = "";
+    document.getElementById("ac-no-list").innerHTML = "";
+    ["flag-notif-driver", "flag-notif-marshal"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = "";
+    });
+    }
+
+
+    function showAudioCheckPrompt(audioCheckId, msg) {
+    if (_acDriverVoted && _acActiveId === audioCheckId) return;
+    _acDriverVoted = false;
+    _acActiveId = audioCheckId;
+    playFlagAudio("AudioCheck.mp4");
+
+    const html = `
+<div style="background:rgba(41,121,255,0.08);border:1.5px solid rgba(41,121,255,0.5);
+    border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;
+    animation:slideIn 0.3s cubic-bezier(0.34,1.56,0.64,1);margin:8px 0 0 0;">
+    <div style="display:flex;align-items:center;gap:8px;">
+    <span style="font-size:20px;">🎙️</span>
+    <div>
+        <div style="font-size:12px;font-weight:800;color:var(--blue);">Audio Check</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.6);">${msg}</div>
+    </div>
+    </div>
+    <div style="display:flex;gap:6px;">
+    <button onclick="submitAudioVote(${audioCheckId},'yes')"
+        style="flex:1;padding:9px;background:rgba(0,230,118,0.15);border:1px solid rgba(0,230,118,0.5);
+        color:var(--green);font-family:'Oxanium',sans-serif;font-size:12px;font-weight:800;
+        letter-spacing:1px;text-transform:uppercase;border-radius:5px;cursor:pointer;">
+        ✅ Loud and Clear
+    </button>
+    <button onclick="submitAudioVote(${audioCheckId},'no')"
+        style="flex:1;padding:9px;background:rgba(255,23,68,0.15);border:1px solid rgba(255,23,68,0.5);
+        color:var(--red);font-family:'Oxanium',sans-serif;font-size:12px;font-weight:800;
+        letter-spacing:1px;text-transform:uppercase;border-radius:5px;cursor:pointer;">
+        ❌ Can't hear ya mate
+    </button>
+    </div>
+</div>`;
+
+    document.getElementById("flag-notif-driver").innerHTML = html;
+    document.getElementById("flag-notif-marshal").innerHTML = html;
+
+    if (currentPanel !== "driver" && currentPanel !== "marshal") {
+        if (hasMarshal) switchPanel("marshal");
+        else if (hasDriver) switchPanel("driver");
+    }
+    }
+
+
+    async function submitAudioVote(audioCheckId, vote) {
+    if (_acDriverVoted) return;
+    _acDriverVoted = true;
+
+    const isMarshal = !config.driver || config.driver === "__dev__";
+    const name = isMarshal ? (user?.username || "Marshal") : config.driver;
+    const info = isMarshal ? { number: "–", callsign: "Marshal" } : (DRIVER_INFO[config.driver] || {});
+
+    try {
+        await fetch(`${apiUrl}/audio-check/${audioCheckId}/vote`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-discord-id": user?.id || "" },
+        body: JSON.stringify({ vote, name, number: info.number || "??", callsign: info.callsign || "???" }),
+        });
+    } catch { }
+
+    const confirmHtml = (v) => `
+<div style="background:${v === "yes" ? "rgba(0,230,118,0.08)" : "rgba(255,23,68,0.08)"};
+    border:1.5px solid ${v === "yes" ? "rgba(0,230,118,0.4)" : "rgba(255,23,68,0.4)"};
+    border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin:8px 0 0 0;">
+    <span style="font-size:20px;">${v === "yes" ? "✅" : "❌"}</span>
+    <div style="font-size:11px;font-weight:700;color:${v === "yes" ? "var(--green)" : "var(--red)"};">
+    Response sent — ${v === "yes" ? "Audio OK" : "Cannot hear"}
+    </div>
+</div>`;
+
+    ["flag-notif-driver", "flag-notif-marshal"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+        el.innerHTML = confirmHtml(vote);
+        setTimeout(() => { el.innerHTML = ""; }, 4000);
+        }
+    });
+
+    showToast(vote === "yes" ? "✅ Voted Yes" : "❌ Voted No", vote === "yes" ? "ok" : "err");
+    }
